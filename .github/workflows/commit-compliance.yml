@@ -1,0 +1,21 @@
+name: Commit Compliance
+on:
+  pull_request:
+
+jobs:
+  commit-compliance:
+    permissions:
+      contents: read
+      pull-requests: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Commit Message
+        uses: gsactions/commit-message-checker@16fa2d5de096ae0d35626443bcd24f1e756cafee # v2.0.0
+        with:
+          pattern: '^(feat|fix|test|bench|docs|chore|refactor|perf)\((backend|frontend|tools|ci|common).*\): '
+          flags: 'gs'
+          error: 'First line should contain a type and scope (e.g. "fix(backend): message").'
+          excludeDescription: 'true' # only first line
+          excludeTitle: 'true' # exclude PR title
+          checkAllCommitMessages: 'true'
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
