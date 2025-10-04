@@ -4,13 +4,13 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
     commit-message:
-      prefix: ⬆
+      prefix: "chore(ci):"
   # Python
   - package-ecosystem: pip
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
     commit-message:
-      prefix: ⬆
+      prefix: "chore(backend):"
