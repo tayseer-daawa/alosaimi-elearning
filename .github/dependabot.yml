@@ -6,21 +6,21 @@ updates:
     schedule:
       interval: daily
     commit-message:
-      prefix: ⬆
+      prefix: "chore(ci):"
   # Python uv
   - package-ecosystem: uv
     directory: /backend
     schedule:
       interval: weekly
     commit-message:
-      prefix: ⬆
+      prefix: "chore(backend):"
   # npm
   - package-ecosystem: npm
     directory: /frontend
     schedule:
       interval: weekly
     commit-message:
-      prefix: ⬆
+      prefix: "chore(frontend):"
     ignore:
       - dependency-name: "@hey-api/openapi-ts"
   # Docker
@@ -31,11 +31,11 @@ updates:
     schedule:
       interval: weekly
     commit-message:
-      prefix: ⬆
+      prefix: "chore(tools/docker):"
   # Docker Compose
   - package-ecosystem: docker-compose
     directory: /
     schedule:
       interval: weekly
     commit-message:
-      prefix: ⬆
+      prefix: "chore(tools/docker):"
