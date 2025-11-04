@@ -42,16 +42,16 @@ For the backend and frontend, they use the same port that would be used by their
 
 This way, you could turn off a Docker Compose service and start its local development service, and everything would keep working, because it all uses the same ports.
 
-For example, you can stop that `frontend` service in the Docker Compose, in another terminal, run:
+For example, you can stop that `frontend-admin` service in the Docker Compose, in another terminal, run:
 
 ```bash
-docker compose stop frontend
+docker compose stop frontend-admin
 ```
 
 And then start the local frontend development server:
 
 ```bash
-cd frontend
+cd frontend/admin
 npm run dev
 ```
 

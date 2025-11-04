@@ -12,11 +12,11 @@ repos:
       - id: end-of-file-fixer
         exclude: |
             (?x)^(
-                frontend/src/client/.*|
+                frontend/admin/src/client/.*|
                 backend/app/email-templates/build/.*
             )$
       - id: trailing-whitespace
-        exclude: ^frontend/src/client/.*
+        exclude: ^frontend/admin/src/client/.*
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.2.2
     hooks:
@@ -28,10 +28,10 @@ repos:
     hooks:
       - id: local-biome-check
         name: biome check
-        entry: bash -c 'cd frontend && npm run lint'
+        entry: bash -c 'cd frontend/admin && npm run lint'
         language: system
         types: [text]
-        files: ^frontend/
+        files: ^frontend/admin
 
 ci:
   autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
