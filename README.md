@@ -86,7 +86,7 @@ Backend docs: [backend/README.md](./backend/README.md).
 
 ## Frontend Development
 
-Frontend docs: [frontend/README.md](./frontend/README.md).
+Frontend Admin docs: [frontend/admin/README.md](./frontend/admin/README.md).
 
 ## Deployment
 

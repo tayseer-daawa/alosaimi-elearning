@@ -8,10 +8,10 @@ Before you begin, ensure that you have either the Node Version Manager (nvm) or 
 
 * To install fnm follow the [official fnm guide](https://github.com/Schniz/fnm#installation). If you prefer nvm, you can install it using the [official nvm guide](https://github.com/nvm-sh/nvm#installing-and-updating).
 
-* After installing either nvm or fnm, proceed to the `frontend` directory:
+* After installing either nvm or fnm, proceed to the `frontend-admin` directory:
 
 ```bash
-cd frontend
+cd frontend-admin
 ```
 * If the Node.js version specified in the `.nvmrc` file isn't installed on your system, you can install it using the appropriate command:
 
@@ -33,7 +33,7 @@ fnm use
 nvm use
 ```
 
-* Within the `frontend` directory, install the necessary NPM packages:
+* Within the `frontend-admin` directory, install the necessary NPM packages:
 
 ```bash
 npm install
@@ -55,11 +55,11 @@ Check the file `package.json` to see other available options.
 
 If you are developing an API-only app and want to remove the frontend, you can do it easily:
 
-* Remove the `./frontend` directory.
+* Remove the `./frontend/admin` directory.
 
-* In the `docker-compose.yml` file, remove the whole service / section `frontend`.
+* In the `docker-compose.yml` file, remove the whole service / section `frontend-admin`.
 
-* In the `docker-compose.override.yml` file, remove the whole service / section `frontend` and `playwright`.
+* In the `docker-compose.override.yml` file, remove the whole service / section `frontend-admin` and `playwright`.
 
 Done, you have a frontend-less (api-only) app. 🤓
 
@@ -89,7 +89,7 @@ But it would be only to clean them up, leaving them won't really have any effect
 
 * Start the Docker Compose stack.
 
-* Download the OpenAPI JSON file from `http://localhost/api/v1/openapi.json` and copy it to a new file `openapi.json` at the root of the `frontend` directory.
+* Download the OpenAPI JSON file from `http://localhost/api/v1/openapi.json` and copy it to a new file `openapi.json` at the root of the `frontend/admin` directory.
 
 * To generate the frontend client, run:
 
@@ -103,7 +103,7 @@ Notice that everytime the backend changes (changing the OpenAPI schema), you sho
 
 ## Using a Remote API
 
-If you want to use a remote API, you can set the environment variable `VITE_API_URL` to the URL of the remote API. For example, you can set it in the `frontend/.env` file:
+If you want to use a remote API, you can set the environment variable `VITE_API_URL` to the URL of the remote API. For example, you can set it in the `frontend/admin/.env` file:
 
 ```env
 VITE_API_URL=https://api.my-domain.example.com
@@ -115,12 +115,12 @@ Then, when you run the frontend, it will use that URL as the base URL for the AP
 
 The frontend code is structured as follows:
 
-* `frontend/src` - The main frontend code.
-* `frontend/src/assets` - Static assets.
-* `frontend/src/client` - The generated OpenAPI client.
-* `frontend/src/components` -  The different components of the frontend.
-* `frontend/src/hooks` - Custom hooks.
-* `frontend/src/routes` - The different routes of the frontend which include the pages.
+* `frontend/admin/src` - The main frontend code.
+* `frontend/admin/src/assets` - Static assets.
+* `frontend/admin/src/client` - The generated OpenAPI client.
+* `frontend/admin/src/components` -  The different components of the frontend.
+* `frontend/admin/src/hooks` - Custom hooks.
+* `frontend/admin/src/routes` - The different routes of the frontend which include the pages.
 * `theme.tsx` - The Chakra UI custom theme.
 
 ## End-to-End Testing with Playwright
