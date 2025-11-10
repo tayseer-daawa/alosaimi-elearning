@@ -24,5 +24,12 @@
             "url": "http://localhost:5173",
             "webRoot": "${workspaceFolder}/frontend/admin"
         },
+         {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Debug Frontend: Launch Chrome against http://localhost:5174",
+            "url": "http://localhost:5174",
+            "webRoot": "${workspaceFolder}/frontend/student"
+        },
     ]
 }
