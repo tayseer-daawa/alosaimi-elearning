@@ -47,11 +47,7 @@ jobs:
         git config --local user.email "github-actions@github.com"
         git config --local user.name "github-actions"
         git add frontend/admin/src/client
-    - name: Add student changes to git
-      run: |
-        git config --local user.email "github-actions@github.com"
-        git config --local user.name "github-actions"
-        git add frontend/student/src/client
+        git add frontend/student/src/client 
     # Same repo PRs
     - name: Push changes
       if: ( github.event_name != 'pull_request' || github.secret_source == 'Actions' )
