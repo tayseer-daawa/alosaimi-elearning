@@ -26,12 +26,18 @@ repos:
       - id: ruff-format
   - repo: local
     hooks:
-      - id: local-biome-check
-        name: biome check
+      - id: local-biome-check-admin
+        name: biome check admin
         entry: bash -c 'cd frontend/admin && npm run lint'
         language: system
         types: [text]
         files: ^frontend/admin
+      - id: local-biome-check-student
+        name: biome check student
+        entry: bash -c 'cd frontend/student && npm run lint'
+        language: system
+        types: [text]
+        files: ^frontend/student
 
 ci:
   autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks

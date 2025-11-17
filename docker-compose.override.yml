@@ -101,6 +101,15 @@ services:
       args:
         - VITE_API_URL=http://localhost:8000
         - NODE_ENV=development
+  frontend-student:
+    restart: "no"
+    ports:
+      - "5174:80"
+    build:
+      context: ./frontend/student
+      args:
+        - VITE_API_URL=http://localhost:8000
+        - NODE_ENV=development
 
   playwright:
     build:
