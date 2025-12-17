@@ -4,11 +4,11 @@ import { defineRecipe } from '@chakra-ui/react';
 export const buttonRecipe = defineRecipe({
   base: {
     fontWeight: '600',
-    borderRadius: 'lg',
+    borderRadius: 'md',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '2',
+    gap: '4',
     transitionProperty: 'common',
     transitionDuration: '200ms',
   },
