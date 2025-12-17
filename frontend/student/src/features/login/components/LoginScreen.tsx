@@ -12,6 +12,8 @@ import {
 } from '@chakra-ui/react';
 import { useLoginWizard } from '../hooks/useLoginWizard';
 
+import { YesNoToggle } from './YesNoToggle';
+
 const CustomVStackInput = ({
   label,
   state,
@@ -119,34 +121,10 @@ export default function LoginScreen() {
                   <Text fontSize={{ base: 'sm', md: 'md', lg: 'lg' }} color="text.default">
                     هل تريد تلقي بعض الاشعارات على البريد الالكتروني؟
                   </Text>
-                  <HStack gap={{ base: 3, md: 4 }} justify="space-between">
-                    <Button
-                      size={{ base: 'md', md: 'lg' }}
-                      variant={wantsNotifications === true ? 'solid' : 'outline'}
-                      onClick={() => setWantsNotifications(true)}
-                      borderColor="brand.primary"
-                      color={wantsNotifications === true ? 'white' : 'brand.primary'}
-                      bg={wantsNotifications === true ? 'brand.primary' : 'transparent'}
-                      _hover={{ bg: wantsNotifications === true ? 'brand.primary' : 'transparent' }}
-                      w={{ base: '40%', md: '45%' }}
-                    >
-                      نعم
-                    </Button>
-                    <Button
-                      size={{ base: 'md', md: 'lg' }}
-                      variant={wantsNotifications === false ? 'solid' : 'outline'}
-                      onClick={() => setWantsNotifications(false)}
-                      borderColor="brand.primary"
-                      color={wantsNotifications === false ? 'white' : 'brand.primary'}
-                      bg={wantsNotifications === false ? 'brand.primary' : 'transparent'}
-                      _hover={{
-                        bg: wantsNotifications === false ? 'brand.primary' : 'transparent',
-                      }}
-                      w={{ base: '40%', md: '45%' }}
-                    >
-                      لا
-                    </Button>
-                  </HStack>
+                  <YesNoToggle value={wantsNotifications} onChange={setWantsNotifications} />
+                 
+                 
+                  {/* <ErrorText error={error} /> */}
                 </VStack>
               )}
 
