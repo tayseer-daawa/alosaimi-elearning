@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Flex,
-  HStack,
   Image,
   Input,
   InputProps,
@@ -18,14 +17,18 @@ const CustomVStackInput = ({
   label,
   state,
   stateSetter,
+  handleKeyDownEnter,
+  error,
   ...props //input props
 }: {
   label: string;
   state: string;
   stateSetter: (value: string) => void;
+  handleKeyDownEnter?: (e: React.KeyboardEvent) => void;
+  error?: string | null;
 } & Omit<InputProps, 'value' | 'onChange'>) => {
   return (
-    <VStack w={{ base: '90%', md: '45%', lg: '35%' }} gap={{ base: 3, md: 4 }} align="stretch">
+    <VStack w={{ base: '100%', md: '55%', lg: '45%' }} gap={{ base: 3, md: 4 }} align="stretch">
       <Text fontSize={{ base: 'sm', md: '2xl', lg: '3xl' }} color="text.default">
         {label}
       </Text>
@@ -34,15 +37,15 @@ const CustomVStackInput = ({
         fontSize={{ base: 'xl', md: '2xl', lg: '4xl' }}
         fontWeight={600}
         variant="flushed"
-        value={state}
         onChange={(e) => stateSetter(e.target.value)}
+        onKeyDown={handleKeyDownEnter}
         placeholder=""
-        borderColor="brand.primary"
         borderBottomWidth={{ base: '2px', md: '3px', lg: '4px' }}
         _focus={{ borderColor: 'brand.primary', borderBottomWidth: '3px' }}
         height={{ base: 16, md: 24, lg: 24 }}
         {...props}
       />
+      <ErrorText error={error} />
     </VStack>
   );
 };
@@ -66,9 +69,15 @@ export default function LoginScreen() {
     next,
   } = useLoginWizard();
 
+  const handleKeyDownEnter = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    next();
+  };
+
   return (
     <Box dir="rtl" minH="100vh" py={{ base: 10, md: 16, lg: 20 }}>
-      <Container>
+      <Container p={8}>
         <Flex minH="calc(100vh - 80px)" direction="column" gap={{ base: 10, md: 12, lg: 14 }}>
           <VStack gap={{ base: 2, md: 3 }} pt={{ base: 4, md: 10, lg: 12 }}>
             <Text
@@ -91,7 +100,6 @@ export default function LoginScreen() {
               my="auto"
             />
           ) : (
-            // </VStack>
             <VStack gap={{ base: 8, md: 10, lg: 12 }} flex="1" justify="center">
               {step === 'name' && (
                 <CustomVStackInput
@@ -99,6 +107,8 @@ export default function LoginScreen() {
                   state={fullName}
                   stateSetter={setFullName}
                   autoComplete="name"
+                  handleKeyDownEnter={handleKeyDownEnter}
+                  error={error}
                 />
               )}
 
@@ -109,22 +119,23 @@ export default function LoginScreen() {
                   stateSetter={setEmail}
                   autoComplete="email"
                   type="email"
+                  handleKeyDownEnter={handleKeyDownEnter}
+                  error={error}
                 />
               )}
 
               {step === 'goal' && (
                 <VStack
-                  w={{ base: '90%', md: '45%', lg: '35%' }}
+                  w={{ base: '100%', md: '65%', lg: '55%' }}
                   gap={{ base: 3, md: 4 }}
                   align="stretch"
                 >
-                  <Text fontSize={{ base: 'sm', md: 'md', lg: 'lg' }} color="text.default">
+                  <Text fontSize={{ base: 'sm', md: '2xl', lg: '3xl' }} color="text.default">
                     هل تريد تلقي بعض الاشعارات على البريد الالكتروني؟
                   </Text>
                   <YesNoToggle value={wantsNotifications} onChange={setWantsNotifications} />
-                 
-                 
-                  {/* <ErrorText error={error} /> */}
+
+                  <ErrorText error={error} />
                 </VStack>
               )}
 
@@ -136,6 +147,7 @@ export default function LoginScreen() {
                     stateSetter={setPassword}
                     type="password"
                     autoComplete="new-password"
+                    handleKeyDownEnter={handleKeyDownEnter}
                   />
                   <CustomVStackInput
                     label="تأكيد كلمة السر"
@@ -143,15 +155,11 @@ export default function LoginScreen() {
                     stateSetter={setConfirmPassword}
                     type="password"
                     autoComplete="new-password"
+                    handleKeyDownEnter={handleKeyDownEnter}
+                    error={error}
                   />
                 </VStack>
               )}
-
-              {error ? (
-                <Text fontSize={{ base: 'sm', md: 'md' }} color="red.500" textAlign="center">
-                  {error}
-                </Text>
-              ) : null}
             </VStack>
           )}
 
@@ -179,3 +187,16 @@ export default function LoginScreen() {
     </Box>
   );
 }
+
+const ErrorText = ({ error }: { error?: string | null }) => {
+  return error ? (
+    <Text
+      fontSize={{ base: 'md', md: '2xl', lg: '3xl' }}
+      color="red.500"
+      textAlign="start"
+      w="100%"
+    >
+      {error}
+    </Text>
+  ) : null;
+};
