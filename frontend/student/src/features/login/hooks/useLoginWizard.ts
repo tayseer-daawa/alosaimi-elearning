@@ -8,7 +8,7 @@ const steps: Step[] = ['welcome', 'name', 'email', 'goal', 'password'];
 function mockSubmit(values: {
   fullName: string;
   email: string;
-  wantsLearning: boolean | null;
+  wantsNotifications: boolean | null;
   password: string;
 }) {
   return new Promise<void>((resolve) => {
@@ -19,7 +19,7 @@ function mockSubmit(values: {
         JSON.stringify({
           fullName: values.fullName,
           email: values.email,
-          wantsLearning: values.wantsLearning,
+          wantsNotifications: values.wantsNotifications,
         })
       );
       resolve();
@@ -35,7 +35,7 @@ export function useLoginWizard() {
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [wantsLearning, setWantsLearning] = useState<boolean | null>(null);
+  const [wantsNotifications, setWantsNotifications] = useState<boolean | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -55,13 +55,13 @@ export function useLoginWizard() {
       case 'email':
         return /\S+@\S+\.\S+/.test(email.trim());
       case 'goal':
-        return wantsLearning !== null;
+        return wantsNotifications !== null;
       case 'password':
         return password.length >= 6 && password === confirmPassword;
       default:
         return false;
     }
-  }, [step, fullName, email, wantsLearning, password, confirmPassword]);
+  }, [step, fullName, email, wantsNotifications, password, confirmPassword]);
 
   const validateCurrentStep = () => {
     if (canContinue) return true;
@@ -92,7 +92,7 @@ export function useLoginWizard() {
     if (step === 'password') {
       setIsSubmitting(true);
       try {
-        await mockSubmit({ fullName, email, wantsLearning, password });
+        await mockSubmit({ fullName, email, wantsNotifications, password });
         await navigate({ to: '/' });
       } finally {
         setIsSubmitting(false);
@@ -113,8 +113,8 @@ export function useLoginWizard() {
     setFullName,
     email,
     setEmail,
-    wantsLearning,
-    setWantsLearning,
+    wantsNotifications,
+    setWantsNotifications,
     password,
     setPassword,
     confirmPassword,
