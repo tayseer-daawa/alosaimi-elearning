@@ -27,7 +27,7 @@ function mockSubmit(values: {
   });
 }
 
-export function useLoginWizard() {
+export function useSignupWizard() {
   const navigate = useNavigate();
 
   const [stepIndex, setStepIndex] = useState(0);
