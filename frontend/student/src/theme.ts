@@ -22,6 +22,7 @@ export const system = createSystem(defaultConfig, {
       '@media (min-width: 48em)': {
         backgroundImage: 'url(/assets/bg-desktop.svg)',
       },
+ 
     },
   },
   theme: {
