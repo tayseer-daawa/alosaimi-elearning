@@ -9,7 +9,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { useLoginWizard } from '../hooks/useLoginWizard';
+import { useSignupWizard } from '../hooks/useSignupWizard';
 
 import { YesNoToggle } from './YesNoToggle';
 
@@ -50,7 +50,7 @@ const CustomVStackInput = ({
   );
 };
 
-export default function LoginScreen() {
+export default function SignupScreen() {
   const {
     step,
     title,
@@ -67,7 +67,7 @@ export default function LoginScreen() {
     confirmPassword,
     setConfirmPassword,
     next,
-  } = useLoginWizard();
+  } = useSignupWizard();
 
   const handleKeyDownEnter = (e: React.KeyboardEvent) => {
     if (e.key !== 'Enter') return;
