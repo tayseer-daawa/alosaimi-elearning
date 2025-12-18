@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSignupRouteImport } from './routes/_layout/signup'
-import { Route as LayoutLoginRouteImport } from './routes/_layout/login'
 import { Route as LayoutExampleRouteImport } from './routes/_layout/example'
 
 const LayoutRoute = LayoutRouteImport.update({
@@ -29,11 +28,6 @@ const LayoutSignupRoute = LayoutSignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutLoginRoute = LayoutLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => LayoutRoute,
-} as any)
 const LayoutExampleRoute = LayoutExampleRouteImport.update({
   id: '/example',
   path: '/example',
@@ -42,13 +36,11 @@ const LayoutExampleRoute = LayoutExampleRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/example': typeof LayoutExampleRoute
-  '/login': typeof LayoutLoginRoute
   '/signup': typeof LayoutSignupRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesByTo {
   '/example': typeof LayoutExampleRoute
-  '/login': typeof LayoutLoginRoute
   '/signup': typeof LayoutSignupRoute
   '/': typeof LayoutIndexRoute
 }
@@ -56,20 +48,18 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
   '/_layout/example': typeof LayoutExampleRoute
-  '/_layout/login': typeof LayoutLoginRoute
   '/_layout/signup': typeof LayoutSignupRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/example' | '/login' | '/signup' | '/'
+  fullPaths: '/example' | '/signup' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/example' | '/login' | '/signup' | '/'
+  to: '/example' | '/signup' | '/'
   id:
     | '__root__'
     | '/_layout'
     | '/_layout/example'
-    | '/_layout/login'
     | '/_layout/signup'
     | '/_layout/'
   fileRoutesById: FileRoutesById
@@ -101,13 +91,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSignupRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/login': {
-      id: '/_layout/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LayoutLoginRouteImport
-      parentRoute: typeof LayoutRoute
-    }
     '/_layout/example': {
       id: '/_layout/example'
       path: '/example'
@@ -120,14 +103,12 @@ declare module '@tanstack/react-router' {
 
 interface LayoutRouteChildren {
   LayoutExampleRoute: typeof LayoutExampleRoute
-  LayoutLoginRoute: typeof LayoutLoginRoute
   LayoutSignupRoute: typeof LayoutSignupRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutExampleRoute: LayoutExampleRoute,
-  LayoutLoginRoute: LayoutLoginRoute,
   LayoutSignupRoute: LayoutSignupRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
