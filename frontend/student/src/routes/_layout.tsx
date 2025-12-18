@@ -8,7 +8,7 @@ export const Route = createFileRoute('/_layout')({
 
 function Layout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  if (pathname === '/login') {
+  if (pathname === '/signup') {
     return <Outlet />;
   }
 
