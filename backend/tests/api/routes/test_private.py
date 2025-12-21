@@ -11,7 +11,10 @@ def test_create_user(client: TestClient, db: Session) -> None:
         json={
             "email": "pollo@listo.com",
             "password": "password123",
-            "full_name": "Pollo Listo",
+            "first_name": "Pollo",
+            "father_name": "L",
+            "family_name": "Listo",
+            "is_male": True,
         },
     )
 
@@ -23,4 +26,7 @@ def test_create_user(client: TestClient, db: Session) -> None:
 
     assert user
     assert user.email == "pollo@listo.com"
-    assert user.full_name == "Pollo Listo"
+    assert user.first_name == "Pollo"
+    assert user.father_name == "L"
+    assert user.family_name == "Listo"
+    assert user.is_male is True
