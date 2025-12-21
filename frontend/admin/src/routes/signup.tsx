@@ -43,7 +43,10 @@ function SignUp() {
     criteriaMode: "all",
     defaultValues: {
       email: "",
-      full_name: "",
+      first_name: "",
+      father_name: "",
+      family_name: "",
+      is_male: true,
       password: "",
       confirm_password: "",
     },
@@ -74,16 +77,48 @@ function SignUp() {
           mb={4}
         />
         <Field
-          invalid={!!errors.full_name}
-          errorText={errors.full_name?.message}
+          invalid={!!errors.first_name}
+          errorText={errors.first_name?.message}
         >
           <InputGroup w="100%" startElement={<FiUser />}>
             <Input
-              minLength={3}
-              {...register("full_name", {
-                required: "Full Name is required",
+              minLength={2}
+              {...register("first_name", {
+                required: "First Name is required",
               })}
-              placeholder="Full Name"
+              placeholder="First Name"
+              type="text"
+            />
+          </InputGroup>
+        </Field>
+
+        <Field
+          invalid={!!errors.father_name}
+          errorText={errors.father_name?.message}
+        >
+          <InputGroup w="100%" startElement={<FiUser />}>
+            <Input
+              minLength={2}
+              {...register("father_name", {
+                required: "Father Name is required",
+              })}
+              placeholder="Father Name"
+              type="text"
+            />
+          </InputGroup>
+        </Field>
+
+        <Field
+          invalid={!!errors.family_name}
+          errorText={errors.family_name?.message}
+        >
+          <InputGroup w="100%" startElement={<FiUser />}>
+            <Input
+              minLength={2}
+              {...register("family_name", {
+                required: "Family Name is required",
+              })}
+              placeholder="Family Name"
               type="text"
             />
           </InputGroup>
