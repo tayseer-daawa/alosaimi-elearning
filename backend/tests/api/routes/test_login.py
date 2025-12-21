@@ -79,10 +79,13 @@ def test_reset_password(client: TestClient, db: Session) -> None:
 
     user_create = UserCreate(
         email=email,
-        full_name="Test User",
+        first_name="Test",
+        father_name="",
+        family_name="User",
         password=password,
         is_active=True,
         is_superuser=False,
+        is_male=True,
     )
     user = create_user(session=db, user_create=user_create)
     token = generate_password_reset_token(email=email)
