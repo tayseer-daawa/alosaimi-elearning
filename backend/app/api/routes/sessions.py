@@ -11,38 +11,36 @@ from app.api.deps import (
 )
 from app.models import (
     Message,
-    SessionCreate,
+    ProgramSession,
+    ProgramSessionCreate,
+    ProgramSessionPublic,
+    ProgramSessionsPublic,
+    ProgramSessionUpdate,
     SessionEvent,
     SessionEventCreate,
     SessionEventPublic,
     SessionEventsPublic,
-    SessionPublic,
-    SessionsPublic,
-    SessionUpdate,
-)
-from app.models import (
-    Session as SessionModel,
 )
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
 # For guest users as well
-@router.get("/", response_model=SessionsPublic)
+@router.get("/", response_model=ProgramSessionsPublic)
 def read_sessions(
     session: SessionDep, skip: int = 0, limit: int = Query(default=100, le=500)
 ):
     """
     Retrieve sessions.
     """
-    count_statement = select(func.count()).select_from(SessionModel)
+    count_statement = select(func.count()).select_from(ProgramSession)
     count = session.exec(count_statement).one()
     sessions = crud.get_sessions(session=session, skip=skip, limit=limit)
-    return SessionsPublic(data=sessions, count=count)
+    return ProgramSessionsPublic(data=sessions, count=count)
 
 
 # For guest users as well
-@router.get("/program/{program_id}", response_model=SessionsPublic)
+@router.get("/program/{program_id}", response_model=ProgramSessionsPublic)
 def read_sessions_by_program(
     session: SessionDep,
     program_id: uuid.UUID,
@@ -57,15 +55,15 @@ def read_sessions_by_program(
     )
     count_statement = (
         select(func.count())
-        .select_from(SessionModel)
-        .where(SessionModel.program_id == program_id)
+        .select_from(ProgramSession)
+        .where(ProgramSession.program_id == program_id)
     )
     count = session.exec(count_statement).one()
-    return SessionsPublic(data=sessions, count=count)
+    return ProgramSessionsPublic(data=sessions, count=count)
 
 
 # For guest users as well
-@router.get("/{session_id}", response_model=SessionPublic)
+@router.get("/{session_id}", response_model=ProgramSessionPublic)
 def read_session(session: SessionDep, session_id: uuid.UUID):
     """
     Get session by ID.
@@ -78,10 +76,10 @@ def read_session(session: SessionDep, session_id: uuid.UUID):
 
 @router.post(
     "/",
-    response_model=SessionPublic,
+    response_model=ProgramSessionPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def create_session(*, session: SessionDep, session_in: SessionCreate):
+def create_session(*, session: SessionDep, session_in: ProgramSessionCreate):
     """
     Create new session.
 
@@ -98,14 +96,14 @@ def create_session(*, session: SessionDep, session_in: SessionCreate):
 
 @router.patch(
     "/{session_id}",
-    response_model=SessionPublic,
+    response_model=ProgramSessionPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
 def update_session(
     *,
     session: SessionDep,
     session_id: uuid.UUID,
-    session_in: SessionUpdate,
+    session_in: ProgramSessionUpdate,
 ):
     """
     Update a session.
@@ -143,7 +141,7 @@ def delete_session(session: SessionDep, session_id: uuid.UUID):
 # Student enrollment endpoints
 @router.post(
     "/{session_id}/students/{user_id}",
-    response_model=SessionPublic,
+    response_model=ProgramSessionPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
 def add_student_to_session(
@@ -167,7 +165,7 @@ def add_student_to_session(
 
 @router.delete(
     "/{session_id}/students/{user_id}",
-    response_model=SessionPublic,
+    response_model=ProgramSessionPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
 def remove_student_from_session(
@@ -194,7 +192,7 @@ def remove_student_from_session(
 # Teacher assignment endpoints
 @router.post(
     "/{session_id}/teachers/{user_id}",
-    response_model=SessionPublic,
+    response_model=ProgramSessionPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
 def add_teacher_to_session(
@@ -218,7 +216,7 @@ def add_teacher_to_session(
 
 @router.delete(
     "/{session_id}/teachers/{user_id}",
-    response_model=SessionPublic,
+    response_model=ProgramSessionPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
 def remove_teacher_from_session(

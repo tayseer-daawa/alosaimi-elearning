@@ -7,7 +7,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.models.book import Book
-    from app.models.session import Session
+    from app.models.session import ProgramSession
     from app.models.user import User
 
 
@@ -40,7 +40,7 @@ class Exam(ExamBase, table=True):
 
     # Relationships
     book: "Book" = Relationship(back_populates="exams")
-    session: "Session" = Relationship(back_populates="exams")
+    session: "ProgramSession" = Relationship(back_populates="exams")
     attempts: list["ExamAttempt"] = Relationship(
         back_populates="exam", cascade_delete=True
     )
