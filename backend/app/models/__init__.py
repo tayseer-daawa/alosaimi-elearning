@@ -57,12 +57,12 @@ from app.models.question import (
     QuestionUpdate,
 )
 from app.models.session import (
-    Session,
-    SessionBase,
-    SessionCreate,
-    SessionPublic,
-    SessionsPublic,
-    SessionUpdate,
+    ProgramSession,
+    ProgramSessionBase,
+    ProgramSessionCreate,
+    ProgramSessionPublic,
+    ProgramSessionsPublic,
+    ProgramSessionUpdate,
 )
 from app.models.session_event import (
     SessionEvent,
@@ -134,13 +134,13 @@ __all__ = [
     "Question",
     "QuestionPublic",
     "QuestionsPublic",
-    # Session
-    "SessionBase",
-    "SessionCreate",
-    "SessionUpdate",
-    "Session",
-    "SessionPublic",
-    "SessionsPublic",
+    # ProgramSession
+    "ProgramSessionBase",
+    "ProgramSessionCreate",
+    "ProgramSessionUpdate",
+    "ProgramSession",
+    "ProgramSessionPublic",
+    "ProgramSessionsPublic",
     # SessionEvent
     "SessionEventBase",
     "SessionEventCreate",

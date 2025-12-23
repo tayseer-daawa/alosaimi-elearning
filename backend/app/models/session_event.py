@@ -6,7 +6,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.models.lesson import Lesson
-    from app.models.session import Session
+    from app.models.session import ProgramSession
 
 
 class SessionEventBase(SQLModel):
@@ -41,7 +41,7 @@ class SessionEvent(SessionEventBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     # Relationships
-    session: "Session" = Relationship(back_populates="session_events")
+    session: "ProgramSession" = Relationship(back_populates="session_events")
     lesson: Optional["Lesson"] = Relationship(back_populates="session_events")
 
 

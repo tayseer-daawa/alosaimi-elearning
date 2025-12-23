@@ -12,8 +12,7 @@ from sqlmodel import Session
 from app.core import security
 from app.core.config import settings
 from app.core.db import engine
-from app.models import Session as SessionModel
-from app.models import TokenPayload, User
+from app.models import ProgramSession, TokenPayload, User
 from app.models.exam import Exam, ExamAttempt
 
 reusable_oauth2 = OAuth2PasswordBearer(
@@ -85,7 +84,7 @@ def get_session_for_current_user(
 ) -> uuid.UUID:
     if current_user.is_admin or current_user.is_superuser:
         return session_id
-    current_session = session.get(SessionModel, session_id)
+    current_session = session.get(ProgramSession, session_id)
     if not current_session:
         raise HTTPException(status_code=404, detail="Session not found")
 

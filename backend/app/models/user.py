@@ -7,7 +7,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.models.exam import ExamAttempt
-    from app.models.session import Session
+    from app.models.session import ProgramSession
 
 from app.models.associations import UserSessionStudent, UserSessionTeacher
 
@@ -85,12 +85,12 @@ class User(UserBase, table=True):
     reg_date: date = Field(default_factory=date.today)
 
     # Relationships
-    student_sessions: list["Session"] = Relationship(
+    student_sessions: list["ProgramSession"] = Relationship(
         back_populates="students",
         link_model=UserSessionStudent,
         sa_relationship_kwargs={"overlaps": "teacher_sessions"},
     )
-    teacher_sessions: list["Session"] = Relationship(
+    teacher_sessions: list["ProgramSession"] = Relationship(
         back_populates="teachers",
         link_model=UserSessionTeacher,
         sa_relationship_kwargs={"overlaps": "student_sessions"},

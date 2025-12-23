@@ -6,7 +6,7 @@ from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 if TYPE_CHECKING:
     from app.models.lesson import Lesson
     from app.models.phase import Phase
-    from app.models.session import Session
+    from app.models.session import ProgramSession
 
 
 class ProgramBase(SQLModel):
@@ -28,7 +28,7 @@ class Program(ProgramBase, table=True):
 
     # Relationships
     phases: list["Phase"] = Relationship(back_populates="program", cascade_delete=True)
-    sessions: list["Session"] = Relationship(
+    sessions: list["ProgramSession"] = Relationship(
         back_populates="program", cascade_delete=True
     )
 
