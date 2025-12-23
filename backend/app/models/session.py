@@ -13,20 +13,24 @@ if TYPE_CHECKING:
 from app.models.associations import UserSessionStudent, UserSessionTeacher
 
 
-class SessionBase(SQLModel):
+class ProgramSessionBase(SQLModel):
     start_date: date
     program_id: uuid.UUID = Field(foreign_key="program.id", ondelete="CASCADE")
 
 
-class SessionCreate(SessionBase):
+class ProgramSessionCreate(ProgramSessionBase):
     pass
 
 
-class SessionUpdate(SQLModel):
+class ProgramSessionUpdate(SQLModel):
     start_date: date | None = None
 
 
-class Session(SessionBase, table=True):
+# Originally named "Session". Renamed to ProgramSession to avoid
+# confusion with Session from sqlmodel.
+class ProgramSession(ProgramSessionBase, table=True):
+    __tablename__ = "session"  # Keep table name after rename
+
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     # Relationships
@@ -83,10 +87,10 @@ class Session(SessionBase, table=True):
         pass
 
 
-class SessionPublic(SessionBase):
+class ProgramSessionPublic(ProgramSessionBase):
     id: uuid.UUID
 
 
-class SessionsPublic(SQLModel):
-    data: list[SessionPublic]
+class ProgramSessionsPublic(SQLModel):
+    data: list[ProgramSessionPublic]
     count: int
