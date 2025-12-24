@@ -9,30 +9,119 @@ export type Body_login_login_access_token = {
     client_secret?: (string | null);
 };
 
+export type BookCreate = {
+    title: string;
+    pdf?: (string | null);
+    audio?: (string | null);
+};
+
+export type BookPublic = {
+    title: string;
+    pdf?: (string | null);
+    audio?: (string | null);
+    id: string;
+};
+
+export type BooksPublic = {
+    data: Array<BookPublic>;
+    count: number;
+};
+
+export type BookUpdate = {
+    title?: (string | null);
+    pdf?: (string | null);
+    audio?: (string | null);
+};
+
+export type ExamAttemptCreate = {
+    observation: string;
+    passed: boolean;
+    exam_id: string;
+    student_id: string;
+    examiner_id: string;
+};
+
+export type ExamAttemptPublic = {
+    observation: string;
+    passed: boolean;
+    attempt_date?: string;
+    exam_id: string;
+    student_id: string;
+    examiner_id: string;
+    id: string;
+};
+
+export type ExamAttemptsPublic = {
+    data: Array<ExamAttemptPublic>;
+    count: number;
+};
+
+export type ExamAttemptUpdate = {
+    observation?: (string | null);
+    passed?: (boolean | null);
+};
+
+export type ExamCreate = {
+    start_date: string;
+    deadline: string;
+    max_attempts?: number;
+    book_id: string;
+    session_id: string;
+};
+
+export type ExamPublic = {
+    start_date: string;
+    deadline: string;
+    max_attempts?: number;
+    book_id: string;
+    session_id: string;
+    id: string;
+};
+
+export type ExamsPublic = {
+    data: Array<ExamPublic>;
+    count: number;
+};
+
+export type ExamUpdate = {
+    start_date?: (string | null);
+    deadline?: (string | null);
+    max_attempts?: (number | null);
+};
+
 export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
 
-export type ItemCreate = {
-    title: string;
-    description?: (string | null);
+export type LessonCreate = {
+    book_part_pdf: string;
+    book_part_audio: string;
+    lesson_audio: string;
+    explanation_notes: string;
+    order: number;
+    book_id: string;
 };
 
-export type ItemPublic = {
-    title: string;
-    description?: (string | null);
+export type LessonPublic = {
+    book_part_pdf: string;
+    book_part_audio: string;
+    lesson_audio: string;
+    explanation_notes: string;
+    order: number;
+    book_id: string;
     id: string;
-    owner_id: string;
 };
 
-export type ItemsPublic = {
-    data: Array<ItemPublic>;
+export type LessonsPublic = {
+    data: Array<LessonPublic>;
     count: number;
 };
 
-export type ItemUpdate = {
-    title?: (string | null);
-    description?: (string | null);
+export type LessonUpdate = {
+    book_part_pdf?: (string | null);
+    book_part_audio?: (string | null);
+    lesson_audio?: (string | null);
+    explanation_notes?: (string | null);
 };
 
 export type Message = {
@@ -44,11 +133,126 @@ export type NewPassword = {
     new_password: string;
 };
 
+export type PhaseCreate = {
+    order: number;
+    program_id: string;
+};
+
+export type PhasePublic = {
+    order: number;
+    program_id: string;
+    id: string;
+};
+
+export type PhasesPublic = {
+    data: Array<PhasePublic>;
+    count: number;
+};
+
+export type PhaseUpdate = {
+    order?: (number | null);
+};
+
 export type PrivateUserCreate = {
     email: string;
     password: string;
-    full_name: string;
+    first_name: string;
+    father_name: string;
+    family_name: string;
+    is_male: boolean;
     is_verified?: boolean;
+};
+
+export type ProgramCreate = {
+    title: string;
+    days_of_study: Array<(string)>;
+};
+
+export type ProgramPublic = {
+    title: string;
+    days_of_study: Array<(string)>;
+    id: string;
+};
+
+export type ProgramsPublic = {
+    data: Array<ProgramPublic>;
+    count: number;
+};
+
+export type ProgramUpdate = {
+    title?: (string | null);
+    days_of_study?: (Array<(string)> | null);
+};
+
+export type QuestionCreate = {
+    question: string;
+    options: Array<(string)>;
+    correct_options: Array<(number)>;
+    explanation?: (string | null);
+    lesson_id: string;
+};
+
+export type QuestionPublic = {
+    question: string;
+    options: Array<(string)>;
+    correct_options: Array<(number)>;
+    explanation?: (string | null);
+    lesson_id: string;
+    id: string;
+};
+
+export type QuestionsPublic = {
+    data: Array<QuestionPublic>;
+    count: number;
+};
+
+export type QuestionUpdate = {
+    question?: (string | null);
+    options?: (Array<(string)> | null);
+    correct_options?: (Array<(number)> | null);
+    explanation?: (string | null);
+};
+
+export type SessionCreate = {
+    start_date: string;
+    program_id: string;
+};
+
+export type SessionEventCreate = {
+    event_date: string;
+    num_days?: number;
+    session_id: string;
+    is_break?: boolean;
+    lesson_id?: (string | null);
+};
+
+export type SessionEventPublic = {
+    event_date: string;
+    num_days?: number;
+    session_id: string;
+    is_break?: boolean;
+    lesson_id?: (string | null);
+    id: string;
+};
+
+export type SessionEventsPublic = {
+    data: Array<SessionEventPublic>;
+    count: number;
+};
+
+export type SessionPublic = {
+    start_date: string;
+    program_id: string;
+    id: string;
+};
+
+export type SessionsPublic = {
+    data: Array<SessionPublic>;
+    count: number;
+};
+
+export type SessionUpdate = {
+    start_date?: (string | null);
 };
 
 export type Token = {
@@ -62,25 +266,41 @@ export type UpdatePassword = {
 };
 
 export type UserCreate = {
+    reg_num?: string;
     email: string;
+    first_name: string;
+    father_name: string;
+    family_name: string;
     is_active?: boolean;
+    is_admin?: boolean;
+    is_teacher?: boolean;
     is_superuser?: boolean;
-    full_name?: (string | null);
+    is_male: boolean;
     password: string;
+    reg_date?: (string | null);
 };
 
 export type UserPublic = {
+    reg_num?: string;
     email: string;
+    first_name: string;
+    father_name: string;
+    family_name: string;
     is_active?: boolean;
+    is_admin?: boolean;
+    is_teacher?: boolean;
     is_superuser?: boolean;
-    full_name?: (string | null);
+    is_male: boolean;
     id: string;
 };
 
 export type UserRegister = {
     email: string;
     password: string;
-    full_name?: (string | null);
+    first_name: string;
+    father_name: string;
+    family_name: string;
+    is_male: boolean;
 };
 
 export type UsersPublic = {
@@ -90,15 +310,22 @@ export type UsersPublic = {
 
 export type UserUpdate = {
     email?: (string | null);
-    is_active?: boolean;
-    is_superuser?: boolean;
-    full_name?: (string | null);
     password?: (string | null);
+    first_name?: (string | null);
+    father_name?: (string | null);
+    family_name?: (string | null);
+    is_male?: (boolean | null);
+    is_active?: (boolean | null);
+    is_admin?: (boolean | null);
+    is_teacher?: (boolean | null);
 };
 
 export type UserUpdateMe = {
-    full_name?: (string | null);
     email?: (string | null);
+    first_name?: (string | null);
+    father_name?: (string | null);
+    family_name?: (string | null);
+    is_male?: (boolean | null);
 };
 
 export type ValidationError = {
@@ -107,37 +334,147 @@ export type ValidationError = {
     type: string;
 };
 
-export type ItemsReadItemsData = {
+export type BooksReadBooksData = {
     limit?: number;
     skip?: number;
 };
 
-export type ItemsReadItemsResponse = (ItemsPublic);
+export type BooksReadBooksResponse = (BooksPublic);
 
-export type ItemsCreateItemData = {
-    requestBody: ItemCreate;
+export type BooksCreateBookData = {
+    requestBody: BookCreate;
 };
 
-export type ItemsCreateItemResponse = (ItemPublic);
+export type BooksCreateBookResponse = (BookPublic);
 
-export type ItemsReadItemData = {
-    id: string;
+export type BooksReadBookData = {
+    bookId: string;
 };
 
-export type ItemsReadItemResponse = (ItemPublic);
+export type BooksReadBookResponse = (BookPublic);
 
-export type ItemsUpdateItemData = {
-    id: string;
-    requestBody: ItemUpdate;
+export type BooksUpdateBookData = {
+    bookId: string;
+    requestBody: BookUpdate;
 };
 
-export type ItemsUpdateItemResponse = (ItemPublic);
+export type BooksUpdateBookResponse = (BookPublic);
 
-export type ItemsDeleteItemData = {
-    id: string;
+export type BooksDeleteBookData = {
+    bookId: string;
 };
 
-export type ItemsDeleteItemResponse = (Message);
+export type BooksDeleteBookResponse = (Message);
+
+export type ExamsReadExamsBySessionData = {
+    limit?: number;
+    sessionId: string;
+    skip?: number;
+};
+
+export type ExamsReadExamsBySessionResponse = (ExamsPublic);
+
+export type ExamsReadExamsByBookData = {
+    bookId: string;
+    limit?: number;
+    skip?: number;
+};
+
+export type ExamsReadExamsByBookResponse = (ExamsPublic);
+
+export type ExamsReadExamData = {
+    examId: string;
+};
+
+export type ExamsReadExamResponse = (ExamPublic);
+
+export type ExamsUpdateExamData = {
+    examId: string;
+    requestBody: ExamUpdate;
+};
+
+export type ExamsUpdateExamResponse = (ExamPublic);
+
+export type ExamsDeleteExamData = {
+    examId: string;
+};
+
+export type ExamsDeleteExamResponse = (Message);
+
+export type ExamsCreateExamData = {
+    requestBody: ExamCreate;
+};
+
+export type ExamsCreateExamResponse = (ExamPublic);
+
+export type ExamsReadExamAttemptsData = {
+    examId: string;
+    limit?: number;
+    skip?: number;
+};
+
+export type ExamsReadExamAttemptsResponse = (ExamAttemptsPublic);
+
+export type ExamsCreateExamAttemptData = {
+    examId: string;
+    requestBody: ExamAttemptCreate;
+};
+
+export type ExamsCreateExamAttemptResponse = (ExamAttemptPublic);
+
+export type ExamsReadStudentExamAttemptsData = {
+    examId: string;
+    studentId: string;
+};
+
+export type ExamsReadStudentExamAttemptsResponse = (ExamAttemptsPublic);
+
+export type ExamsUpdateExamAttemptData = {
+    attemptId: string;
+    requestBody: ExamAttemptUpdate;
+};
+
+export type ExamsUpdateExamAttemptResponse = (ExamAttemptPublic);
+
+export type LessonsReadLessonsData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type LessonsReadLessonsResponse = (LessonsPublic);
+
+export type LessonsCreateLessonData = {
+    requestBody: LessonCreate;
+};
+
+export type LessonsCreateLessonResponse = (LessonPublic);
+
+export type LessonsReadLessonsByBookData = {
+    bookId: string;
+    limit?: number;
+    skip?: number;
+};
+
+export type LessonsReadLessonsByBookResponse = (LessonsPublic);
+
+export type LessonsReadLessonData = {
+    lessonId: string;
+};
+
+export type LessonsReadLessonResponse = (LessonPublic);
+
+export type LessonsUpdateLessonData = {
+    lessonId: string;
+    requestBody: LessonUpdate;
+};
+
+export type LessonsUpdateLessonResponse = (LessonPublic);
+
+export type LessonsDeleteLessonData = {
+    lessonId: string;
+};
+
+export type LessonsDeleteLessonResponse = (Message);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;
@@ -165,11 +502,237 @@ export type LoginRecoverPasswordHtmlContentData = {
 
 export type LoginRecoverPasswordHtmlContentResponse = (string);
 
+export type PhasesReadPhasesData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type PhasesReadPhasesResponse = (PhasesPublic);
+
+export type PhasesCreatePhaseData = {
+    requestBody: PhaseCreate;
+};
+
+export type PhasesCreatePhaseResponse = (PhasePublic);
+
+export type PhasesReadPhasesByProgramData = {
+    limit?: number;
+    programId: string;
+    skip?: number;
+};
+
+export type PhasesReadPhasesByProgramResponse = (PhasesPublic);
+
+export type PhasesReadPhaseData = {
+    phaseId: string;
+};
+
+export type PhasesReadPhaseResponse = (PhasePublic);
+
+export type PhasesUpdatePhaseData = {
+    phaseId: string;
+    requestBody: PhaseUpdate;
+};
+
+export type PhasesUpdatePhaseResponse = (PhasePublic);
+
+export type PhasesDeletePhaseData = {
+    phaseId: string;
+};
+
+export type PhasesDeletePhaseResponse = (Message);
+
+export type PhasesAddBookToPhaseData = {
+    bookId: string;
+    order?: (number | null);
+    phaseId: string;
+};
+
+export type PhasesAddBookToPhaseResponse = (Message);
+
+export type PhasesRemoveBookFromPhaseData = {
+    bookId: string;
+    phaseId: string;
+};
+
+export type PhasesRemoveBookFromPhaseResponse = (Message);
+
 export type PrivateCreateUserData = {
     requestBody: PrivateUserCreate;
 };
 
 export type PrivateCreateUserResponse = (UserPublic);
+
+export type ProgramsReadProgramsData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type ProgramsReadProgramsResponse = (ProgramsPublic);
+
+export type ProgramsCreateProgramData = {
+    requestBody: ProgramCreate;
+};
+
+export type ProgramsCreateProgramResponse = (ProgramPublic);
+
+export type ProgramsReadProgramData = {
+    programId: string;
+};
+
+export type ProgramsReadProgramResponse = (ProgramPublic);
+
+export type ProgramsUpdateProgramData = {
+    programId: string;
+    requestBody: ProgramUpdate;
+};
+
+export type ProgramsUpdateProgramResponse = (ProgramPublic);
+
+export type ProgramsDeleteProgramData = {
+    programId: string;
+};
+
+export type ProgramsDeleteProgramResponse = (Message);
+
+export type QuestionsReadQuestionsData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type QuestionsReadQuestionsResponse = (QuestionsPublic);
+
+export type QuestionsCreateQuestionData = {
+    requestBody: QuestionCreate;
+};
+
+export type QuestionsCreateQuestionResponse = (QuestionPublic);
+
+export type QuestionsReadQuestionsByLessonData = {
+    lessonId: string;
+    limit?: number;
+    skip?: number;
+};
+
+export type QuestionsReadQuestionsByLessonResponse = (QuestionsPublic);
+
+export type QuestionsReadQuestionData = {
+    questionId: string;
+};
+
+export type QuestionsReadQuestionResponse = (QuestionPublic);
+
+export type QuestionsUpdateQuestionData = {
+    questionId: string;
+    requestBody: QuestionUpdate;
+};
+
+export type QuestionsUpdateQuestionResponse = (QuestionPublic);
+
+export type QuestionsDeleteQuestionData = {
+    questionId: string;
+};
+
+export type QuestionsDeleteQuestionResponse = (Message);
+
+export type SessionsReadSessionsData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type SessionsReadSessionsResponse = (SessionsPublic);
+
+export type SessionsCreateSessionData = {
+    requestBody: SessionCreate;
+};
+
+export type SessionsCreateSessionResponse = (SessionPublic);
+
+export type SessionsReadSessionsByProgramData = {
+    limit?: number;
+    programId: string;
+    skip?: number;
+};
+
+export type SessionsReadSessionsByProgramResponse = (SessionsPublic);
+
+export type SessionsReadSessionData = {
+    sessionId: string;
+};
+
+export type SessionsReadSessionResponse = (SessionPublic);
+
+export type SessionsUpdateSessionData = {
+    requestBody: SessionUpdate;
+    sessionId: string;
+};
+
+export type SessionsUpdateSessionResponse = (SessionPublic);
+
+export type SessionsDeleteSessionData = {
+    sessionId: string;
+};
+
+export type SessionsDeleteSessionResponse = (Message);
+
+export type SessionsAddStudentToSessionData = {
+    sessionId: string;
+    userId: string;
+};
+
+export type SessionsAddStudentToSessionResponse = (SessionPublic);
+
+export type SessionsRemoveStudentFromSessionData = {
+    sessionId: string;
+    userId: string;
+};
+
+export type SessionsRemoveStudentFromSessionResponse = (SessionPublic);
+
+export type SessionsAddTeacherToSessionData = {
+    sessionId: string;
+    userId: string;
+};
+
+export type SessionsAddTeacherToSessionResponse = (SessionPublic);
+
+export type SessionsRemoveTeacherFromSessionData = {
+    sessionId: string;
+    userId: string;
+};
+
+export type SessionsRemoveTeacherFromSessionResponse = (SessionPublic);
+
+export type SessionsReadSessionEventsData = {
+    limit?: number;
+    sessionId: string;
+    skip?: number;
+};
+
+export type SessionsReadSessionEventsResponse = (SessionEventsPublic);
+
+export type SessionsCreateSessionEventData = {
+    requestBody: SessionEventCreate;
+    sessionId: string;
+};
+
+export type SessionsCreateSessionEventResponse = (SessionEventPublic);
+
+export type SessionsReadSessionLessonsData = {
+    limit?: number;
+    sessionId: string;
+    skip?: number;
+};
+
+export type SessionsReadSessionLessonsResponse = (SessionEventsPublic);
+
+export type SessionsReadSessionBreaksData = {
+    limit?: number;
+    sessionId: string;
+    skip?: number;
+};
+
+export type SessionsReadSessionBreaksResponse = (SessionEventsPublic);
 
 export type UsersReadUsersData = {
     limit?: number;

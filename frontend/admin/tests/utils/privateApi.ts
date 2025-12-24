@@ -16,7 +16,10 @@ export const createUser = async ({
       email,
       password,
       is_verified: true,
-      full_name: "Test User",
+      first_name: "Test",
+      father_name: "User",
+      family_name: "Playwright",
+      is_male: true,
     },
   })
 }
