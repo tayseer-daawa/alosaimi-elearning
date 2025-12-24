@@ -21,7 +21,7 @@ router = APIRouter(prefix="/books", tags=["books"])
 @router.get("/", response_model=BooksPublic)
 def read_books(
     session: SessionDep, skip: int = 0, limit: int = Query(default=100, le=500)
-):
+) -> BooksPublic:
     """
     Retrieve books.
     """
@@ -33,7 +33,7 @@ def read_books(
 
 # For guest users as well
 @router.get("/{book_id}", response_model=BookPublic)
-def read_book(session: SessionDep, book_id: uuid.UUID):
+def read_book(session: SessionDep, book_id: uuid.UUID) -> Book:
     """
     Get book by ID.
     """
@@ -48,7 +48,7 @@ def read_book(session: SessionDep, book_id: uuid.UUID):
     response_model=BookPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def create_book(*, session: SessionDep, book_in: BookCreate):
+def create_book(*, session: SessionDep, book_in: BookCreate) -> Book:
     """
     Create new book.
 
@@ -68,7 +68,7 @@ def update_book(
     session: SessionDep,
     book_id: uuid.UUID,
     book_in: BookUpdate,
-):
+) -> Book:
     """
     Update a book.
 
@@ -87,7 +87,7 @@ def update_book(
     response_model=Message,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def delete_book(session: SessionDep, book_id: uuid.UUID):
+def delete_book(session: SessionDep, book_id: uuid.UUID) -> Message:
     """
     Delete a book.
 

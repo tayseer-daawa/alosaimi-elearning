@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.models import SessionEvent, SessionEventCreate, SessionEventUpdate
 
@@ -36,7 +36,9 @@ def get_session_events_by_session(
     statement = select(SessionEvent).where(SessionEvent.session_id == session_id)
     if is_break is not None:
         statement = statement.where(SessionEvent.is_break == is_break)
-    statement = statement.order_by(SessionEvent.event_date).offset(skip).limit(limit)
+    statement = (
+        statement.order_by(col(SessionEvent.event_date)).offset(skip).limit(limit)
+    )
     return list(session.exec(statement).all())
 
 

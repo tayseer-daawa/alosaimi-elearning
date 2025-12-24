@@ -16,6 +16,7 @@ from app.api.deps import (
 )
 from app.models import (
     Exam,
+    ExamAttempt,
     ExamAttemptCreate,
     ExamAttemptPublic,
     ExamAttemptsPublic,
@@ -37,7 +38,7 @@ def read_exams_by_session(
     session_id: SessionIDCurrentUser,
     skip: int = 0,
     limit: int = Query(default=100, le=500),
-):
+) -> ExamsPublic:
     """
     Retrieve exams for a specific session.
 
@@ -54,7 +55,7 @@ def read_exams_by_session(
 
 
 @router.get("/{exam_id}", response_model=ExamPublic)
-def read_exam(session: SessionDep, exam_id: ExamIDCurrentUser):
+def read_exam(session: SessionDep, exam_id: ExamIDCurrentUser) -> Exam:
     """
     Get exam by ID.
 
@@ -71,7 +72,7 @@ def read_exam(session: SessionDep, exam_id: ExamIDCurrentUser):
     response_model=ExamPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def create_exam(*, session: SessionDep, exam_in: ExamCreate):
+def create_exam(*, session: SessionDep, exam_in: ExamCreate) -> Exam:
     """
     Create new exam.
 
@@ -100,7 +101,7 @@ def update_exam(
     session: SessionDep,
     exam_id: uuid.UUID,
     exam_in: ExamUpdate,
-):
+) -> Exam:
     """
     Update an exam.
 
@@ -119,7 +120,7 @@ def update_exam(
     response_model=Message,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def delete_exam(session: SessionDep, exam_id: uuid.UUID):
+def delete_exam(session: SessionDep, exam_id: uuid.UUID) -> Message:
     """
     Delete an exam.
 
@@ -142,7 +143,7 @@ def read_student_exam_attempts(
     session: SessionDep,
     exam_id: uuid.UUID,
     student_id: uuid.UUID,
-):
+) -> ExamAttemptsPublic:
     """
     Get attempts for a specific student on a specific exam.
 
@@ -162,7 +163,7 @@ def read_my_exam_attempts(
     session: SessionDep,
     current_user: CurrentUser,
     exam_id: uuid.UUID,
-):
+) -> ExamAttemptsPublic:
     """
     Get current user's attempts for a specific exam.
     """
@@ -181,7 +182,7 @@ def create_exam_attempt(
     session: SessionDep,
     exam_id: ExamIDCurrentTeacher,
     attempt_in: ExamAttemptCreate,
-):
+) -> ExamAttempt:
     """
     Create a new exam attempt.
 
@@ -233,7 +234,7 @@ def update_exam_attempt(
     session: SessionDep,
     attempt_id: ExamAttemptIDCurrentExaminer,
     attempt_in: ExamAttemptUpdate,
-):
+) -> ExamAttempt:
     """
     Update an exam attempt.
 

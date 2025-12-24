@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.models import Lesson, LessonCreate, LessonUpdate
 
@@ -26,7 +26,7 @@ def get_lessons_by_book(
     statement = (
         select(Lesson)
         .where(Lesson.book_id == book_id)
-        .order_by(Lesson.order)
+        .order_by(col(Lesson.order))
         .offset(skip)
         .limit(limit)
     )

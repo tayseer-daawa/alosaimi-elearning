@@ -25,7 +25,7 @@ def read_lessons_by_book(
     book_id: uuid.UUID,
     skip: int = 0,
     limit: int = Query(default=100, le=500),
-):
+) -> LessonsPublic:
     """
     Retrieve lessons for a specific book.
     """
@@ -41,7 +41,7 @@ def read_lessons_by_book(
 
 # For guest users as well
 @router.get("/{lesson_id}", response_model=LessonPublic)
-def read_lesson(session: SessionDep, lesson_id: uuid.UUID):
+def read_lesson(session: SessionDep, lesson_id: uuid.UUID) -> Lesson:
     """
     Get lesson by ID.
     """
@@ -56,7 +56,7 @@ def read_lesson(session: SessionDep, lesson_id: uuid.UUID):
     response_model=LessonPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def create_lesson(*, session: SessionDep, lesson_in: LessonCreate):
+def create_lesson(*, session: SessionDep, lesson_in: LessonCreate) -> Lesson:
     """
     Create new lesson.
 
@@ -87,7 +87,7 @@ def update_lesson(
     session: SessionDep,
     lesson_id: uuid.UUID,
     lesson_in: LessonUpdate,
-):
+) -> Lesson:
     """
     Update a lesson.
 
@@ -106,7 +106,7 @@ def update_lesson(
     response_model=Message,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def delete_lesson(session: SessionDep, lesson_id: uuid.UUID):
+def delete_lesson(session: SessionDep, lesson_id: uuid.UUID) -> Message:
     """
     Delete a lesson.
 

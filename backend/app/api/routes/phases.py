@@ -21,7 +21,7 @@ router = APIRouter(prefix="/phases", tags=["phases"])
 @router.get("/", response_model=PhasesPublic)
 def read_phases(
     session: SessionDep, skip: int = 0, limit: int = Query(default=100, le=500)
-):
+) -> PhasesPublic:
     """
     Retrieve all phases.
     """
@@ -40,7 +40,7 @@ def read_phases_by_program(
     program_id: uuid.UUID,
     skip: int = 0,
     limit: int = Query(default=100, le=500),
-):
+) -> PhasesPublic:
     """
     Retrieve phases for a specific program (ordered by phase order).
     """
@@ -55,7 +55,7 @@ def read_phases_by_program(
 
 
 @router.get("/{phase_id}", response_model=PhasePublic)
-def read_phase(session: SessionDep, phase_id: uuid.UUID):
+def read_phase(session: SessionDep, phase_id: uuid.UUID) -> Phase:
     """
     Get phase by ID.
     """
@@ -70,7 +70,7 @@ def read_phase(session: SessionDep, phase_id: uuid.UUID):
     response_model=PhasePublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def create_phase(*, session: SessionDep, phase_in: PhaseCreate):
+def create_phase(*, session: SessionDep, phase_in: PhaseCreate) -> Phase:
     """
     Create new phase.
 
@@ -101,7 +101,7 @@ def update_phase(
     session: SessionDep,
     phase_id: uuid.UUID,
     phase_in: PhaseUpdate,
-):
+) -> Phase:
     """
     Update a phase.
 
@@ -120,7 +120,7 @@ def update_phase(
     response_model=Message,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def delete_phase(session: SessionDep, phase_id: uuid.UUID):
+def delete_phase(session: SessionDep, phase_id: uuid.UUID) -> Message:
     """
     Delete a phase.
 
@@ -143,7 +143,7 @@ def add_book_to_phase(
     phase_id: uuid.UUID,
     book_id: uuid.UUID,
     order: int | None = None,
-):
+) -> Message:
     """
     Add a book to a phase.
 
@@ -185,7 +185,7 @@ def remove_book_from_phase(
     session: SessionDep,
     phase_id: uuid.UUID,
     book_id: uuid.UUID,
-):
+) -> Message:
     """
     Remove a book from a phase.
 
