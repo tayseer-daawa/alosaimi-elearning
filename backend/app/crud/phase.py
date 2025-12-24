@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.models import Phase, PhaseBook, PhaseCreate, PhaseUpdate
 
@@ -26,7 +26,7 @@ def get_phases_by_program(
     statement = (
         select(Phase)
         .where(Phase.program_id == program_id)
-        .order_by(Phase.order)
+        .order_by(col(Phase.order))
         .offset(skip)
         .limit(limit)
     )

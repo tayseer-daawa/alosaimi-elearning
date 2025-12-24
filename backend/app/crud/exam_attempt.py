@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.models import ExamAttempt, ExamAttemptCreate, ExamAttemptUpdate
 
@@ -28,7 +28,7 @@ def get_exam_attempts_by_exam(
     statement = (
         select(ExamAttempt)
         .where(ExamAttempt.exam_id == exam_id)
-        .order_by(ExamAttempt.attempt_date)
+        .order_by(col(ExamAttempt.attempt_date))
         .offset(skip)
         .limit(limit)
     )
@@ -42,7 +42,7 @@ def get_exam_attempts_by_student(
     statement = (
         select(ExamAttempt)
         .where(ExamAttempt.student_id == student_id)
-        .order_by(ExamAttempt.attempt_date)
+        .order_by(col(ExamAttempt.attempt_date))
         .offset(skip)
         .limit(limit)
     )
@@ -56,7 +56,7 @@ def get_student_attempts_for_exam(
     statement = (
         select(ExamAttempt)
         .where(ExamAttempt.exam_id == exam_id, ExamAttempt.student_id == student_id)
-        .order_by(ExamAttempt.attempt_date)
+        .order_by(col(ExamAttempt.attempt_date))
     )
     return list(session.exec(statement).all())
 

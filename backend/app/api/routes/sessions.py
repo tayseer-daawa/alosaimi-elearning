@@ -29,7 +29,7 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 @router.get("/", response_model=ProgramSessionsPublic)
 def read_sessions(
     session: SessionDep, skip: int = 0, limit: int = Query(default=100, le=500)
-):
+) -> ProgramSessionsPublic:
     """
     Retrieve sessions.
     """
@@ -46,7 +46,7 @@ def read_sessions_by_program(
     program_id: uuid.UUID,
     skip: int = 0,
     limit: int = Query(default=100, le=500),
-):
+) -> ProgramSessionsPublic:
     """
     Retrieve sessions for a specific program.
     """
@@ -64,7 +64,7 @@ def read_sessions_by_program(
 
 # For guest users as well
 @router.get("/{session_id}", response_model=ProgramSessionPublic)
-def read_session(session: SessionDep, session_id: uuid.UUID):
+def read_session(session: SessionDep, session_id: uuid.UUID) -> ProgramSession:
     """
     Get session by ID.
     """
@@ -79,7 +79,9 @@ def read_session(session: SessionDep, session_id: uuid.UUID):
     response_model=ProgramSessionPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def create_session(*, session: SessionDep, session_in: ProgramSessionCreate):
+def create_session(
+    *, session: SessionDep, session_in: ProgramSessionCreate
+) -> ProgramSession:
     """
     Create new session.
 
@@ -104,7 +106,7 @@ def update_session(
     session: SessionDep,
     session_id: uuid.UUID,
     session_in: ProgramSessionUpdate,
-):
+) -> ProgramSession:
     """
     Update a session.
 
@@ -125,7 +127,7 @@ def update_session(
     response_model=Message,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def delete_session(session: SessionDep, session_id: uuid.UUID):
+def delete_session(session: SessionDep, session_id: uuid.UUID) -> Message:
     """
     Delete a session.
 
@@ -148,7 +150,7 @@ def add_student_to_session(
     session: SessionDep,
     session_id: uuid.UUID,
     user_id: uuid.UUID,
-):
+) -> ProgramSession:
     """
     Add a student to a session.
 
@@ -172,7 +174,7 @@ def remove_student_from_session(
     session: SessionDep,
     session_id: uuid.UUID,
     user_id: uuid.UUID,
-):
+) -> ProgramSession:
     """
     Remove a student from a session.
 
@@ -199,7 +201,7 @@ def add_teacher_to_session(
     session: SessionDep,
     session_id: uuid.UUID,
     user_id: uuid.UUID,
-):
+) -> ProgramSession:
     """
     Add a teacher to a session.
 
@@ -223,7 +225,7 @@ def remove_teacher_from_session(
     session: SessionDep,
     session_id: uuid.UUID,
     user_id: uuid.UUID,
-):
+) -> ProgramSession:
     """
     Remove a teacher from a session.
 
@@ -247,7 +249,7 @@ def read_session_events(
     session_id: uuid.UUID,
     skip: int = 0,
     limit: int = Query(default=100, le=500),
-):
+) -> SessionEventsPublic:
     """
     Get all events for a session.
     """
@@ -269,7 +271,7 @@ def read_session_lessons(
     session_id: uuid.UUID,
     skip: int = 0,
     limit: int = Query(default=100, le=500),
-):
+) -> SessionEventsPublic:
     """
     Get all lessons for a session.
     """
@@ -292,7 +294,7 @@ def read_session_breaks(
     session_id: uuid.UUID,
     skip: int = 0,
     limit: int = Query(default=100, le=500),
-):
+) -> SessionEventsPublic:
     """
     Get all breaks for a session.
     """
@@ -319,7 +321,7 @@ def create_session_event(
     session: SessionDep,
     session_id: uuid.UUID,
     event_in: SessionEventCreate,
-):
+) -> SessionEvent:
     """
     Create a new session event.
 

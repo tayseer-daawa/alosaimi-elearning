@@ -21,7 +21,7 @@ router = APIRouter(prefix="/programs", tags=["programs"])
 @router.get("/", response_model=ProgramsPublic)
 def read_programs(
     session: SessionDep, skip: int = 0, limit: int = Query(default=100, le=500)
-):
+) -> ProgramsPublic:
     """
     Retrieve programs.
     """
@@ -33,7 +33,7 @@ def read_programs(
 
 # For guest users as well
 @router.get("/{program_id}", response_model=ProgramPublic)
-def read_program(session: SessionDep, program_id: uuid.UUID):
+def read_program(session: SessionDep, program_id: uuid.UUID) -> Program:
     """
     Get program by ID.
     """
@@ -48,7 +48,7 @@ def read_program(session: SessionDep, program_id: uuid.UUID):
     response_model=ProgramPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def create_program(*, session: SessionDep, program_in: ProgramCreate):
+def create_program(*, session: SessionDep, program_in: ProgramCreate) -> Program:
     """
     Create new program.
 
@@ -68,7 +68,7 @@ def update_program(
     session: SessionDep,
     program_id: uuid.UUID,
     program_in: ProgramUpdate,
-):
+) -> Program:
     """
     Update a program.
 
@@ -89,7 +89,7 @@ def update_program(
     response_model=Message,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def delete_program(session: SessionDep, program_id: uuid.UUID):
+def delete_program(session: SessionDep, program_id: uuid.UUID) -> Message:
     """
     Delete a program.
 

@@ -34,7 +34,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 )
 def read_users(
     session: SessionDep, skip: int = 0, limit: int = Query(default=100, le=500)
-):
+) -> UsersPublic:
     """
     Retrieve users.
     """
@@ -51,7 +51,7 @@ def read_users(
 @router.post(
     "/", dependencies=[Depends(get_current_active_superuser)], response_model=UserPublic
 )
-def create_user(session: SessionDep, user_in: UserCreate):
+def create_user(session: SessionDep, user_in: UserCreate) -> User:
     """
     Create new user.
     """
@@ -78,7 +78,7 @@ def create_user(session: SessionDep, user_in: UserCreate):
 @router.patch("/me", response_model=UserPublic)
 def update_user_me(
     session: SessionDep, user_in: UserUpdateMe, current_user: CurrentUser
-):
+) -> User:
     """
     Update own user.
     """
@@ -100,7 +100,7 @@ def update_user_me(
 @router.patch("/me/password", response_model=Message)
 def update_password_me(
     session: SessionDep, body: UpdatePassword, current_user: CurrentUser
-):
+) -> Message:
     """
     Update own password.
     """
@@ -118,7 +118,7 @@ def update_password_me(
 
 
 @router.get("/me", response_model=UserPublic)
-def read_user_me(current_user: CurrentUser):
+def read_user_me(current_user: CurrentUser) -> User:
     """
     Get current user.
     """
@@ -126,7 +126,7 @@ def read_user_me(current_user: CurrentUser):
 
 
 @router.delete("/me", response_model=Message)
-def delete_user_me(session: SessionDep, current_user: CurrentUser):
+def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Message:
     """
     Delete own user.
     """
@@ -140,7 +140,7 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser):
 
 
 @router.post("/signup", response_model=UserPublic)
-def register_user(session: SessionDep, user_in: UserRegister):
+def register_user(session: SessionDep, user_in: UserRegister) -> User:
     """
     Create new user without the need to be logged in.
     """
@@ -156,7 +156,9 @@ def register_user(session: SessionDep, user_in: UserRegister):
 
 
 @router.get("/{user_id}", response_model=UserPublic)
-def read_user_by_id(user_id: uuid.UUID, session: SessionDep, current_user: CurrentUser):
+def read_user_by_id(
+    user_id: uuid.UUID, session: SessionDep, current_user: CurrentUser
+) -> User | None:
     """
     Get a specific user by id.
     """
@@ -180,7 +182,7 @@ def update_user(
     session: SessionDep,
     user_id: uuid.UUID,
     user_in: UserUpdate,
-):
+) -> User:
     """
     Update a user.
     """
