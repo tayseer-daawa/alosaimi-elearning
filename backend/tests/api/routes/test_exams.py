@@ -6,7 +6,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from app.core.config import settings
-from app.crud import add_student_to_session, add_teacher_to_session
+from app.crud import add_student_to_session, add_teacher_to_session, create_exam_attempt
+from app.models import ExamAttemptCreate
 from tests.utils.book import create_random_book
 from tests.utils.exam import create_exam_with_details, create_random_exam
 from tests.utils.session import create_random_session
@@ -577,11 +578,6 @@ def test_create_exam_as_teacher(
     client: TestClient, teacher_token_headers: dict[str, str], db: Session
 ) -> None:
     """Teachers should be able to create exams."""
-    from datetime import date, timedelta
-
-    from tests.utils.book import create_random_book
-    from tests.utils.session import create_random_session
-
     book = create_random_book(db)
     session = create_random_session(db)
     data = {
@@ -597,3 +593,230 @@ def test_create_exam_as_teacher(
         json=data,
     )
     assert response.status_code == 403
+
+
+def test_create_exam_book_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    """Test creating exam with non-existent book."""
+    session_obj = create_random_session(db)
+    data = {
+        "start_date": str(date.today()),
+        "deadline": str(date.today() + timedelta(days=7)),
+        "max_attempts": 3,
+        "book_id": str(uuid.uuid4()),  # Non-existent book
+        "session_id": str(session_obj.id),
+    }
+    response = client.post(
+        f"{settings.API_V1_STR}/exams/",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Book not found"
+
+
+def test_create_exam_session_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    """Test creating exam with non-existent session."""
+    book = create_random_book(db)
+    data = {
+        "start_date": str(date.today()),
+        "deadline": str(date.today() + timedelta(days=7)),
+        "max_attempts": 3,
+        "book_id": str(book.id),
+        "session_id": str(uuid.uuid4()),  # Non-existent session
+    }
+    response = client.post(
+        f"{settings.API_V1_STR}/exams/",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Session not found"
+
+
+def test_update_exam(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    """Test updating an exam."""
+    exam = create_random_exam(db)
+    data = {
+        "max_attempts": 5,
+    }
+    response = client.patch(
+        f"{settings.API_V1_STR}/exams/{exam.id}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["max_attempts"] == 5
+
+
+def test_update_exam_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    """Test updating a non-existent exam."""
+    data = {"max_attempts": 5}
+    response = client.patch(
+        f"{settings.API_V1_STR}/exams/{uuid.uuid4()}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Exam not found"
+
+
+def test_delete_exam_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    """Test deleting a non-existent exam."""
+    response = client.delete(
+        f"{settings.API_V1_STR}/exams/{uuid.uuid4()}",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Exam not found"
+
+
+def test_read_student_exam_attempts(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    """Test reading exam attempts for a specific student."""
+    exam = create_random_exam(db)
+    student = create_random_user(db)
+    examiner = create_random_user(db)
+
+    # Add student to session
+    add_student_to_session(session=db, session_id=exam.session_id, user_id=student.id)
+
+    # Create an attempt via CRUD (to bypass validation)
+
+    attempt_in = ExamAttemptCreate(
+        observation="Test attempt",
+        passed=True,
+        exam_id=exam.id,
+        student_id=student.id,
+        examiner_id=examiner.id,
+    )
+    create_exam_attempt(session=db, attempt_in=attempt_in)
+
+    # Read student attempts
+    response = client.get(
+        f"{settings.API_V1_STR}/exams/{exam.id}/attempts/student/{student.id}",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert "data" in content
+    assert "count" in content
+    assert content["count"] >= 1
+
+
+def test_update_exam_attempt(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    """Test updating an exam attempt."""
+    exam = create_random_exam(db)
+    student = create_random_user(db)
+    examiner = create_random_user(db)
+
+    # Add student to session
+    add_student_to_session(session=db, session_id=exam.session_id, user_id=student.id)
+
+    # Create an attempt via CRUD
+    attempt_in = ExamAttemptCreate(
+        observation="Initial observation",
+        passed=False,
+        exam_id=exam.id,
+        student_id=student.id,
+        examiner_id=examiner.id,
+    )
+    attempt = create_exam_attempt(session=db, attempt_in=attempt_in)
+
+    # Update the attempt
+    data = {"observation": "Updated observation", "passed": True}
+    response = client.patch(
+        f"{settings.API_V1_STR}/exams/attempts/{attempt.id}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["observation"] == "Updated observation"
+    assert content["passed"] is True
+
+
+def test_update_exam_attempt_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    """Test updating a non-existent exam attempt."""
+    data = {"observation": "Updated observation"}
+    response = client.patch(
+        f"{settings.API_V1_STR}/exams/attempts/{uuid.uuid4()}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Exam attempt not found"
+
+
+def test_update_exam_attempt_as_examiner(client: TestClient, db: Session) -> None:
+    """Test that examiner can update their own exam attempt."""
+    exam = create_random_exam(db)
+    student = create_random_user(db)
+    examiner = create_random_user(db)
+
+    # Add student and examiner to session
+    add_student_to_session(session=db, session_id=exam.session_id, user_id=student.id)
+    add_teacher_to_session(session=db, session_id=exam.session_id, user_id=examiner.id)
+
+    # Create an attempt with the examiner
+    attempt_in = ExamAttemptCreate(
+        observation="Initial observation",
+        passed=False,
+        exam_id=exam.id,
+        student_id=student.id,
+        examiner_id=examiner.id,
+    )
+    attempt = create_exam_attempt(session=db, attempt_in=attempt_in)
+
+    # Examiner updates their own attempt
+    examiner_token = authentication_token_from_email(
+        client=client, email=examiner.email, db=db
+    )
+    data = {"observation": "Examiner updated observation", "passed": True}
+    response = client.patch(
+        f"{settings.API_V1_STR}/exams/attempts/{attempt.id}",
+        headers=examiner_token,
+        json=data,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["observation"] == "Examiner updated observation"
+
+
+def test_create_exam_attempt_exam_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    """Test creating an exam attempt for a non-existent exam."""
+    student = create_random_user(db)
+    examiner = create_random_user(db)
+    fake_exam_id = uuid.uuid4()
+
+    data = {
+        "observation": "Test attempt",
+        "passed": True,
+        "exam_id": str(fake_exam_id),
+        "student_id": str(student.id),
+        "examiner_id": str(examiner.id),
+    }
+    response = client.post(
+        f"{settings.API_V1_STR}/exams/{fake_exam_id}/attempts",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Exam not found"

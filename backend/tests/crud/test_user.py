@@ -88,3 +88,14 @@ def test_update_user(db: Session) -> None:
     assert user_2
     assert user.email == user_2.email
     assert verify_password(new_password, user_2.hashed_password)
+
+
+def test_user_is_female_property(db: Session) -> None:
+    """Test that is_female property returns the opposite of is_male."""
+    male_user = create_user_with_details(db, is_male=True)
+    assert male_user.is_male is True
+    assert male_user.is_female is False
+
+    female_user = create_user_with_details(db, is_male=False)
+    assert female_user.is_male is False
+    assert female_user.is_female is True

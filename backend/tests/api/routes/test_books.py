@@ -142,3 +142,17 @@ def test_delete_book_not_admin(
         headers=normal_user_token_headers,
     )
     assert response.status_code == 403
+
+
+def test_update_book_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    """Test updating a non-existent book."""
+    data = {"title": "Updated Title"}
+    response = client.patch(
+        f"{settings.API_V1_STR}/books/{uuid.uuid4()}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Book not found"

@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
@@ -289,3 +291,51 @@ def test_delete_question_as_teacher(
         headers=teacher_token_headers,
     )
     assert response.status_code == 403
+
+
+def test_create_question_lesson_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    """Test creating a question with non-existent lesson."""
+
+    data = {
+        "question": "What is the capital of France?",
+        "options": ["Paris", "London", "Berlin", "Madrid"],
+        "correct_options": [0],
+        "lesson_id": str(uuid.uuid4()),  # Non-existent lesson
+    }
+    response = client.post(
+        f"{settings.API_V1_STR}/questions/",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Lesson not found"
+
+
+def test_update_question_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    """Test updating a non-existent question."""
+
+    data = {"question": "Updated question"}
+    response = client.patch(
+        f"{settings.API_V1_STR}/questions/{uuid.uuid4()}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Question not found"
+
+
+def test_delete_question_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    """Test deleting a non-existent question."""
+
+    response = client.delete(
+        f"{settings.API_V1_STR}/questions/{uuid.uuid4()}",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Question not found"
