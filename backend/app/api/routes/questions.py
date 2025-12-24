@@ -24,7 +24,7 @@ router = APIRouter(prefix="/questions", tags=["questions"])
 )
 def read_questions(
     session: SessionDep, skip: int = 0, limit: int = Query(default=100, le=500)
-):
+) -> QuestionsPublic:
     """
     Retrieve all questions.
 
@@ -46,7 +46,7 @@ def read_questions_by_lesson(
     lesson_id: uuid.UUID,
     skip: int = 0,
     limit: int = Query(default=100, le=500),
-):
+) -> QuestionsPublic:
     """
     Retrieve questions for a specific lesson.
     """
@@ -64,7 +64,7 @@ def read_questions_by_lesson(
 
 # For guest users as well
 @router.get("/{question_id}", response_model=QuestionPublic)
-def read_question(session: SessionDep, question_id: uuid.UUID):
+def read_question(session: SessionDep, question_id: uuid.UUID) -> Question:
     """
     Get question by ID.
     """
@@ -79,7 +79,7 @@ def read_question(session: SessionDep, question_id: uuid.UUID):
     response_model=QuestionPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def create_question(*, session: SessionDep, question_in: QuestionCreate):
+def create_question(*, session: SessionDep, question_in: QuestionCreate) -> Question:
     """
     Create new question.
 
@@ -104,7 +104,7 @@ def update_question(
     session: SessionDep,
     question_id: uuid.UUID,
     question_in: QuestionUpdate,
-):
+) -> Question:
     """
     Update a question.
 
@@ -125,7 +125,7 @@ def update_question(
     response_model=Message,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def delete_question(session: SessionDep, question_id: uuid.UUID):
+def delete_question(session: SessionDep, question_id: uuid.UUID) -> Message:
     """
     Delete a question.
 
