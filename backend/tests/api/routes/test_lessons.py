@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
@@ -198,3 +200,50 @@ def test_delete_lesson_as_normal_user(
         headers=normal_user_token_headers,
     )
     assert response.status_code == 403
+
+
+def test_create_lesson_book_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    """Test creating a lesson with non-existent book."""
+    data = {
+        "book_part_pdf": "https://example.com/part.pdf",
+        "book_part_audio": "https://example.com/part.mp3",
+        "lesson_audio": "https://example.com/lesson.mp3",
+        "explanation_notes": "Sample lesson notes",
+        "book_id": str(uuid.uuid4()),  # Non-existent book
+        "order": 1,
+    }
+    response = client.post(
+        f"{settings.API_V1_STR}/lessons/",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Book not found"
+
+
+def test_update_lesson_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    """Test updating a non-existent lesson."""
+    data = {"explanation_notes": "Updated notes"}
+    response = client.patch(
+        f"{settings.API_V1_STR}/lessons/{uuid.uuid4()}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Lesson not found"
+
+
+def test_delete_lesson_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    """Test deleting a non-existent lesson."""
+    response = client.delete(
+        f"{settings.API_V1_STR}/lessons/{uuid.uuid4()}",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Lesson not found"
