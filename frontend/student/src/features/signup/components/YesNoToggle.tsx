@@ -11,7 +11,7 @@ export function YesNoToggle({
   const noSelected = value === false;
 
   const baseWordFontSize = { base: 'lg', md: '2xl', lg: '3xl' } as const;
-  const selectedWordFontSize = { base: '2xl', md: '3xl', lg: '4xl' } as const;
+  const selectedWordFontSize = { base: '2xl', md: '5xl', lg: '5xl' } as const;
 
   return (
     <Box>
