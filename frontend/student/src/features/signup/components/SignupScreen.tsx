@@ -1,14 +1,4 @@
-import {
-  Box,
-  Button,
-  Container,
-  Flex,
-  Image,
-  Input,
-  InputProps,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Box, Button, Flex, Image, Input, InputProps, Text, VStack } from '@chakra-ui/react';
 import { useSignupWizard } from '../hooks/useSignupWizard';
 
 import { YesNoToggle } from './YesNoToggle';
@@ -28,13 +18,13 @@ const CustomVStackInput = ({
   error?: string | null;
 } & Omit<InputProps, 'value' | 'onChange'>) => {
   return (
-    <VStack w={{ base: '100%', md: '55%', lg: '45%' }} gap={{ base: 3, md: 4 }} align="stretch">
-      <Text fontSize={{ base: 'sm', md: '2xl', lg: '3xl' }} color="text.default">
+    <VStack gap={{ base: 3, md: 4 }} align="stretch">
+      <Text fontSize={{ base: 'sm', md: '2xl', lg: '3xl' }} fontWeight="500" color="text.default">
         {label}
       </Text>
       <Input
-        size={{ base: 'md', lg: 'xl' }}
-        fontSize={{ base: 'xl', md: '2xl', lg: '4xl' }}
+        size={{ base: 'md', lg: 'lg' }}
+        fontSize={{ base: 'xl', md: '5xl', lg: '5xl' }}
         fontWeight={600}
         variant="flushed"
         onChange={(e) => stateSetter(e.target.value)}
@@ -42,7 +32,7 @@ const CustomVStackInput = ({
         placeholder=""
         borderBottomWidth={{ base: '2px', md: '3px', lg: '4px' }}
         _focus={{ borderColor: 'brand.primary', borderBottomWidth: '3px' }}
-        height={{ base: 16, md: 24, lg: 24 }}
+        height={{ base: '3.25rem', md: 32, lg: 24 }}
         {...props}
       />
       <ErrorText error={error} />
@@ -76,13 +66,23 @@ export default function SignupScreen() {
   };
 
   return (
-    <Box dir="rtl" minH="100vh" py={{ base: 10, md: 16, lg: 20 }}>
-      <Container p={8}>
-        <Flex minH="calc(100vh - 80px)" direction="column" gap={{ base: 10, md: 12, lg: 14 }}>
+    <Box
+      dir="rtl"
+      h="100vh"
+      p={{ base: 'calc(5rem + 3vh) 2.5rem calc(3rem + 1vh)', md: 16, lg: 20 }} //Magic numbers are calculated from figma to fit different mobile heights
+    >
+      <Box p={0} h="100%" display="flex" alignItems="center" justifyContent="center">
+        <Flex
+          h="100%"
+          direction="column"
+          gap="auto"
+          justifyContent={'space-between'}
+          w={{ base: '100%', md: '80%', lg: '60%' }}
+        >
           <VStack gap={{ base: 2, md: 3 }} pt={{ base: 4, md: 10, lg: 12 }}>
             <Text
-              fontSize={{ base: '2xl', md: '4xl', lg: '5xl' }}
-              fontWeight={700}
+              fontSize={{ base: '3xl', md: '5xl', lg: '5xl' }}
+              fontWeight={400}
               textAlign="center"
               lineHeight={{ base: 'short', md: 'shorter' }}
             >
@@ -91,14 +91,7 @@ export default function SignupScreen() {
           </VStack>
 
           {step === 'welcome' ? (
-            <Image
-              src="/assets/mecque.svg"
-              alt="Mecque illustration"
-              width={{ base: '80%', md: '65%', lg: '60%' }}
-              height="100%"
-              mx="auto"
-              my="auto"
-            />
+            <Image src="/assets/mecque.svg" alt="Mecque illustration" />
           ) : (
             <VStack gap={{ base: 8, md: 10, lg: 12 }} flex="1" justify="center">
               {step === 'name' && (
@@ -126,7 +119,7 @@ export default function SignupScreen() {
 
               {step === 'goal' && (
                 <VStack
-                  w={{ base: '100%', md: '65%', lg: '55%' }}
+                  w={{ base: '100%', md: '75%', lg: '65%' }}
                   gap={{ base: 3, md: 4 }}
                   align="stretch"
                 >
@@ -163,27 +156,18 @@ export default function SignupScreen() {
             </VStack>
           )}
 
-          <Box
-            pb={{ base: 6, md: 10, lg: 12 }}
-            width={{ base: '80%', md: '45%', lg: '30%' }}
-            mx="auto"
+          <Button
+            size={{ base: 'md', md: 'lg' }}
+            w={{ base: '80%', md: '60%', lg: '50%' }}
+            alignSelf="center"
+            onClick={next}
+            loading={isSubmitting}
+            disabled={isSubmitting}
           >
-            <Button
-              size={{ base: 'md', md: '2xl' }}
-              fontSize={{ base: 'auto', md: '2xl', lg: '3xl' }}
-              w="100%"
-              bg="brand.primary"
-              color="white"
-              _hover={{ bg: 'brand.primary' }}
-              onClick={next}
-              loading={isSubmitting}
-              disabled={isSubmitting}
-            >
-              {step === 'welcome' ? 'دخول' : 'مواصلة'}
-            </Button>
-          </Box>
+            {step === 'welcome' ? 'دخول' : 'مواصلة'}
+          </Button>
         </Flex>
-      </Container>
+      </Box>
     </Box>
   );
 }
