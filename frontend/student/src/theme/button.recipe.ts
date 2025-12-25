@@ -3,8 +3,7 @@ import { defineRecipe } from '@chakra-ui/react';
 // Button recipe matching the Figma design
 export const buttonRecipe = defineRecipe({
   base: {
-    fontWeight: '600',
-    borderRadius: 'md',
+    fontWeight: '400',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -38,16 +37,19 @@ export const buttonRecipe = defineRecipe({
         h: '9',
         px: '4',
         fontSize: 'sm',
+        borderRadius: 'sm',
       },
       md: {
-        h: '11',
-        px: '6',
-        fontSize: 'md',
+        h: '4rem',
+        px: '7',
+        fontSize: 'xl',
+        borderRadius: 'sm',
       },
       lg: {
-        h: '12',
+        h: '6rem',
         px: '7',
-        fontSize: 'lg',
+        fontSize: '3xl',
+        borderRadius: 'md',
       },
     },
   },
