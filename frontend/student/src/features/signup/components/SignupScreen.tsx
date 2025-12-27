@@ -184,7 +184,6 @@ export default function SignupScreen() {
 }
 
 const ErrorText = ({ error }: { error?: string | null }) => {
-  console.log({ error });
   return (
     <Field.ErrorText
       fontSize={{ base: 'md', md: '2xl', lg: '3xl' }}
