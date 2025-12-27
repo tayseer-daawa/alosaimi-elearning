@@ -14,7 +14,7 @@ export function YesNoToggle({
   const selectedWordFontSize = { base: '2xl', md: '5xl', lg: '5xl' } as const;
 
   return (
-    <Box>
+    <Box w="100%">
       <HStack justify="flex-start" gap={2} align="baseline">
         <Text
           as="button"
