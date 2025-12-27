@@ -15,6 +15,13 @@ export const system = createSystem(defaultConfig, {
       fontFamily: fontStack,
       color: 'text.default',
       backgroundColor: 'white',
+      backgroundImage: 'url(/assets/bg-mobile.svg)',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center top',
+      backgroundSize: 'cover',
+      '@media (min-width: 48em)': {
+        backgroundImage: 'url(/assets/bg-desktop.svg)',
+      },
     },
   },
   theme: {
