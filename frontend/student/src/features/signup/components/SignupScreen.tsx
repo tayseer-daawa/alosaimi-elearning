@@ -1,9 +1,9 @@
-import { Box, Button, Flex, Image, Input, InputProps, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, Field, Flex, Image, Input, InputProps, Text, VStack } from '@chakra-ui/react';
 import { useSignupWizard } from '../hooks/useSignupWizard';
 
 import { YesNoToggle } from './YesNoToggle';
 
-const CustomVStackInput = ({
+const CustomField = ({
   label,
   state,
   stateSetter,
@@ -18,10 +18,19 @@ const CustomVStackInput = ({
   error?: string | null;
 } & Omit<InputProps, 'value' | 'onChange'>) => {
   return (
-    <VStack gap={{ base: 3, md: 4 }} align="stretch">
-      <Text fontSize={{ base: 'sm', md: '2xl', lg: '3xl' }} fontWeight="500" color="text.default">
-        {label}
-      </Text>
+    <Field.Root
+      invalid={!!error}
+      required
+      gap={{ base: 3, md: 4 }}
+      w={{ base: '100%', md: '75%', lg: '65%' }}
+    >
+      <Field.Label
+        fontSize={{ base: 'sm', md: '2xl', lg: '3xl' }}
+        fontWeight="500"
+        color="text.default"
+      >
+        {label} <Field.RequiredIndicator />
+      </Field.Label>
       <Input
         size={{ base: 'md', lg: 'lg' }}
         fontSize={{ base: 'xl', md: '5xl', lg: '5xl' }}
@@ -36,7 +45,7 @@ const CustomVStackInput = ({
         {...props}
       />
       <ErrorText error={error} />
-    </VStack>
+    </Field.Root>
   );
 };
 
@@ -95,7 +104,7 @@ export default function SignupScreen() {
           ) : (
             <VStack gap={{ base: 8, md: 10, lg: 12 }} flex="1" justify="center">
               {step === 'name' && (
-                <CustomVStackInput
+                <CustomField
                   label="الاسم الكامل"
                   state={fullName}
                   stateSetter={setFullName}
@@ -106,7 +115,7 @@ export default function SignupScreen() {
               )}
 
               {step === 'email' && (
-                <CustomVStackInput
+                <CustomField
                   label="البريد الإلكتروني"
                   state={email}
                   stateSetter={setEmail}
@@ -118,23 +127,25 @@ export default function SignupScreen() {
               )}
 
               {step === 'goal' && (
-                <VStack
+                <Field.Root
+                  invalid={!!error}
+                  required
                   w={{ base: '100%', md: '75%', lg: '65%' }}
                   gap={{ base: 3, md: 4 }}
-                  align="stretch"
                 >
-                  <Text fontSize={{ base: 'sm', md: '2xl', lg: '3xl' }} color="text.default">
-                    هل تريد تلقي بعض الاشعارات على البريد الالكتروني؟
-                  </Text>
+                  <Field.Label fontSize={{ base: 'sm', md: '2xl', lg: '3xl' }} color="text.default">
+                    {'هل تريد تلقي بعض الاشعارات على البريد الالكتروني؟'}
+                    <Field.RequiredIndicator />
+                  </Field.Label>
                   <YesNoToggle value={wantsNotifications} onChange={setWantsNotifications} />
 
                   <ErrorText error={error} />
-                </VStack>
+                </Field.Root>
               )}
 
               {step === 'password' && (
                 <VStack w="100%" gap={{ base: 6, md: 8 }} align="center">
-                  <CustomVStackInput
+                  <CustomField
                     label="كلمة السر"
                     state={password}
                     stateSetter={setPassword}
@@ -142,7 +153,7 @@ export default function SignupScreen() {
                     autoComplete="new-password"
                     handleKeyDownEnter={handleKeyDownEnter}
                   />
-                  <CustomVStackInput
+                  <CustomField
                     label="تأكيد كلمة السر"
                     state={confirmPassword}
                     stateSetter={setConfirmPassword}
@@ -173,14 +184,16 @@ export default function SignupScreen() {
 }
 
 const ErrorText = ({ error }: { error?: string | null }) => {
-  return error ? (
-    <Text
+  console.log({ error });
+  return (
+    <Field.ErrorText
       fontSize={{ base: 'md', md: '2xl', lg: '3xl' }}
+      lineHeight={{ base: 'short', md: 'shorter' }}
       color="red.500"
       textAlign="start"
       w="100%"
     >
       {error}
-    </Text>
-  ) : null;
+    </Field.ErrorText>
+  );
 };
