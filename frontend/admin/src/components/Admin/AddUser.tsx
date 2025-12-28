@@ -47,7 +47,10 @@ const AddUser = () => {
     criteriaMode: "all",
     defaultValues: {
       email: "",
-      full_name: "",
+      first_name: "",
+      father_name: "",
+      family_name: "",
+      is_male: true,
       password: "",
       confirm_password: "",
       is_superuser: false,
@@ -115,13 +118,46 @@ const AddUser = () => {
               </Field>
 
               <Field
-                invalid={!!errors.full_name}
-                errorText={errors.full_name?.message}
-                label="Full Name"
+                required
+                invalid={!!errors.first_name}
+                errorText={errors.first_name?.message}
+                label="First Name"
               >
                 <Input
-                  {...register("full_name")}
-                  placeholder="Full name"
+                  {...register("first_name", {
+                    required: "First name is required",
+                  })}
+                  placeholder="First name"
+                  type="text"
+                />
+              </Field>
+
+              <Field
+                required
+                invalid={!!errors.father_name}
+                errorText={errors.father_name?.message}
+                label="Father Name"
+              >
+                <Input
+                  {...register("father_name", {
+                    required: "Father name is required",
+                  })}
+                  placeholder="Father name"
+                  type="text"
+                />
+              </Field>
+
+              <Field
+                required
+                invalid={!!errors.family_name}
+                errorText={errors.family_name?.message}
+                label="Family Name"
+              >
+                <Input
+                  {...register("family_name", {
+                    required: "Family name is required",
+                  })}
+                  placeholder="Family name"
                   type="text"
                 />
               </Field>

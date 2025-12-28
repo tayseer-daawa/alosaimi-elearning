@@ -114,13 +114,37 @@ const EditUser = ({ user }: EditUserProps) => {
               </Field>
 
               <Field
-                invalid={!!errors.full_name}
-                errorText={errors.full_name?.message}
-                label="Full Name"
+                invalid={!!errors.first_name}
+                errorText={errors.first_name?.message}
+                label="First Name"
               >
                 <Input
-                  {...register("full_name")}
-                  placeholder="Full name"
+                  {...register("first_name")}
+                  placeholder="First name"
+                  type="text"
+                />
+              </Field>
+
+              <Field
+                invalid={!!errors.father_name}
+                errorText={errors.father_name?.message}
+                label="Father Name"
+              >
+                <Input
+                  {...register("father_name")}
+                  placeholder="Father name"
+                  type="text"
+                />
+              </Field>
+
+              <Field
+                invalid={!!errors.family_name}
+                errorText={errors.family_name?.message}
+                label="Family Name"
+              >
+                <Input
+                  {...register("family_name")}
+                  placeholder="Family name"
                   type="text"
                 />
               </Field>
@@ -162,14 +186,28 @@ const EditUser = ({ user }: EditUserProps) => {
             <Flex mt={4} direction="column" gap={4}>
               <Controller
                 control={control}
-                name="is_superuser"
+                name="is_admin"
                 render={({ field }) => (
                   <Field disabled={field.disabled} colorPalette="teal">
                     <Checkbox
-                      checked={field.value}
+                      checked={field.value ?? false}
                       onCheckedChange={({ checked }) => field.onChange(checked)}
                     >
-                      Is superuser?
+                      Is admin?
+                    </Checkbox>
+                  </Field>
+                )}
+              />
+              <Controller
+                control={control}
+                name="is_teacher"
+                render={({ field }) => (
+                  <Field disabled={field.disabled} colorPalette="teal">
+                    <Checkbox
+                      checked={field.value ?? false}
+                      onCheckedChange={({ checked }) => field.onChange(checked)}
+                    >
+                      Is teacher?
                     </Checkbox>
                   </Field>
                 )}
@@ -180,7 +218,7 @@ const EditUser = ({ user }: EditUserProps) => {
                 render={({ field }) => (
                   <Field disabled={field.disabled} colorPalette="teal">
                     <Checkbox
-                      checked={field.value}
+                      checked={field.value ?? false}
                       onCheckedChange={({ checked }) => field.onChange(checked)}
                     >
                       Is active?
