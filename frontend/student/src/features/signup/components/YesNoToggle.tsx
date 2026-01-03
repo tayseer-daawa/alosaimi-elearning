@@ -1,17 +1,17 @@
-import { Box, HStack, Text } from '@chakra-ui/react';
+import { Box, HStack, Text } from "@chakra-ui/react"
 
 export function YesNoToggle({
   value,
   onChange,
 }: {
-  value: boolean | null;
-  onChange: (next: boolean) => void;
+  value: boolean | null
+  onChange: (next: boolean) => void
 }) {
-  const yesSelected = value === true;
-  const noSelected = value === false;
+  const yesSelected = value === true
+  const noSelected = value === false
 
-  const baseWordFontSize = { base: 'lg', md: '2xl', lg: '3xl' } as const;
-  const selectedWordFontSize = { base: '2xl', md: '5xl', lg: '5xl' } as const;
+  const baseWordFontSize = { base: "lg", md: "2xl", lg: "3xl" } as const
+  const selectedWordFontSize = { base: "2xl", md: "5xl", lg: "5xl" } as const
 
   return (
     <Box w="100%">
@@ -32,7 +32,7 @@ export function YesNoToggle({
         <Text
           color="text.default"
           fontWeight={600}
-          fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }}
+          fontSize={{ base: "xl", md: "2xl", lg: "3xl" }}
           opacity={0.8}
         >
           /
@@ -54,9 +54,9 @@ export function YesNoToggle({
 
       <Box
         mt={{ base: 3, md: 4 }}
-        borderBottomWidth={{ base: '2px', md: '3px', lg: '4px' }}
+        borderBottomWidth={{ base: "2px", md: "3px", lg: "4px" }}
         borderColor="brand.primary"
       />
     </Box>
-  );
+  )
 }

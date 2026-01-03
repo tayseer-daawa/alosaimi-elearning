@@ -1,107 +1,109 @@
-import { useNavigate } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { useNavigate } from "@tanstack/react-router"
+import { useMemo, useState } from "react"
 
-type Step = 'welcome' | 'name' | 'email' | 'goal' | 'password';
+type Step = "welcome" | "name" | "email" | "goal" | "password"
 
-const steps: Step[] = ['welcome', 'name', 'email', 'goal', 'password'];
+const steps: Step[] = ["welcome", "name", "email", "goal", "password"]
 
 function mockSubmit(values: {
-  fullName: string;
-  email: string;
-  wantsNotifications: boolean | null;
-  password: string;
+  fullName: string
+  email: string
+  wantsNotifications: boolean | null
+  password: string
 }) {
   return new Promise<void>((resolve) => {
     setTimeout(() => {
-      localStorage.setItem('access_token', 'mock-student-token');
+      localStorage.setItem("access_token", "mock-student-token")
       localStorage.setItem(
-        'mock_student_profile',
+        "mock_student_profile",
         JSON.stringify({
           fullName: values.fullName,
           email: values.email,
           wantsNotifications: values.wantsNotifications,
-        })
-      );
-      resolve();
-    }, 600);
-  });
+        }),
+      )
+      resolve()
+    }, 600)
+  })
 }
 
 export function useSignupWizard() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [stepIndex, setStepIndex] = useState(0);
-  const step = steps[stepIndex] ?? 'welcome';
+  const [stepIndex, setStepIndex] = useState(0)
+  const step = steps[stepIndex] ?? "welcome"
 
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [wantsNotifications, setWantsNotifications] = useState<boolean | null>(null);
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [wantsNotifications, setWantsNotifications] = useState<boolean | null>(
+    null,
+  )
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const title = useMemo(() => {
-    if (step === 'welcome') return 'مرحبا بك في موقع برامج الشيخ العصيمي';
-    return 'أدخل بعض المعلومات';
-  }, [step]);
+    if (step === "welcome") return "مرحبا بك في موقع برامج الشيخ العصيمي"
+    return "أدخل بعض المعلومات"
+  }, [step])
 
   const canContinue = useMemo(() => {
     switch (step) {
-      case 'welcome':
-        return true;
-      case 'name':
-        return fullName.trim().length > 1;
-      case 'email':
-        return /\S+@\S+\.\S+/.test(email.trim());
-      case 'goal':
-        return wantsNotifications !== null;
-      case 'password':
-        return password.length >= 6 && password === confirmPassword;
+      case "welcome":
+        return true
+      case "name":
+        return fullName.trim().length > 1
+      case "email":
+        return /\S+@\S+\.\S+/.test(email.trim())
+      case "goal":
+        return wantsNotifications !== null
+      case "password":
+        return password.length >= 6 && password === confirmPassword
       default:
-        return false;
+        return false
     }
-  }, [step, fullName, email, wantsNotifications, password, confirmPassword]);
+  }, [step, fullName, email, wantsNotifications, password, confirmPassword])
 
   const validateCurrentStep = () => {
-    if (canContinue) return true;
+    if (canContinue) return true
 
     switch (step) {
-      case 'name':
-        setError('الرجاء إدخال الاسم الكامل');
-        return false;
-      case 'email':
-        setError('الرجاء إدخال بريد إلكتروني صحيح');
-        return false;
-      case 'goal':
-        setError('الرجاء اختيار نعم أو لا');
-        return false;
-      case 'password':
-        setError('كلمة السر يجب أن تكون 6 أحرف على الأقل وأن تتطابق مع التأكيد');
-        return false;
+      case "name":
+        setError("الرجاء إدخال الاسم الكامل")
+        return false
+      case "email":
+        setError("الرجاء إدخال بريد إلكتروني صحيح")
+        return false
+      case "goal":
+        setError("الرجاء اختيار نعم أو لا")
+        return false
+      case "password":
+        setError("كلمة السر يجب أن تكون 6 أحرف على الأقل وأن تتطابق مع التأكيد")
+        return false
       default:
-        return false;
+        return false
     }
-  };
+  }
 
   const next = async () => {
-    setError(null);
+    setError(null)
 
-    if (!validateCurrentStep()) return;
+    if (!validateCurrentStep()) return
 
-    if (step === 'password') {
-      setIsSubmitting(true);
+    if (step === "password") {
+      setIsSubmitting(true)
       try {
-        await mockSubmit({ fullName, email, wantsNotifications, password });
-        await navigate({ to: '/' });
+        await mockSubmit({ fullName, email, wantsNotifications, password })
+        await navigate({ to: "/" })
       } finally {
-        setIsSubmitting(false);
+        setIsSubmitting(false)
       }
-      return;
+      return
     }
 
-    setStepIndex((i) => Math.min(i + 1, steps.length - 1));
-  };
+    setStepIndex((i) => Math.min(i + 1, steps.length - 1))
+  }
 
   return {
     step,
@@ -120,5 +122,5 @@ export function useSignupWizard() {
     confirmPassword,
     setConfirmPassword,
     next,
-  };
+  }
 }

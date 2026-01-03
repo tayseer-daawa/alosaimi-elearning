@@ -1,26 +1,27 @@
-import { createSystem, defaultConfig } from '@chakra-ui/react';
+import { createSystem, defaultConfig } from "@chakra-ui/react"
 
-import { buttonRecipe } from './theme/button.recipe';
+import { buttonRecipe } from "./theme/button.recipe"
 
-const fontStack = "'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+const fontStack =
+  "'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 export const system = createSystem(defaultConfig, {
   globalCss: {
     html: {
-      fontSize: '16px',
+      fontSize: "16px",
     },
     body: {
       margin: 0,
       padding: 0,
       fontFamily: fontStack,
-      color: 'text.default',
-      backgroundColor: 'white',
-      backgroundImage: 'url(/assets/bg-mobile.svg)',
-      backgroundRepeat: 'no-repeat',
-      backgroundPosition: 'center top',
-      backgroundSize: 'cover',
-      '@media (min-width: 48em)': {
-        backgroundImage: 'url(/assets/bg-desktop.svg)',
+      color: "text.default",
+      backgroundColor: "white",
+      backgroundImage: "url(/assets/bg-mobile.svg)",
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "center top",
+      backgroundSize: "cover",
+      "@media (min-width: 48em)": {
+        backgroundImage: "url(/assets/bg-desktop.svg)",
       },
     },
   },
@@ -32,12 +33,12 @@ export const system = createSystem(defaultConfig, {
       },
       colors: {
         brand: {
-          primary: { value: '#21605D' },
-          accent: { value: '#E4DB99' },
-          info: { value: '#0B8CE9' },
+          primary: { value: "#21605D" },
+          accent: { value: "#E4DB99" },
+          info: { value: "#0B8CE9" },
         },
         text: {
-          default: { value: '#1A4D4A' },
+          default: { value: "#1A4D4A" },
         },
       },
     },
@@ -45,4 +46,4 @@ export const system = createSystem(defaultConfig, {
       button: buttonRecipe,
     },
   },
-});
+})
