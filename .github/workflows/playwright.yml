@@ -68,6 +68,8 @@ jobs:
       working-directory: backend
     - run: npm ci
       working-directory: frontend/admin
+    - run: npm ci
+      working-directory: frontend/student
     - run: uv run bash scripts/generate-client.sh
       env:
         VIRTUAL_ENV: backend/.venv
