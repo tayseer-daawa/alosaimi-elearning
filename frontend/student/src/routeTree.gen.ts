@@ -12,7 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSignupRouteImport } from './routes/_layout/signup'
+import { Route as LayoutProgramsRouteImport } from './routes/_layout/programs'
+import { Route as LayoutPhasesRouteImport } from './routes/_layout/phases'
 import { Route as LayoutExampleRouteImport } from './routes/_layout/example'
+import { Route as LayoutCourseRouteImport } from './routes/_layout/course'
+import { Route as LayoutBooksRouteImport } from './routes/_layout/books'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -28,38 +32,88 @@ const LayoutSignupRoute = LayoutSignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutProgramsRoute = LayoutProgramsRouteImport.update({
+  id: '/programs',
+  path: '/programs',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutPhasesRoute = LayoutPhasesRouteImport.update({
+  id: '/phases',
+  path: '/phases',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutExampleRoute = LayoutExampleRouteImport.update({
   id: '/example',
   path: '/example',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutCourseRoute = LayoutCourseRouteImport.update({
+  id: '/course',
+  path: '/course',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutBooksRoute = LayoutBooksRouteImport.update({
+  id: '/books',
+  path: '/books',
+  getParentRoute: () => LayoutRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/books': typeof LayoutBooksRoute
+  '/course': typeof LayoutCourseRoute
   '/example': typeof LayoutExampleRoute
+  '/phases': typeof LayoutPhasesRoute
+  '/programs': typeof LayoutProgramsRoute
   '/signup': typeof LayoutSignupRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesByTo {
+  '/books': typeof LayoutBooksRoute
+  '/course': typeof LayoutCourseRoute
   '/example': typeof LayoutExampleRoute
+  '/phases': typeof LayoutPhasesRoute
+  '/programs': typeof LayoutProgramsRoute
   '/signup': typeof LayoutSignupRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
+  '/_layout/books': typeof LayoutBooksRoute
+  '/_layout/course': typeof LayoutCourseRoute
   '/_layout/example': typeof LayoutExampleRoute
+  '/_layout/phases': typeof LayoutPhasesRoute
+  '/_layout/programs': typeof LayoutProgramsRoute
   '/_layout/signup': typeof LayoutSignupRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/example' | '/signup' | '/'
+  fullPaths:
+    | '/books'
+    | '/course'
+    | '/example'
+    | '/phases'
+    | '/programs'
+    | '/signup'
+    | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/example' | '/signup' | '/'
+  to:
+    | '/books'
+    | '/course'
+    | '/example'
+    | '/phases'
+    | '/programs'
+    | '/signup'
+    | '/'
   id:
     | '__root__'
     | '/_layout'
+    | '/_layout/books'
+    | '/_layout/course'
     | '/_layout/example'
+    | '/_layout/phases'
+    | '/_layout/programs'
     | '/_layout/signup'
     | '/_layout/'
   fileRoutesById: FileRoutesById
@@ -91,6 +145,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSignupRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/programs': {
+      id: '/_layout/programs'
+      path: '/programs'
+      fullPath: '/programs'
+      preLoaderRoute: typeof LayoutProgramsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/phases': {
+      id: '/_layout/phases'
+      path: '/phases'
+      fullPath: '/phases'
+      preLoaderRoute: typeof LayoutPhasesRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/example': {
       id: '/_layout/example'
       path: '/example'
@@ -98,17 +166,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutExampleRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/course': {
+      id: '/_layout/course'
+      path: '/course'
+      fullPath: '/course'
+      preLoaderRoute: typeof LayoutCourseRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/books': {
+      id: '/_layout/books'
+      path: '/books'
+      fullPath: '/books'
+      preLoaderRoute: typeof LayoutBooksRouteImport
+      parentRoute: typeof LayoutRoute
+    }
   }
 }
 
 interface LayoutRouteChildren {
+  LayoutBooksRoute: typeof LayoutBooksRoute
+  LayoutCourseRoute: typeof LayoutCourseRoute
   LayoutExampleRoute: typeof LayoutExampleRoute
+  LayoutPhasesRoute: typeof LayoutPhasesRoute
+  LayoutProgramsRoute: typeof LayoutProgramsRoute
   LayoutSignupRoute: typeof LayoutSignupRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutBooksRoute: LayoutBooksRoute,
+  LayoutCourseRoute: LayoutCourseRoute,
   LayoutExampleRoute: LayoutExampleRoute,
+  LayoutPhasesRoute: LayoutPhasesRoute,
+  LayoutProgramsRoute: LayoutProgramsRoute,
   LayoutSignupRoute: LayoutSignupRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
