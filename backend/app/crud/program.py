@@ -3,11 +3,14 @@ import uuid
 from sqlmodel import Session, select
 
 from app.models import Program, ProgramCreate, ProgramUpdate
+from app.models.program import days_list_to_bitmask
 
 
 def create_program(*, session: Session, program_in: ProgramCreate) -> Program:
     """Create a new program"""
-    db_obj = Program.model_validate(program_in)
+    data = program_in.model_dump()
+    data["days_of_study"] = days_list_to_bitmask(data["days_of_study"])
+    db_obj = Program.model_validate(data)
     session.add(db_obj)
     session.commit()
     session.refresh(db_obj)
@@ -30,6 +33,11 @@ def update_program(
 ) -> Program:
     """Update a program"""
     program_data = program_in.model_dump(exclude_unset=True)
+    # convert from str representation to bitmask
+    if "days_of_study" in program_data and program_data["days_of_study"] is not None:
+        program_data["days_of_study"] = days_list_to_bitmask(
+            program_data["days_of_study"]
+        )
     db_program.sqlmodel_update(program_data)
     session.add(db_program)
     session.commit()

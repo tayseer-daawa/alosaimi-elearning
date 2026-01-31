@@ -28,19 +28,19 @@ def read_programs(
     count_statement = select(func.count()).select_from(Program)
     count = session.exec(count_statement).one()
     programs = crud.get_programs(session=session, skip=skip, limit=limit)
-    return ProgramsPublic(data=programs, count=count)
+    return ProgramsPublic.from_programs(programs, count)
 
 
 # For guest users as well
 @router.get("/{program_id}", response_model=ProgramPublic)
-def read_program(session: SessionDep, program_id: uuid.UUID) -> Program:
+def read_program(session: SessionDep, program_id: uuid.UUID) -> ProgramPublic:
     """
     Get program by ID.
     """
     program = crud.get_program(session=session, program_id=program_id)
     if not program:
         raise HTTPException(status_code=404, detail="Program not found")
-    return program
+    return ProgramPublic.from_program(program)
 
 
 @router.post(
@@ -48,14 +48,14 @@ def read_program(session: SessionDep, program_id: uuid.UUID) -> Program:
     response_model=ProgramPublic,
     dependencies=[Depends(get_current_admin_or_superuser)],
 )
-def create_program(*, session: SessionDep, program_in: ProgramCreate) -> Program:
+def create_program(*, session: SessionDep, program_in: ProgramCreate) -> ProgramPublic:
     """
     Create new program.
 
     Only admins can create programs.
     """
     program = crud.create_program(session=session, program_in=program_in)
-    return program
+    return ProgramPublic.from_program(program)
 
 
 @router.patch(
@@ -68,7 +68,7 @@ def update_program(
     session: SessionDep,
     program_id: uuid.UUID,
     program_in: ProgramUpdate,
-) -> Program:
+) -> ProgramPublic:
     """
     Update a program.
 
@@ -81,7 +81,7 @@ def update_program(
     program = crud.update_program(
         session=session, db_program=program, program_in=program_in
     )
-    return program
+    return ProgramPublic.from_program(program)
 
 
 @router.delete(
