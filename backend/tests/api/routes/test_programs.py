@@ -10,9 +10,10 @@ from tests.utils.program import create_random_program
 def test_create_program(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
+    days = ["Sunday", "Monday", "Wednesday", "Thursday"]
     data = {
         "title": "Advanced Quran Studies",
-        "days_of_study": ["Sunday", "Monday", "Wednesday", "Thursday"],
+        "days_of_study": days,
     }
     response = client.post(
         f"{settings.API_V1_STR}/programs/",
@@ -29,9 +30,10 @@ def test_create_program(
 def test_create_program_not_admin(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
+    days = ["Sunday", "Monday"]
     data = {
         "title": "Test Program",
-        "days_of_study": ["Sunday", "Monday"],
+        "days_of_study": days,
     }
     response = client.post(
         f"{settings.API_V1_STR}/programs/",

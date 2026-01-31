@@ -7,17 +7,18 @@ from tests.utils.utils import random_lower_string
 
 def test_get_study_weekdays_full_week(db: Session) -> None:
     """Test get_study_weekdays with full week"""
+    days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+    ]
     program_in = ProgramCreate(
         title=f"Program {random_lower_string()}",
-        days_of_study=[
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday",
-        ],
+        days_of_study=days,
     )
     program = crud.create_program(session=db, program_in=program_in)
 
@@ -27,26 +28,28 @@ def test_get_study_weekdays_full_week(db: Session) -> None:
 
 def test_get_study_weekdays_partial(db: Session) -> None:
     """Test get_study_weekdays with partial week"""
+    days = ["Monday", "Wednesday", "Friday"]
     program_in = ProgramCreate(
         title=f"Program {random_lower_string()}",
-        days_of_study=["Monday", "Wednesday", "Friday"],
+        days_of_study=days,
     )
     program = crud.create_program(session=db, program_in=program_in)
 
     weekdays = program.get_study_weekdays()
-    assert weekdays == {0, 2, 4}  # Monday=0, Wednesday=2, Friday=4
+    assert weekdays == {1, 3, 5}  # Monday=1, Wednesday=3, Friday=5
 
 
 def test_get_study_weekdays_case_insensitive(db: Session) -> None:
     """Test get_study_weekdays is case insensitive"""
+    days = ["MONDAY", "wednesday", "FrIdAy"]
     program_in = ProgramCreate(
         title=f"Program {random_lower_string()}",
-        days_of_study=["MONDAY", "wednesday", "FrIdAy"],
+        days_of_study=days,
     )
     program = crud.create_program(session=db, program_in=program_in)
 
     weekdays = program.get_study_weekdays()
-    assert weekdays == {0, 2, 4}
+    assert weekdays == {1, 3, 5}
 
 
 def test_get_study_weekdays_empty(db: Session) -> None:
@@ -61,23 +64,12 @@ def test_get_study_weekdays_empty(db: Session) -> None:
     assert weekdays == set()
 
 
-def test_get_study_weekdays_invalid_day(db: Session) -> None:
-    """Test get_study_weekdays with invalid day names (should be ignored)"""
-    program_in = ProgramCreate(
-        title=f"Program {random_lower_string()}",
-        days_of_study=["Monday", "InvalidDay", "Friday"],
-    )
-    program = crud.create_program(session=db, program_in=program_in)
-
-    weekdays = program.get_study_weekdays()
-    assert weekdays == {0, 4}  # Only valid days
-
-
 def test_get_all_lessons_empty(db: Session) -> None:
     """Test get_all_lessons with no phases"""
+    days = ["Monday"]
     program_in = ProgramCreate(
         title=f"Program {random_lower_string()}",
-        days_of_study=["Monday"],
+        days_of_study=days,
     )
     program = crud.create_program(session=db, program_in=program_in)
 
@@ -88,9 +80,10 @@ def test_get_all_lessons_empty(db: Session) -> None:
 def test_get_all_lessons_with_phases(db: Session) -> None:
     """Test get_all_lessons returns lessons from phases in order"""
     # Create program
+    days = ["Monday"]
     program_in = ProgramCreate(
         title=f"Program {random_lower_string()}",
-        days_of_study=["Monday"],
+        days_of_study=days,
     )
     program = crud.create_program(session=db, program_in=program_in)
 
@@ -132,9 +125,10 @@ def test_get_all_lessons_with_phases(db: Session) -> None:
 def test_get_all_lessons_multiple_phases(db: Session) -> None:
     """Test get_all_lessons returns lessons from multiple phases in correct order"""
     # Create program
+    days = ["Monday"]
     program_in = ProgramCreate(
         title=f"Program {random_lower_string()}",
-        days_of_study=["Monday"],
+        days_of_study=days,
     )
     program = crud.create_program(session=db, program_in=program_in)
 

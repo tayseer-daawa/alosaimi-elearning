@@ -28,7 +28,7 @@ def upgrade():
     )
     op.create_table('program',
     sa.Column('title', sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False),
-    sa.Column('days_of_study', sa.JSON(), nullable=True),
+    sa.Column('days_of_study', sa.Integer(), nullable=False),
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
