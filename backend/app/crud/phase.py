@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import Session, col, select
+from sqlmodel import Session, col, func, select
 
 from app.models import Phase, PhaseBook, PhaseCreate, PhaseUpdate
 
@@ -63,10 +63,14 @@ def add_book_to_phase(
     """Add a book to a phase"""
     # If order not provided, calculate it based on existing books in the phase
     if order is None:
-        existing_books = session.exec(
-            select(PhaseBook).where(PhaseBook.phase_id == phase_id)
-        ).all()
-        order = len(existing_books) + 1
+        order = (
+            session.exec(
+                select(func.coalesce(func.max(PhaseBook.order), -1)).where(
+                    PhaseBook.phase_id == phase_id
+                )
+            ).one()
+            + 1
+        )
 
     # Add the relationship
     phase_book = PhaseBook(phase_id=phase_id, book_id=book_id, order=order)
