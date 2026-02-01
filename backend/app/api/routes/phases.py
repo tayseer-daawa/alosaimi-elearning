@@ -159,7 +159,7 @@ def add_book_to_phase(
         raise HTTPException(status_code=404, detail="Book not found")
 
     try:
-        success = crud.add_book_to_phase(
+        crud.add_book_to_phase(
             session=session,
             phase_id=phase_id,
             book_id=book_id,
@@ -168,11 +168,8 @@ def add_book_to_phase(
     except IntegrityError:
         raise HTTPException(
             status_code=400,
-            detail=f"A book with order {order} already exists in the phase",
+            detail="A book with this order already exists in the phase, or book already in phase",
         )
-    if not success:
-        raise HTTPException(status_code=400, detail="Book already in phase")
-
     return Message(message="Book added to phase successfully")
 
 

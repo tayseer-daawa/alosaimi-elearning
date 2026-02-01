@@ -368,7 +368,7 @@ def test_add_book_with_same_order_to_phase(
         headers=superuser_token_headers,
     )
     assert response.status_code == 400
-    assert "order 1 already exists" in response.json()["detail"]
+    assert "A book with this order already exists" in response.json()["detail"]
 
 
 def test_add_same_book_twice_to_phase(
@@ -394,7 +394,7 @@ def test_add_same_book_twice_to_phase(
         headers=superuser_token_headers,
     )
     assert response.status_code == 400
-    assert response.json()["detail"] == "Book already in phase"
+    assert "book already in phase" in response.json()["detail"]
 
 
 def test_remove_nonexistent_book_from_phase(
