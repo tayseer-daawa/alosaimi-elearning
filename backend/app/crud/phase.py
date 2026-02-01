@@ -61,15 +61,6 @@ def add_book_to_phase(
     order: int | None = None,
 ) -> bool:
     """Add a book to a phase"""
-    # Check if already exists
-    existing = session.exec(
-        select(PhaseBook).where(
-            PhaseBook.phase_id == phase_id, PhaseBook.book_id == book_id
-        )
-    ).first()
-    if existing:
-        return False
-
     # If order not provided, calculate it based on existing books in the phase
     if order is None:
         existing_books = session.exec(

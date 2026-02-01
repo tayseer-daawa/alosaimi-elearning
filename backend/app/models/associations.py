@@ -41,6 +41,7 @@ class PhaseBook(SQLModel, table=True):
     __tablename__ = "phase_book"
     __table_args__ = (
         UniqueConstraint("phase_id", "order", name="uq_phase_book_phase_order"),
+        UniqueConstraint("phase_id", "book_id", name="uq_phase_book_phase_book"),
     )
 
     phase_id: uuid.UUID = Field(
