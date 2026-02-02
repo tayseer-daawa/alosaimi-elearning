@@ -73,7 +73,7 @@ def test_get_all_lessons_empty(db: Session) -> None:
     )
     program = crud.create_program(session=db, program_in=program_in)
 
-    lessons = program.get_all_lessons()
+    lessons = crud.get_all_lessons(session=db, program_id=program.id)
     assert lessons == []
 
 
@@ -115,7 +115,7 @@ def test_get_all_lessons_with_phases(db: Session) -> None:
     # Refresh program to load relationships
     db.refresh(program)
 
-    lessons = program.get_all_lessons()
+    lessons = crud.get_all_lessons(session=db, program_id=program.id)
     assert len(lessons) == 3
     # Verify lessons are sorted by order
     for i, lesson in enumerate(lessons):
@@ -175,7 +175,7 @@ def test_get_all_lessons_multiple_phases(db: Session) -> None:
     # Refresh program to load relationships
     db.refresh(program)
 
-    lessons = program.get_all_lessons()
+    lessons = crud.get_all_lessons(session=db, program_id=program.id)
     assert len(lessons) == 4
     # First two lessons should be from book1 (phase 0)
     assert lessons[0].book_id == book1.id

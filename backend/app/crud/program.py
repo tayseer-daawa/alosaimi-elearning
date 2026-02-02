@@ -1,8 +1,16 @@
 import uuid
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
-from app.models import Program, ProgramCreate, ProgramUpdate
+from app.models import (
+    Book,
+    Lesson,
+    Phase,
+    PhaseBook,
+    Program,
+    ProgramCreate,
+    ProgramUpdate,
+)
 from app.models.program import days_list_to_bitmask
 
 
@@ -53,3 +61,15 @@ def delete_program(*, session: Session, program_id: uuid.UUID) -> bool:
         session.commit()
         return True
     return False
+
+
+def get_all_lessons(*, session: Session, program_id: uuid.UUID) -> list[Lesson]:
+    statement = (
+        select(Lesson)
+        .join(Book)
+        .join(PhaseBook)
+        .join(Phase)
+        .where(Phase.program_id == program_id)
+        .order_by(col(Phase.order), col(PhaseBook.order), col(Lesson.order))
+    )
+    return list(session.exec(statement).all())
