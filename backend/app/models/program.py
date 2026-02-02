@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from app.models.lesson import Lesson
     from app.models.phase import Phase
     from app.models.session import ProgramSession
 
@@ -97,25 +96,6 @@ class Program(SQLModel, table=True):
     @days_of_study_list.setter
     def days_of_study_list(self, value: list[str]) -> None:
         self.days_of_study = days_list_to_bitmask(value)
-
-    def get_all_lessons(self) -> list["Lesson"]:
-        """Get all lessons from the program's phases and books in order"""
-        if not self.phases:
-            return []
-
-        lessons = []
-        # Sort phases by order
-        sorted_phases = sorted(self.phases, key=lambda p: p.order)
-        for phase in sorted_phases:
-            # Sort books by order from the phase_books association
-            sorted_phase_books = sorted(phase.phase_books, key=lambda pb: pb.order)
-            for phase_book in sorted_phase_books:
-                # Sort lessons by order
-                sorted_lessons = sorted(
-                    phase_book.book.lessons, key=lambda lsn: lsn.order
-                )
-                lessons.extend(sorted_lessons)
-        return lessons
 
     def get_study_weekdays(self) -> set[int]:
         """Convert days_of_study to weekday integers (0=Sunday, 6=Saturday)"""

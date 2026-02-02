@@ -41,6 +41,7 @@ from app.crud.phase import (
 from app.crud.program import (
     create_program,
     delete_program,
+    get_all_lessons,
     get_program,
     get_programs,
     update_program,
@@ -90,6 +91,7 @@ __all__ = [
     "get_programs",
     "update_program",
     "delete_program",
+    "get_all_lessons",
     # Phase
     "create_phase",
     "get_phase",
