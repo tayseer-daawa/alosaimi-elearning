@@ -19,7 +19,7 @@ class ExamBase(SQLModel):
     session_id: uuid.UUID = Field(foreign_key="session.id", ondelete="CASCADE")
 
     @model_validator(mode="after")
-    def validate_correct_options(self) -> "ExamBase":
+    def validate_dates(self) -> "ExamBase":
         if self.start_date > self.deadline:
             raise ValueError("start_date cannot be after deadline")
         return self
