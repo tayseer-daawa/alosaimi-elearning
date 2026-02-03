@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import func, select
 
@@ -97,8 +98,13 @@ def update_lesson(
     if not lesson:
         raise HTTPException(status_code=404, detail="Lesson not found")
 
-    lesson = crud.update_lesson(session=session, db_lesson=lesson, lesson_in=lesson_in)
-    return lesson
+    try:
+        lesson = crud.update_lesson(
+            session=session, db_lesson=lesson, lesson_in=lesson_in
+        )
+        return lesson
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors()[0]["msg"])
 
 
 @router.delete(

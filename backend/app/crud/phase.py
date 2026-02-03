@@ -2,6 +2,7 @@ import uuid
 
 from sqlmodel import Session, col, func, select
 
+from app.crud.utils import validate_update_model
 from app.models import Phase, PhaseBook, PhaseCreate, PhaseUpdate
 
 
@@ -36,6 +37,7 @@ def get_phases_by_program(
 def update_phase(*, session: Session, db_phase: Phase, phase_in: PhaseUpdate) -> Phase:
     """Update a phase"""
     phase_data = phase_in.model_dump(exclude_unset=True)
+    validate_update_model(Phase, db_phase, phase_data)
     db_phase.sqlmodel_update(phase_data)
     session.add(db_phase)
     session.commit()

@@ -2,6 +2,7 @@ import uuid
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import ValidationError
 from sqlmodel import func, select
 
 from app import crud
@@ -111,8 +112,11 @@ def update_exam(
     if not exam:
         raise HTTPException(status_code=404, detail="Exam not found")
 
-    exam = crud.update_exam(session=session, db_exam=exam, exam_in=exam_in)
-    return exam
+    try:
+        exam = crud.update_exam(session=session, db_exam=exam, exam_in=exam_in)
+        return exam
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors()[0]["msg"])
 
 
 @router.delete(
@@ -244,7 +248,10 @@ def update_exam_attempt(
     if not attempt:
         raise HTTPException(status_code=404, detail="Exam attempt not found")
 
-    attempt = crud.update_exam_attempt(
-        session=session, db_attempt=attempt, attempt_in=attempt_in
-    )
-    return attempt
+    try:
+        attempt = crud.update_exam_attempt(
+            session=session, db_attempt=attempt, attempt_in=attempt_in
+        )
+        return attempt
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors()[0]["msg"])

@@ -2,6 +2,7 @@ import uuid
 
 from sqlmodel import Session, col, select
 
+from app.crud.utils import validate_update_model
 from app.models import SessionEvent, SessionEventCreate, SessionEventUpdate
 
 
@@ -47,6 +48,7 @@ def update_session_event(
 ) -> SessionEvent:
     """Update a session event"""
     event_data = event_in.model_dump(exclude_unset=True)
+    validate_update_model(SessionEvent, db_event, event_data)
     db_event.sqlmodel_update(event_data)
     session.add(db_event)
     session.commit()

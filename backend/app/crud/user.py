@@ -1,6 +1,7 @@
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
+from app.crud.utils import validate_update_model
 from app.models import User, UserCreate, UserUpdate
 
 
@@ -24,6 +25,7 @@ def update_user(*, session: Session, db_user: User, user_in: UserUpdate) -> User
         password = user_data["password"]
         hashed_password = get_password_hash(password)
         extra_data["hashed_password"] = hashed_password
+    validate_update_model(User, db_user, {**user_data, **extra_data})
     db_user.sqlmodel_update(user_data, update=extra_data)
     session.add(db_user)
     session.commit()

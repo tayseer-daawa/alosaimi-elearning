@@ -2,6 +2,7 @@ import uuid
 
 from sqlmodel import Session, select
 
+from app.crud.utils import validate_update_model
 from app.models import Question, QuestionCreate, QuestionUpdate
 
 
@@ -37,6 +38,7 @@ def update_question(
 ) -> Question:
     """Update a question"""
     question_data = question_in.model_dump(exclude_unset=True)
+    validate_update_model(Question, db_question, question_data)
     db_question.sqlmodel_update(question_data)
     session.add(db_question)
     session.commit()
