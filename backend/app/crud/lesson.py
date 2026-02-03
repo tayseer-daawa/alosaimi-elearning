@@ -2,6 +2,7 @@ import uuid
 
 from sqlmodel import Session, col, select
 
+from app.crud.utils import validate_update_model
 from app.models import Lesson, LessonCreate, LessonUpdate
 
 
@@ -38,6 +39,7 @@ def update_lesson(
 ) -> Lesson:
     """Update a lesson"""
     lesson_data = lesson_in.model_dump(exclude_unset=True)
+    validate_update_model(Lesson, db_lesson, lesson_data)
     db_lesson.sqlmodel_update(lesson_data)
     session.add(db_lesson)
     session.commit()

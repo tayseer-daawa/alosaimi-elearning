@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import ValidationError
 from sqlmodel import func, select
 
 from app import crud
@@ -116,10 +117,13 @@ def update_session(
     if not db_session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    db_session = crud.update_session(
-        session=session, db_session=db_session, session_in=session_in
-    )
-    return db_session
+    try:
+        db_session = crud.update_session(
+            session=session, db_session=db_session, session_in=session_in
+        )
+        return db_session
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors()[0]["msg"])
 
 
 @router.delete(

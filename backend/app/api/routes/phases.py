@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import func, select
 
@@ -111,8 +112,11 @@ def update_phase(
     if not phase:
         raise HTTPException(status_code=404, detail="Phase not found")
 
-    phase = crud.update_phase(session=session, db_phase=phase, phase_in=phase_in)
-    return phase
+    try:
+        phase = crud.update_phase(session=session, db_phase=phase, phase_in=phase_in)
+        return phase
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors()[0]["msg"])
 
 
 @router.delete(

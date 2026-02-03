@@ -4,7 +4,7 @@ import pytest
 from sqlmodel import Session
 
 from app import crud
-from app.models import ExamAttemptCreate, ExamCreate
+from app.models import ExamAttemptCreate, ExamCreate, ExamUpdate
 from tests.utils.book import create_random_book
 from tests.utils.session import create_random_session
 from tests.utils.user import create_random_user
@@ -150,6 +150,34 @@ def test_create_exam_attempt(db: Session) -> None:
     assert attempt.exam_id == exam.id
     assert attempt.student_id == student.id
     assert attempt.examiner_id == examiner.id
+
+
+def test_update_exam_invalid_model(db: Session) -> None:
+    book = create_random_book(db)
+    session = create_random_session(db)
+    exam_in = ExamCreate(
+        start_date=date.today(),
+        deadline=date.today() + timedelta(days=7),
+        max_attempts=3,
+        book_id=book.id,
+        session_id=session.id,
+    )
+    exam = crud.create_exam(session=db, exam_in=exam_in)
+
+    # Try to update with start_date after deadline
+    exam_update = ExamUpdate(
+        start_date=date.today() + timedelta(days=10),
+        deadline=date.today() + timedelta(days=7),
+    )
+    with pytest.raises(ValueError, match="start_date cannot be after deadline"):
+        crud.update_exam(session=db, db_exam=exam, exam_in=exam_update)
+
+    # Try to update with start_date after deadline
+    exam_update = ExamUpdate(
+        start_date=date.today() + timedelta(days=8),
+    )
+    with pytest.raises(ValueError, match="start_date cannot be after deadline"):
+        crud.update_exam(session=db, db_exam=exam, exam_in=exam_update)
 
 
 def test_get_exam_attempts_by_exam(db: Session) -> None:

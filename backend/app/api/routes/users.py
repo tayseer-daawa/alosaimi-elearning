@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import ValidationError
 from sqlmodel import func, select
 
 from app import crud
@@ -200,8 +201,11 @@ def update_user(
                 status_code=409, detail="User with this email already exists"
             )
 
-    db_user = crud.update_user(session=session, db_user=db_user, user_in=user_in)
-    return db_user
+    try:
+        db_user = crud.update_user(session=session, db_user=db_user, user_in=user_in)
+        return db_user
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors()[0]["msg"])
 
 
 @router.delete("/{user_id}", dependencies=[Depends(get_current_active_superuser)])

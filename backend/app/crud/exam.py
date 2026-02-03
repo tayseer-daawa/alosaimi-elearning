@@ -2,6 +2,7 @@ import uuid
 
 from sqlmodel import Session, select
 
+from app.crud.utils import validate_update_model
 from app.models import Exam, ExamCreate, ExamUpdate
 
 
@@ -40,6 +41,7 @@ def get_exams_by_book(
 def update_exam(*, session: Session, db_exam: Exam, exam_in: ExamUpdate) -> Exam:
     """Update an exam"""
     exam_data = exam_in.model_dump(exclude_unset=True)
+    validate_update_model(Exam, db_exam, exam_data)
     db_exam.sqlmodel_update(exam_data)
     session.add(db_exam)
     session.commit()

@@ -655,6 +655,43 @@ def test_update_exam(
     assert content["max_attempts"] == 5
 
 
+def test_update_exam_invalid_model(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    book = create_random_book(db)
+    session = create_random_session(db)
+    data_create = {
+        "start_date": str(date.today()),
+        "deadline": str(date.today() + timedelta(days=7)),
+        "max_attempts": 3,
+        "book_id": str(book.id),
+        "session_id": str(session.id),
+    }
+    response_create = client.post(
+        f"{settings.API_V1_STR}/exams/",
+        headers=superuser_token_headers,
+        json=data_create,
+    )
+    assert response_create.status_code == 200
+    exam_id = response_create.json()["id"]
+
+    # Try to update with start_date after deadline
+    data_update = {
+        "start_date": str(date.today() + timedelta(days=10)),
+        "deadline": str(date.today() + timedelta(days=7)),
+    }
+    response_update = client.patch(
+        f"{settings.API_V1_STR}/exams/{exam_id}",
+        headers=superuser_token_headers,
+        json=data_update,
+    )
+    assert response_update.status_code == 422
+    assert (
+        "Value error, start_date cannot be after deadline"
+        == response_update.json()["detail"]
+    )
+
+
 def test_update_exam_not_found(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:

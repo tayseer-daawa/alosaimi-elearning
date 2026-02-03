@@ -2,6 +2,7 @@ import uuid
 
 from sqlmodel import Session, select
 
+from app.crud.utils import validate_update_model
 from app.models import ProgramSession, ProgramSessionCreate, ProgramSessionUpdate, User
 
 
@@ -47,6 +48,7 @@ def update_session(
 ) -> ProgramSession:
     """Update a session"""
     session_data = session_in.model_dump(exclude_unset=True)
+    validate_update_model(ProgramSession, db_session, session_data)
     db_session.sqlmodel_update(session_data)
     session.add(db_session)
     session.commit()

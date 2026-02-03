@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import ValidationError
 from sqlmodel import func, select
 
 from app import crud
@@ -78,8 +79,11 @@ def update_book(
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
 
-    book = crud.update_book(session=session, db_book=book, book_in=book_in)
-    return book
+    try:
+        book = crud.update_book(session=session, db_book=book, book_in=book_in)
+        return book
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors()[0]["msg"])
 
 
 @router.delete(

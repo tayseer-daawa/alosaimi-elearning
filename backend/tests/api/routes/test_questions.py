@@ -130,6 +130,36 @@ def test_update_question(
     assert content["options"] == ["New Answer 1", "New Answer 2", "New Answer 3"]
 
 
+def test_update_question_invalid_model(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    lesson = create_random_lesson(db)
+    question_in = QuestionCreate(
+        question="Old question",
+        options=["Answer 1", "Answer 2"],
+        correct_options=[0],
+        lesson_id=lesson.id,
+    )
+    question = crud.create_question(session=db, question_in=question_in)
+
+    # Try to update with an invalid correct_options index
+    data = {
+        "options": ["New Answer 1", "New Answer 2"],
+        "correct_options": [5],  # Invalid index
+    }
+    response = client.patch(
+        f"{settings.API_V1_STR}/questions/{question.id}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 422
+    # Optionally check error message
+    assert (
+        "Value error, correct_option index 5 is out of range for options of length 2"
+        == response.json()["detail"]
+    )
+
+
 def test_delete_question(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:

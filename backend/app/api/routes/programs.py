@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import ValidationError
 from sqlmodel import func, select
 
 from app import crud
@@ -78,10 +79,13 @@ def update_program(
     if not program:
         raise HTTPException(status_code=404, detail="Program not found")
 
-    program = crud.update_program(
-        session=session, db_program=program, program_in=program_in
-    )
-    return ProgramPublic.from_program(program)
+    try:
+        program = crud.update_program(
+            session=session, db_program=program, program_in=program_in
+        )
+        return ProgramPublic.from_program(program)
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors()[0]["msg"])
 
 
 @router.delete(

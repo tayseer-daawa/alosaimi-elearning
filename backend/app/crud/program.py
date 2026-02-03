@@ -2,6 +2,7 @@ import uuid
 
 from sqlmodel import Session, col, select
 
+from app.crud.utils import validate_update_model
 from app.models import (
     Book,
     Lesson,
@@ -46,6 +47,7 @@ def update_program(
         program_data["days_of_study"] = days_list_to_bitmask(
             program_data["days_of_study"]
         )
+    validate_update_model(Program, db_program, program_data)
     db_program.sqlmodel_update(program_data)
     session.add(db_program)
     session.commit()

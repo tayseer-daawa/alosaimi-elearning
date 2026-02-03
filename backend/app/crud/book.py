@@ -2,6 +2,7 @@ import uuid
 
 from sqlmodel import Session, select
 
+from app.crud.utils import validate_update_model
 from app.models import Book, BookCreate, BookUpdate
 
 
@@ -28,6 +29,7 @@ def get_books(*, session: Session, skip: int = 0, limit: int = 100) -> list[Book
 def update_book(*, session: Session, db_book: Book, book_in: BookUpdate) -> Book:
     """Update a book"""
     book_data = book_in.model_dump(exclude_unset=True)
+    validate_update_model(Book, db_book, book_data)
     db_book.sqlmodel_update(book_data)
     session.add(db_book)
     session.commit()

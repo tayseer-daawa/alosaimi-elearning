@@ -2,6 +2,7 @@ import uuid
 
 from sqlmodel import Session, col, select
 
+from app.crud.utils import validate_update_model
 from app.models import ExamAttempt, ExamAttemptCreate, ExamAttemptUpdate
 
 
@@ -66,6 +67,7 @@ def update_exam_attempt(
 ) -> ExamAttempt:
     """Update an exam attempt"""
     attempt_data = attempt_in.model_dump(exclude_unset=True)
+    validate_update_model(ExamAttempt, db_attempt, attempt_data)
     db_attempt.sqlmodel_update(attempt_data)
     session.add(db_attempt)
     session.commit()

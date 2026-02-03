@@ -149,6 +149,54 @@ def test_update_question(db: Session) -> None:
     assert updated_question.id == question.id
 
 
+def test_update_question_inconsistent_data(db: Session) -> None:
+    book = create_random_book(db)
+    lesson_in = LessonCreate(
+        book_part_pdf="https://example.com/part.pdf",
+        book_part_audio="https://example.com/part.mp3",
+        lesson_audio="https://example.com/lesson.mp3",
+        explanation_notes="Notes",
+        book_id=book.id,
+        order=0,
+    )
+    lesson = crud.create_lesson(session=db, lesson_in=lesson_in)
+
+    question_in = QuestionCreate(
+        question=random_lower_string(),
+        options=["Answer 1", "Answer 2"],
+        correct_options=[0],
+        lesson_id=lesson.id,
+    )
+    question = crud.create_question(session=db, question_in=question_in)
+
+    # Try to update with an invalid correct_options index
+    question_in_update = QuestionUpdate(
+        options=["New Answer 1", "New Answer 2", "New Answer 3"],
+        correct_options=[5],  # Invalid index
+    )
+    with pytest.raises(
+        ValueError,
+        match="correct_option index 5 is out of range for options of length 3",
+    ):
+        # This should raise due to model validator
+        crud.update_question(
+            session=db, db_question=question, question_in=question_in_update
+        )
+
+    # Try to update with an invalid correct_options index
+    question_in_update = QuestionUpdate(
+        correct_options=[5],  # Invalid index
+    )
+    with pytest.raises(
+        ValueError,
+        match="correct_option index 5 is out of range for options of length 2",
+    ):
+        # This should raise due to model validator
+        crud.update_question(
+            session=db, db_question=question, question_in=question_in_update
+        )
+
+
 def test_question_is_single_answer(db: Session) -> None:
     book = create_random_book(db)
     lesson_in = LessonCreate(
