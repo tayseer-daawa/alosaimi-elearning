@@ -1,12 +1,7 @@
 import uuid
-from typing import TYPE_CHECKING
 
 from sqlalchemy import UniqueConstraint
-from sqlmodel import Field, Relationship, SQLModel
-
-if TYPE_CHECKING:
-    from app.models.book import Book
-    from app.models.phase import Phase
+from sqlmodel import Field, SQLModel
 
 
 class UserSessionStudent(SQLModel, table=True):
@@ -51,12 +46,3 @@ class PhaseBook(SQLModel, table=True):
         foreign_key="book.id", primary_key=True, ondelete="CASCADE"
     )
     order: int = Field(index=True, ge=0)
-
-    # Relationships
-    phase: "Phase" = Relationship(
-        back_populates="phase_books",
-        sa_relationship_kwargs={"overlaps": "books,phases"},
-    )
-    book: "Book" = Relationship(
-        sa_relationship_kwargs={"overlaps": "books,phases"},
-    )

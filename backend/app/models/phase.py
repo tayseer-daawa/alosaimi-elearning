@@ -36,11 +36,6 @@ class Phase(PhaseBase, table=True):
     books: list["Book"] = Relationship(
         back_populates="phases",
         link_model=PhaseBook,
-        sa_relationship_kwargs={"overlaps": "book,phase,phase_books"},
-    )
-    phase_books: list["PhaseBook"] = Relationship(
-        back_populates="phase",
-        sa_relationship_kwargs={"overlaps": "books,phases"},
     )
 
 
