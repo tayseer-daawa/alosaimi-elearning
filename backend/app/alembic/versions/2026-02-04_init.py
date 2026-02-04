@@ -1,8 +1,8 @@
-"""init
+"""init 
 
-Revision ID: f0dbf44b2637
+Revision ID: 084b9343c0c7
 Revises: 
-Create Date: 2025-12-21 10:07:20.659020
+Create Date: 2026-02-04 17:56:19.963980
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlmodel.sql.sqltypes
 
 
 # revision identifiers, used by Alembic.
-revision = 'f0dbf44b2637'
+revision = '084b9343c0c7'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,9 +27,9 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('program',
+    sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('title', sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False),
     sa.Column('days_of_study', sa.Integer(), nullable=False),
-    sa.Column('id', sa.Uuid(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user',
@@ -86,6 +86,7 @@ def upgrade():
     sa.Column('book_id', sa.Uuid(), nullable=False),
     sa.Column('session_id', sa.Uuid(), nullable=False),
     sa.Column('id', sa.Uuid(), nullable=False),
+    sa.CheckConstraint('start_date <= deadline', name='check_exam_start_before_deadline'),
     sa.ForeignKeyConstraint(['book_id'], ['book.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['session_id'], ['session.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
@@ -97,6 +98,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['book_id'], ['book.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['phase_id'], ['phase.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('phase_id', 'book_id'),
+    sa.UniqueConstraint('phase_id', 'book_id', name='uq_phase_book_phase_book'),
     sa.UniqueConstraint('phase_id', 'order', name='uq_phase_book_phase_order')
     )
     op.create_index(op.f('ix_phase_book_order'), 'phase_book', ['order'], unique=False)
