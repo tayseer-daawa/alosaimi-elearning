@@ -174,6 +174,26 @@ export type ProgramPublic = {
     id: string;
 };
 
+export type ProgramSessionCreate = {
+    start_date: string;
+    program_id: string;
+};
+
+export type ProgramSessionPublic = {
+    start_date: string;
+    program_id: string;
+    id: string;
+};
+
+export type ProgramSessionsPublic = {
+    data: Array<ProgramSessionPublic>;
+    count: number;
+};
+
+export type ProgramSessionUpdate = {
+    start_date?: (string | null);
+};
+
 export type ProgramsPublic = {
     data: Array<ProgramPublic>;
     count: number;
@@ -213,11 +233,6 @@ export type QuestionUpdate = {
     explanation?: (string | null);
 };
 
-export type SessionCreate = {
-    start_date: string;
-    program_id: string;
-};
-
 export type SessionEventCreate = {
     event_date: string;
     num_days?: number;
@@ -238,21 +253,6 @@ export type SessionEventPublic = {
 export type SessionEventsPublic = {
     data: Array<SessionEventPublic>;
     count: number;
-};
-
-export type SessionPublic = {
-    start_date: string;
-    program_id: string;
-    id: string;
-};
-
-export type SessionsPublic = {
-    data: Array<SessionPublic>;
-    count: number;
-};
-
-export type SessionUpdate = {
-    start_date?: (string | null);
 };
 
 export type Token = {
@@ -374,14 +374,6 @@ export type ExamsReadExamsBySessionData = {
 
 export type ExamsReadExamsBySessionResponse = (ExamsPublic);
 
-export type ExamsReadExamsByBookData = {
-    bookId: string;
-    limit?: number;
-    skip?: number;
-};
-
-export type ExamsReadExamsByBookResponse = (ExamsPublic);
-
 export type ExamsReadExamData = {
     examId: string;
 };
@@ -407,13 +399,18 @@ export type ExamsCreateExamData = {
 
 export type ExamsCreateExamResponse = (ExamPublic);
 
-export type ExamsReadExamAttemptsData = {
+export type ExamsReadStudentExamAttemptsData = {
     examId: string;
-    limit?: number;
-    skip?: number;
+    studentId: string;
 };
 
-export type ExamsReadExamAttemptsResponse = (ExamAttemptsPublic);
+export type ExamsReadStudentExamAttemptsResponse = (ExamAttemptsPublic);
+
+export type ExamsReadMyExamAttemptsData = {
+    examId: string;
+};
+
+export type ExamsReadMyExamAttemptsResponse = (ExamAttemptsPublic);
 
 export type ExamsCreateExamAttemptData = {
     examId: string;
@@ -422,32 +419,12 @@ export type ExamsCreateExamAttemptData = {
 
 export type ExamsCreateExamAttemptResponse = (ExamAttemptPublic);
 
-export type ExamsReadStudentExamAttemptsData = {
-    examId: string;
-    studentId: string;
-};
-
-export type ExamsReadStudentExamAttemptsResponse = (ExamAttemptsPublic);
-
 export type ExamsUpdateExamAttemptData = {
     attemptId: string;
     requestBody: ExamAttemptUpdate;
 };
 
 export type ExamsUpdateExamAttemptResponse = (ExamAttemptPublic);
-
-export type LessonsReadLessonsData = {
-    limit?: number;
-    skip?: number;
-};
-
-export type LessonsReadLessonsResponse = (LessonsPublic);
-
-export type LessonsCreateLessonData = {
-    requestBody: LessonCreate;
-};
-
-export type LessonsCreateLessonResponse = (LessonPublic);
 
 export type LessonsReadLessonsByBookData = {
     bookId: string;
@@ -475,6 +452,12 @@ export type LessonsDeleteLessonData = {
 };
 
 export type LessonsDeleteLessonResponse = (Message);
+
+export type LessonsCreateLessonData = {
+    requestBody: LessonCreate;
+};
+
+export type LessonsCreateLessonResponse = (LessonPublic);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;
@@ -640,13 +623,13 @@ export type SessionsReadSessionsData = {
     skip?: number;
 };
 
-export type SessionsReadSessionsResponse = (SessionsPublic);
+export type SessionsReadSessionsResponse = (ProgramSessionsPublic);
 
 export type SessionsCreateSessionData = {
-    requestBody: SessionCreate;
+    requestBody: ProgramSessionCreate;
 };
 
-export type SessionsCreateSessionResponse = (SessionPublic);
+export type SessionsCreateSessionResponse = (ProgramSessionPublic);
 
 export type SessionsReadSessionsByProgramData = {
     limit?: number;
@@ -654,20 +637,20 @@ export type SessionsReadSessionsByProgramData = {
     skip?: number;
 };
 
-export type SessionsReadSessionsByProgramResponse = (SessionsPublic);
+export type SessionsReadSessionsByProgramResponse = (ProgramSessionsPublic);
 
 export type SessionsReadSessionData = {
     sessionId: string;
 };
 
-export type SessionsReadSessionResponse = (SessionPublic);
+export type SessionsReadSessionResponse = (ProgramSessionPublic);
 
 export type SessionsUpdateSessionData = {
-    requestBody: SessionUpdate;
+    requestBody: ProgramSessionUpdate;
     sessionId: string;
 };
 
-export type SessionsUpdateSessionResponse = (SessionPublic);
+export type SessionsUpdateSessionResponse = (ProgramSessionPublic);
 
 export type SessionsDeleteSessionData = {
     sessionId: string;
@@ -680,28 +663,28 @@ export type SessionsAddStudentToSessionData = {
     userId: string;
 };
 
-export type SessionsAddStudentToSessionResponse = (SessionPublic);
+export type SessionsAddStudentToSessionResponse = (ProgramSessionPublic);
 
 export type SessionsRemoveStudentFromSessionData = {
     sessionId: string;
     userId: string;
 };
 
-export type SessionsRemoveStudentFromSessionResponse = (SessionPublic);
+export type SessionsRemoveStudentFromSessionResponse = (ProgramSessionPublic);
 
 export type SessionsAddTeacherToSessionData = {
     sessionId: string;
     userId: string;
 };
 
-export type SessionsAddTeacherToSessionResponse = (SessionPublic);
+export type SessionsAddTeacherToSessionResponse = (ProgramSessionPublic);
 
 export type SessionsRemoveTeacherFromSessionData = {
     sessionId: string;
     userId: string;
 };
 
-export type SessionsRemoveTeacherFromSessionResponse = (SessionPublic);
+export type SessionsRemoveTeacherFromSessionResponse = (ProgramSessionPublic);
 
 export type SessionsReadSessionEventsData = {
     limit?: number;

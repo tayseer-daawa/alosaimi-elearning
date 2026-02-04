@@ -793,6 +793,85 @@ export const ProgramPublicSchema = {
     title: 'ProgramPublic'
 } as const;
 
+export const ProgramSessionCreateSchema = {
+    properties: {
+        start_date: {
+            type: 'string',
+            format: 'date',
+            title: 'Start Date'
+        },
+        program_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Program Id'
+        }
+    },
+    type: 'object',
+    required: ['start_date', 'program_id'],
+    title: 'ProgramSessionCreate'
+} as const;
+
+export const ProgramSessionPublicSchema = {
+    properties: {
+        start_date: {
+            type: 'string',
+            format: 'date',
+            title: 'Start Date'
+        },
+        program_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Program Id'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        }
+    },
+    type: 'object',
+    required: ['start_date', 'program_id', 'id'],
+    title: 'ProgramSessionPublic'
+} as const;
+
+export const ProgramSessionUpdateSchema = {
+    properties: {
+        start_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Start Date'
+        }
+    },
+    type: 'object',
+    title: 'ProgramSessionUpdate'
+} as const;
+
+export const ProgramSessionsPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/ProgramSessionPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'ProgramSessionsPublic'
+} as const;
+
 export const ProgramUpdateSchema = {
     properties: {
         title: {
@@ -1010,24 +1089,6 @@ export const QuestionsPublicSchema = {
     title: 'QuestionsPublic'
 } as const;
 
-export const SessionCreateSchema = {
-    properties: {
-        start_date: {
-            type: 'string',
-            format: 'date',
-            title: 'Start Date'
-        },
-        program_id: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Program Id'
-        }
-    },
-    type: 'object',
-    required: ['start_date', 'program_id'],
-    title: 'SessionCreate'
-} as const;
-
 export const SessionEventCreateSchema = {
     properties: {
         event_date: {
@@ -1132,67 +1193,6 @@ export const SessionEventsPublicSchema = {
     type: 'object',
     required: ['data', 'count'],
     title: 'SessionEventsPublic'
-} as const;
-
-export const SessionPublicSchema = {
-    properties: {
-        start_date: {
-            type: 'string',
-            format: 'date',
-            title: 'Start Date'
-        },
-        program_id: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Program Id'
-        },
-        id: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Id'
-        }
-    },
-    type: 'object',
-    required: ['start_date', 'program_id', 'id'],
-    title: 'SessionPublic'
-} as const;
-
-export const SessionUpdateSchema = {
-    properties: {
-        start_date: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'date'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Start Date'
-        }
-    },
-    type: 'object',
-    title: 'SessionUpdate'
-} as const;
-
-export const SessionsPublicSchema = {
-    properties: {
-        data: {
-            items: {
-                '$ref': '#/components/schemas/SessionPublic'
-            },
-            type: 'array',
-            title: 'Data'
-        },
-        count: {
-            type: 'integer',
-            title: 'Count'
-        }
-    },
-    type: 'object',
-    required: ['data', 'count'],
-    title: 'SessionsPublic'
 } as const;
 
 export const TokenSchema = {

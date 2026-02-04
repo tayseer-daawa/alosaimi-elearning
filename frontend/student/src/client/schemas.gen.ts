@@ -55,6 +55,396 @@ export const Body_login_login_access_tokenSchema = {
     title: 'Body_login-login_access_token'
 } as const;
 
+export const BookCreateSchema = {
+    properties: {
+        title: {
+            type: 'string',
+            maxLength: 255,
+            title: 'Title'
+        },
+        pdf: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pdf'
+        },
+        audio: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Audio'
+        }
+    },
+    type: 'object',
+    required: ['title'],
+    title: 'BookCreate'
+} as const;
+
+export const BookPublicSchema = {
+    properties: {
+        title: {
+            type: 'string',
+            maxLength: 255,
+            title: 'Title'
+        },
+        pdf: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pdf'
+        },
+        audio: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Audio'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        }
+    },
+    type: 'object',
+    required: ['title', 'id'],
+    title: 'BookPublic'
+} as const;
+
+export const BookUpdateSchema = {
+    properties: {
+        title: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Title'
+        },
+        pdf: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pdf'
+        },
+        audio: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Audio'
+        }
+    },
+    type: 'object',
+    title: 'BookUpdate'
+} as const;
+
+export const BooksPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/BookPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'BooksPublic'
+} as const;
+
+export const ExamAttemptCreateSchema = {
+    properties: {
+        observation: {
+            type: 'string',
+            title: 'Observation'
+        },
+        passed: {
+            type: 'boolean',
+            title: 'Passed'
+        },
+        exam_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Exam Id'
+        },
+        student_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Student Id'
+        },
+        examiner_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Examiner Id'
+        }
+    },
+    type: 'object',
+    required: ['observation', 'passed', 'exam_id', 'student_id', 'examiner_id'],
+    title: 'ExamAttemptCreate'
+} as const;
+
+export const ExamAttemptPublicSchema = {
+    properties: {
+        observation: {
+            type: 'string',
+            title: 'Observation'
+        },
+        passed: {
+            type: 'boolean',
+            title: 'Passed'
+        },
+        attempt_date: {
+            type: 'string',
+            format: 'date',
+            title: 'Attempt Date'
+        },
+        exam_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Exam Id'
+        },
+        student_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Student Id'
+        },
+        examiner_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Examiner Id'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        }
+    },
+    type: 'object',
+    required: ['observation', 'passed', 'exam_id', 'student_id', 'examiner_id', 'id'],
+    title: 'ExamAttemptPublic'
+} as const;
+
+export const ExamAttemptUpdateSchema = {
+    properties: {
+        observation: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Observation'
+        },
+        passed: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Passed'
+        }
+    },
+    type: 'object',
+    title: 'ExamAttemptUpdate'
+} as const;
+
+export const ExamAttemptsPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/ExamAttemptPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'ExamAttemptsPublic'
+} as const;
+
+export const ExamCreateSchema = {
+    properties: {
+        start_date: {
+            type: 'string',
+            format: 'date',
+            title: 'Start Date'
+        },
+        deadline: {
+            type: 'string',
+            format: 'date',
+            title: 'Deadline'
+        },
+        max_attempts: {
+            type: 'integer',
+            minimum: 1,
+            title: 'Max Attempts',
+            default: 1
+        },
+        book_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Book Id'
+        },
+        session_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Session Id'
+        }
+    },
+    type: 'object',
+    required: ['start_date', 'deadline', 'book_id', 'session_id'],
+    title: 'ExamCreate'
+} as const;
+
+export const ExamPublicSchema = {
+    properties: {
+        start_date: {
+            type: 'string',
+            format: 'date',
+            title: 'Start Date'
+        },
+        deadline: {
+            type: 'string',
+            format: 'date',
+            title: 'Deadline'
+        },
+        max_attempts: {
+            type: 'integer',
+            minimum: 1,
+            title: 'Max Attempts',
+            default: 1
+        },
+        book_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Book Id'
+        },
+        session_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Session Id'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        }
+    },
+    type: 'object',
+    required: ['start_date', 'deadline', 'book_id', 'session_id', 'id'],
+    title: 'ExamPublic'
+} as const;
+
+export const ExamUpdateSchema = {
+    properties: {
+        start_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Start Date'
+        },
+        deadline: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Deadline'
+        },
+        max_attempts: {
+            anyOf: [
+                {
+                    type: 'integer',
+                    minimum: 1
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Max Attempts'
+        }
+    },
+    type: 'object',
+    title: 'ExamUpdate'
+} as const;
+
+export const ExamsPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/ExamPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'ExamsPublic'
+} as const;
+
 export const HTTPValidationErrorSchema = {
     properties: {
         detail: {
@@ -69,105 +459,135 @@ export const HTTPValidationErrorSchema = {
     title: 'HTTPValidationError'
 } as const;
 
-export const ItemCreateSchema = {
+export const LessonCreateSchema = {
     properties: {
-        title: {
+        book_part_pdf: {
             type: 'string',
-            maxLength: 255,
-            minLength: 1,
-            title: 'Title'
+            title: 'Book Part Pdf'
         },
-        description: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
+        book_part_audio: {
+            type: 'string',
+            title: 'Book Part Audio'
+        },
+        lesson_audio: {
+            type: 'string',
+            title: 'Lesson Audio'
+        },
+        explanation_notes: {
+            type: 'string',
+            title: 'Explanation Notes'
+        },
+        order: {
+            type: 'integer',
+            minimum: 0,
+            title: 'Order'
+        },
+        book_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Book Id'
         }
     },
     type: 'object',
-    required: ['title'],
-    title: 'ItemCreate'
+    required: ['book_part_pdf', 'book_part_audio', 'lesson_audio', 'explanation_notes', 'order', 'book_id'],
+    title: 'LessonCreate'
 } as const;
 
-export const ItemPublicSchema = {
+export const LessonPublicSchema = {
     properties: {
-        title: {
+        book_part_pdf: {
             type: 'string',
-            maxLength: 255,
-            minLength: 1,
-            title: 'Title'
+            title: 'Book Part Pdf'
         },
-        description: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Description'
+        book_part_audio: {
+            type: 'string',
+            title: 'Book Part Audio'
+        },
+        lesson_audio: {
+            type: 'string',
+            title: 'Lesson Audio'
+        },
+        explanation_notes: {
+            type: 'string',
+            title: 'Explanation Notes'
+        },
+        order: {
+            type: 'integer',
+            minimum: 0,
+            title: 'Order'
+        },
+        book_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Book Id'
         },
         id: {
             type: 'string',
             format: 'uuid',
             title: 'Id'
-        },
-        owner_id: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Owner Id'
         }
     },
     type: 'object',
-    required: ['title', 'id', 'owner_id'],
-    title: 'ItemPublic'
+    required: ['book_part_pdf', 'book_part_audio', 'lesson_audio', 'explanation_notes', 'order', 'book_id', 'id'],
+    title: 'LessonPublic'
 } as const;
 
-export const ItemUpdateSchema = {
+export const LessonUpdateSchema = {
     properties: {
-        title: {
+        book_part_pdf: {
             anyOf: [
                 {
-                    type: 'string',
-                    maxLength: 255,
-                    minLength: 1
+                    type: 'string'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Title'
+            title: 'Book Part Pdf'
         },
-        description: {
+        book_part_audio: {
             anyOf: [
                 {
-                    type: 'string',
-                    maxLength: 255
+                    type: 'string'
                 },
                 {
                     type: 'null'
                 }
             ],
-            title: 'Description'
+            title: 'Book Part Audio'
+        },
+        lesson_audio: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lesson Audio'
+        },
+        explanation_notes: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Explanation Notes'
         }
     },
     type: 'object',
-    title: 'ItemUpdate'
+    title: 'LessonUpdate'
 } as const;
 
-export const ItemsPublicSchema = {
+export const LessonsPublicSchema = {
     properties: {
         data: {
             items: {
-                '$ref': '#/components/schemas/ItemPublic'
+                '$ref': '#/components/schemas/LessonPublic'
             },
             type: 'array',
             title: 'Data'
@@ -179,7 +599,7 @@ export const ItemsPublicSchema = {
     },
     type: 'object',
     required: ['data', 'count'],
-    title: 'ItemsPublic'
+    title: 'LessonsPublic'
 } as const;
 
 export const MessageSchema = {
@@ -212,6 +632,85 @@ export const NewPasswordSchema = {
     title: 'NewPassword'
 } as const;
 
+export const PhaseCreateSchema = {
+    properties: {
+        order: {
+            type: 'integer',
+            minimum: 0,
+            title: 'Order'
+        },
+        program_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Program Id'
+        }
+    },
+    type: 'object',
+    required: ['order', 'program_id'],
+    title: 'PhaseCreate'
+} as const;
+
+export const PhasePublicSchema = {
+    properties: {
+        order: {
+            type: 'integer',
+            minimum: 0,
+            title: 'Order'
+        },
+        program_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Program Id'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        }
+    },
+    type: 'object',
+    required: ['order', 'program_id', 'id'],
+    title: 'PhasePublic'
+} as const;
+
+export const PhaseUpdateSchema = {
+    properties: {
+        order: {
+            anyOf: [
+                {
+                    type: 'integer',
+                    minimum: 0
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Order'
+        }
+    },
+    type: 'object',
+    title: 'PhaseUpdate'
+} as const;
+
+export const PhasesPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/PhasePublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'PhasesPublic'
+} as const;
+
 export const PrivateUserCreateSchema = {
     properties: {
         email: {
@@ -222,9 +721,21 @@ export const PrivateUserCreateSchema = {
             type: 'string',
             title: 'Password'
         },
-        full_name: {
+        first_name: {
             type: 'string',
-            title: 'Full Name'
+            title: 'First Name'
+        },
+        father_name: {
+            type: 'string',
+            title: 'Father Name'
+        },
+        family_name: {
+            type: 'string',
+            title: 'Family Name'
+        },
+        is_male: {
+            type: 'boolean',
+            title: 'Is Male'
         },
         is_verified: {
             type: 'boolean',
@@ -233,8 +744,455 @@ export const PrivateUserCreateSchema = {
         }
     },
     type: 'object',
-    required: ['email', 'password', 'full_name'],
+    required: ['email', 'password', 'first_name', 'father_name', 'family_name', 'is_male'],
     title: 'PrivateUserCreate'
+} as const;
+
+export const ProgramCreateSchema = {
+    properties: {
+        title: {
+            type: 'string',
+            maxLength: 255,
+            title: 'Title'
+        },
+        days_of_study: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Days Of Study'
+        }
+    },
+    type: 'object',
+    required: ['title', 'days_of_study'],
+    title: 'ProgramCreate'
+} as const;
+
+export const ProgramPublicSchema = {
+    properties: {
+        title: {
+            type: 'string',
+            maxLength: 255,
+            title: 'Title'
+        },
+        days_of_study: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Days Of Study'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        }
+    },
+    type: 'object',
+    required: ['title', 'days_of_study', 'id'],
+    title: 'ProgramPublic'
+} as const;
+
+export const ProgramSessionCreateSchema = {
+    properties: {
+        start_date: {
+            type: 'string',
+            format: 'date',
+            title: 'Start Date'
+        },
+        program_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Program Id'
+        }
+    },
+    type: 'object',
+    required: ['start_date', 'program_id'],
+    title: 'ProgramSessionCreate'
+} as const;
+
+export const ProgramSessionPublicSchema = {
+    properties: {
+        start_date: {
+            type: 'string',
+            format: 'date',
+            title: 'Start Date'
+        },
+        program_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Program Id'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        }
+    },
+    type: 'object',
+    required: ['start_date', 'program_id', 'id'],
+    title: 'ProgramSessionPublic'
+} as const;
+
+export const ProgramSessionUpdateSchema = {
+    properties: {
+        start_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Start Date'
+        }
+    },
+    type: 'object',
+    title: 'ProgramSessionUpdate'
+} as const;
+
+export const ProgramSessionsPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/ProgramSessionPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'ProgramSessionsPublic'
+} as const;
+
+export const ProgramUpdateSchema = {
+    properties: {
+        title: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Title'
+        },
+        days_of_study: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Days Of Study'
+        }
+    },
+    type: 'object',
+    title: 'ProgramUpdate'
+} as const;
+
+export const ProgramsPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/ProgramPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'ProgramsPublic'
+} as const;
+
+export const QuestionCreateSchema = {
+    properties: {
+        question: {
+            type: 'string',
+            title: 'Question'
+        },
+        options: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Options'
+        },
+        correct_options: {
+            items: {
+                type: 'integer'
+            },
+            type: 'array',
+            title: 'Correct Options'
+        },
+        explanation: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Explanation'
+        },
+        lesson_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Lesson Id'
+        }
+    },
+    type: 'object',
+    required: ['question', 'options', 'correct_options', 'lesson_id'],
+    title: 'QuestionCreate'
+} as const;
+
+export const QuestionPublicSchema = {
+    properties: {
+        question: {
+            type: 'string',
+            title: 'Question'
+        },
+        options: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Options'
+        },
+        correct_options: {
+            items: {
+                type: 'integer'
+            },
+            type: 'array',
+            title: 'Correct Options'
+        },
+        explanation: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Explanation'
+        },
+        lesson_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Lesson Id'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        }
+    },
+    type: 'object',
+    required: ['question', 'options', 'correct_options', 'lesson_id', 'id'],
+    title: 'QuestionPublic'
+} as const;
+
+export const QuestionUpdateSchema = {
+    properties: {
+        question: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Question'
+        },
+        options: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Options'
+        },
+        correct_options: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'integer'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Correct Options'
+        },
+        explanation: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Explanation'
+        }
+    },
+    type: 'object',
+    title: 'QuestionUpdate'
+} as const;
+
+export const QuestionsPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/QuestionPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'QuestionsPublic'
+} as const;
+
+export const SessionEventCreateSchema = {
+    properties: {
+        event_date: {
+            type: 'string',
+            format: 'date',
+            title: 'Event Date'
+        },
+        num_days: {
+            type: 'integer',
+            minimum: 1,
+            title: 'Num Days',
+            default: 1
+        },
+        session_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Session Id'
+        },
+        is_break: {
+            type: 'boolean',
+            title: 'Is Break',
+            default: false
+        },
+        lesson_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lesson Id'
+        }
+    },
+    type: 'object',
+    required: ['event_date', 'session_id'],
+    title: 'SessionEventCreate'
+} as const;
+
+export const SessionEventPublicSchema = {
+    properties: {
+        event_date: {
+            type: 'string',
+            format: 'date',
+            title: 'Event Date'
+        },
+        num_days: {
+            type: 'integer',
+            minimum: 1,
+            title: 'Num Days',
+            default: 1
+        },
+        session_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Session Id'
+        },
+        is_break: {
+            type: 'boolean',
+            title: 'Is Break',
+            default: false
+        },
+        lesson_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Lesson Id'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        }
+    },
+    type: 'object',
+    required: ['event_date', 'session_id', 'id'],
+    title: 'SessionEventPublic'
+} as const;
+
+export const SessionEventsPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/SessionEventPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'SessionEventsPublic'
 } as const;
 
 export const TokenSchema = {
@@ -276,75 +1234,131 @@ export const UpdatePasswordSchema = {
 
 export const UserCreateSchema = {
     properties: {
+        reg_num: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Reg Num'
+        },
         email: {
             type: 'string',
             maxLength: 255,
             format: 'email',
             title: 'Email'
         },
+        first_name: {
+            type: 'string',
+            maxLength: 30,
+            title: 'First Name'
+        },
+        father_name: {
+            type: 'string',
+            maxLength: 30,
+            title: 'Father Name'
+        },
+        family_name: {
+            type: 'string',
+            maxLength: 30,
+            title: 'Family Name'
+        },
         is_active: {
             type: 'boolean',
             title: 'Is Active',
             default: true
+        },
+        is_admin: {
+            type: 'boolean',
+            title: 'Is Admin',
+            default: false
+        },
+        is_teacher: {
+            type: 'boolean',
+            title: 'Is Teacher',
+            default: false
         },
         is_superuser: {
             type: 'boolean',
             title: 'Is Superuser',
             default: false
         },
-        full_name: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Full Name'
+        is_male: {
+            type: 'boolean',
+            title: 'Is Male'
         },
         password: {
             type: 'string',
             maxLength: 128,
             minLength: 8,
             title: 'Password'
+        },
+        reg_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reg Date'
         }
     },
     type: 'object',
-    required: ['email', 'password'],
+    required: ['email', 'first_name', 'father_name', 'family_name', 'is_male', 'password'],
     title: 'UserCreate'
 } as const;
 
 export const UserPublicSchema = {
     properties: {
+        reg_num: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Reg Num'
+        },
         email: {
             type: 'string',
             maxLength: 255,
             format: 'email',
             title: 'Email'
         },
+        first_name: {
+            type: 'string',
+            maxLength: 30,
+            title: 'First Name'
+        },
+        father_name: {
+            type: 'string',
+            maxLength: 30,
+            title: 'Father Name'
+        },
+        family_name: {
+            type: 'string',
+            maxLength: 30,
+            title: 'Family Name'
+        },
         is_active: {
             type: 'boolean',
             title: 'Is Active',
             default: true
+        },
+        is_admin: {
+            type: 'boolean',
+            title: 'Is Admin',
+            default: false
+        },
+        is_teacher: {
+            type: 'boolean',
+            title: 'Is Teacher',
+            default: false
         },
         is_superuser: {
             type: 'boolean',
             title: 'Is Superuser',
             default: false
         },
-        full_name: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Full Name'
+        is_male: {
+            type: 'boolean',
+            title: 'Is Male'
         },
         id: {
             type: 'string',
@@ -353,7 +1367,7 @@ export const UserPublicSchema = {
         }
     },
     type: 'object',
-    required: ['email', 'id'],
+    required: ['email', 'first_name', 'father_name', 'family_name', 'is_male', 'id'],
     title: 'UserPublic'
 } as const;
 
@@ -371,21 +1385,28 @@ export const UserRegisterSchema = {
             minLength: 8,
             title: 'Password'
         },
-        full_name: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Full Name'
+        first_name: {
+            type: 'string',
+            maxLength: 30,
+            title: 'First Name'
+        },
+        father_name: {
+            type: 'string',
+            maxLength: 30,
+            title: 'Father Name'
+        },
+        family_name: {
+            type: 'string',
+            maxLength: 30,
+            title: 'Family Name'
+        },
+        is_male: {
+            type: 'boolean',
+            title: 'Is Male'
         }
     },
     type: 'object',
-    required: ['email', 'password'],
+    required: ['email', 'password', 'first_name', 'father_name', 'family_name', 'is_male'],
     title: 'UserRegister'
 } as const;
 
@@ -404,28 +1425,6 @@ export const UserUpdateSchema = {
             ],
             title: 'Email'
         },
-        is_active: {
-            type: 'boolean',
-            title: 'Is Active',
-            default: true
-        },
-        is_superuser: {
-            type: 'boolean',
-            title: 'Is Superuser',
-            default: false
-        },
-        full_name: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Full Name'
-        },
         password: {
             anyOf: [
                 {
@@ -438,6 +1437,86 @@ export const UserUpdateSchema = {
                 }
             ],
             title: 'Password'
+        },
+        first_name: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 30
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'First Name'
+        },
+        father_name: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 30
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Father Name'
+        },
+        family_name: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 30
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Family Name'
+        },
+        is_male: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Male'
+        },
+        is_active: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Active'
+        },
+        is_admin: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Admin'
+        },
+        is_teacher: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Teacher'
         }
     },
     type: 'object',
@@ -446,18 +1525,6 @@ export const UserUpdateSchema = {
 
 export const UserUpdateMeSchema = {
     properties: {
-        full_name: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 255
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Full Name'
-        },
         email: {
             anyOf: [
                 {
@@ -470,6 +1537,53 @@ export const UserUpdateMeSchema = {
                 }
             ],
             title: 'Email'
+        },
+        first_name: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 30
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'First Name'
+        },
+        father_name: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 30
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Father Name'
+        },
+        family_name: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 30
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Family Name'
+        },
+        is_male: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Male'
         }
     },
     type: 'object',
