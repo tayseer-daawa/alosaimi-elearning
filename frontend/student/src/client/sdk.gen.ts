@@ -3,22 +3,22 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { BooksReadBooksData, BooksReadBooksResponse, BooksCreateBookData, BooksCreateBookResponse, BooksReadBookData, BooksReadBookResponse, BooksUpdateBookData, BooksUpdateBookResponse, BooksDeleteBookData, BooksDeleteBookResponse, ExamsReadExamsBySessionData, ExamsReadExamsBySessionResponse, ExamsReadExamData, ExamsReadExamResponse, ExamsUpdateExamData, ExamsUpdateExamResponse, ExamsDeleteExamData, ExamsDeleteExamResponse, ExamsCreateExamData, ExamsCreateExamResponse, ExamsReadStudentExamAttemptsData, ExamsReadStudentExamAttemptsResponse, ExamsReadMyExamAttemptsData, ExamsReadMyExamAttemptsResponse, ExamsCreateExamAttemptData, ExamsCreateExamAttemptResponse, ExamsUpdateExamAttemptData, ExamsUpdateExamAttemptResponse, LessonsReadLessonsByBookData, LessonsReadLessonsByBookResponse, LessonsReadLessonData, LessonsReadLessonResponse, LessonsUpdateLessonData, LessonsUpdateLessonResponse, LessonsDeleteLessonData, LessonsDeleteLessonResponse, LessonsCreateLessonData, LessonsCreateLessonResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PhasesReadPhasesData, PhasesReadPhasesResponse, PhasesCreatePhaseData, PhasesCreatePhaseResponse, PhasesReadPhasesByProgramData, PhasesReadPhasesByProgramResponse, PhasesReadPhaseData, PhasesReadPhaseResponse, PhasesUpdatePhaseData, PhasesUpdatePhaseResponse, PhasesDeletePhaseData, PhasesDeletePhaseResponse, PhasesAddBookToPhaseData, PhasesAddBookToPhaseResponse, PhasesRemoveBookFromPhaseData, PhasesRemoveBookFromPhaseResponse, PrivateCreateUserData, PrivateCreateUserResponse, ProgramsReadProgramsData, ProgramsReadProgramsResponse, ProgramsCreateProgramData, ProgramsCreateProgramResponse, ProgramsReadProgramData, ProgramsReadProgramResponse, ProgramsUpdateProgramData, ProgramsUpdateProgramResponse, ProgramsDeleteProgramData, ProgramsDeleteProgramResponse, QuestionsReadQuestionsData, QuestionsReadQuestionsResponse, QuestionsCreateQuestionData, QuestionsCreateQuestionResponse, QuestionsReadQuestionsByLessonData, QuestionsReadQuestionsByLessonResponse, QuestionsReadQuestionData, QuestionsReadQuestionResponse, QuestionsUpdateQuestionData, QuestionsUpdateQuestionResponse, QuestionsDeleteQuestionData, QuestionsDeleteQuestionResponse, SessionsReadSessionsData, SessionsReadSessionsResponse, SessionsCreateSessionData, SessionsCreateSessionResponse, SessionsReadSessionsByProgramData, SessionsReadSessionsByProgramResponse, SessionsReadSessionData, SessionsReadSessionResponse, SessionsUpdateSessionData, SessionsUpdateSessionResponse, SessionsDeleteSessionData, SessionsDeleteSessionResponse, SessionsAddStudentToSessionData, SessionsAddStudentToSessionResponse, SessionsRemoveStudentFromSessionData, SessionsRemoveStudentFromSessionResponse, SessionsAddTeacherToSessionData, SessionsAddTeacherToSessionResponse, SessionsRemoveTeacherFromSessionData, SessionsRemoveTeacherFromSessionResponse, SessionsReadSessionEventsData, SessionsReadSessionEventsResponse, SessionsCreateSessionEventData, SessionsCreateSessionEventResponse, SessionsReadSessionLessonsData, SessionsReadSessionLessonsResponse, SessionsReadSessionBreaksData, SessionsReadSessionBreaksResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
 
-export class ItemsService {
+export class BooksService {
     /**
-     * Read Items
-     * Retrieve items.
+     * Read Books
+     * Retrieve books.
      * @param data The data for the request.
      * @param data.skip
      * @param data.limit
-     * @returns ItemsPublic Successful Response
+     * @returns BooksPublic Successful Response
      * @throws ApiError
      */
-    public static readItems(data: ItemsReadItemsData = {}): CancelablePromise<ItemsReadItemsResponse> {
+    public static readBooks(data: BooksReadBooksData = {}): CancelablePromise<BooksReadBooksResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/items/',
+            url: '/api/v1/books/',
             query: {
                 skip: data.skip,
                 limit: data.limit
@@ -30,17 +30,19 @@ export class ItemsService {
     }
     
     /**
-     * Create Item
-     * Create new item.
+     * Create Book
+     * Create new book.
+     *
+     * Only admins can create books.
      * @param data The data for the request.
      * @param data.requestBody
-     * @returns ItemPublic Successful Response
+     * @returns BookPublic Successful Response
      * @throws ApiError
      */
-    public static createItem(data: ItemsCreateItemData): CancelablePromise<ItemsCreateItemResponse> {
+    public static createBook(data: BooksCreateBookData): CancelablePromise<BooksCreateBookResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/items/',
+            url: '/api/v1/books/',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -50,19 +52,19 @@ export class ItemsService {
     }
     
     /**
-     * Read Item
-     * Get item by ID.
+     * Read Book
+     * Get book by ID.
      * @param data The data for the request.
-     * @param data.id
-     * @returns ItemPublic Successful Response
+     * @param data.bookId
+     * @returns BookPublic Successful Response
      * @throws ApiError
      */
-    public static readItem(data: ItemsReadItemData): CancelablePromise<ItemsReadItemResponse> {
+    public static readBook(data: BooksReadBookData): CancelablePromise<BooksReadBookResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/items/{id}',
+            url: '/api/v1/books/{book_id}',
             path: {
-                id: data.id
+                book_id: data.bookId
             },
             errors: {
                 422: 'Validation Error'
@@ -71,20 +73,22 @@ export class ItemsService {
     }
     
     /**
-     * Update Item
-     * Update an item.
+     * Update Book
+     * Update a book.
+     *
+     * Only admins can update books.
      * @param data The data for the request.
-     * @param data.id
+     * @param data.bookId
      * @param data.requestBody
-     * @returns ItemPublic Successful Response
+     * @returns BookPublic Successful Response
      * @throws ApiError
      */
-    public static updateItem(data: ItemsUpdateItemData): CancelablePromise<ItemsUpdateItemResponse> {
+    public static updateBook(data: BooksUpdateBookData): CancelablePromise<BooksUpdateBookResponse> {
         return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/v1/items/{id}',
+            method: 'PATCH',
+            url: '/api/v1/books/{book_id}',
             path: {
-                id: data.id
+                book_id: data.bookId
             },
             body: data.requestBody,
             mediaType: 'application/json',
@@ -95,20 +99,366 @@ export class ItemsService {
     }
     
     /**
-     * Delete Item
-     * Delete an item.
+     * Delete Book
+     * Delete a book.
+     *
+     * Only admins can delete books.
      * @param data The data for the request.
-     * @param data.id
+     * @param data.bookId
      * @returns Message Successful Response
      * @throws ApiError
      */
-    public static deleteItem(data: ItemsDeleteItemData): CancelablePromise<ItemsDeleteItemResponse> {
+    public static deleteBook(data: BooksDeleteBookData): CancelablePromise<BooksDeleteBookResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/items/{id}',
+            url: '/api/v1/books/{book_id}',
             path: {
-                id: data.id
+                book_id: data.bookId
             },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class ExamsService {
+    /**
+     * Read Exams By Session
+     * Retrieve exams for a specific session.
+     *
+     * You must be enrolled or teaching the session.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @param data.skip
+     * @param data.limit
+     * @returns ExamsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readExamsBySession(data: ExamsReadExamsBySessionData): CancelablePromise<ExamsReadExamsBySessionResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/exams/session/{session_id}',
+            path: {
+                session_id: data.sessionId
+            },
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Exam
+     * Get exam by ID.
+     *
+     * You must be enrolled or teaching the session for this exam.
+     * @param data The data for the request.
+     * @param data.examId
+     * @returns ExamPublic Successful Response
+     * @throws ApiError
+     */
+    public static readExam(data: ExamsReadExamData): CancelablePromise<ExamsReadExamResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/exams/{exam_id}',
+            path: {
+                exam_id: data.examId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Exam
+     * Update an exam.
+     *
+     * Only admins can update exams.
+     * @param data The data for the request.
+     * @param data.examId
+     * @param data.requestBody
+     * @returns ExamPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateExam(data: ExamsUpdateExamData): CancelablePromise<ExamsUpdateExamResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/exams/{exam_id}',
+            path: {
+                exam_id: data.examId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Exam
+     * Delete an exam.
+     *
+     * Only admins can delete exams.
+     * @param data The data for the request.
+     * @param data.examId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteExam(data: ExamsDeleteExamData): CancelablePromise<ExamsDeleteExamResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/exams/{exam_id}',
+            path: {
+                exam_id: data.examId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Exam
+     * Create new exam.
+     *
+     * Only admins can create exams.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns ExamPublic Successful Response
+     * @throws ApiError
+     */
+    public static createExam(data: ExamsCreateExamData): CancelablePromise<ExamsCreateExamResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/exams/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Student Exam Attempts
+     * Get attempts for a specific student on a specific exam.
+     *
+     * Only admins can see student's attempts.
+     * @param data The data for the request.
+     * @param data.examId
+     * @param data.studentId
+     * @returns ExamAttemptsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readStudentExamAttempts(data: ExamsReadStudentExamAttemptsData): CancelablePromise<ExamsReadStudentExamAttemptsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/exams/{exam_id}/attempts/student/{student_id}',
+            path: {
+                exam_id: data.examId,
+                student_id: data.studentId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read My Exam Attempts
+     * Get current user's attempts for a specific exam.
+     * @param data The data for the request.
+     * @param data.examId
+     * @returns ExamAttemptsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readMyExamAttempts(data: ExamsReadMyExamAttemptsData): CancelablePromise<ExamsReadMyExamAttemptsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/exams/{exam_id}/attempts',
+            path: {
+                exam_id: data.examId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Exam Attempt
+     * Create a new exam attempt.
+     *
+     * Teachers and admins can create attempts.
+     * @param data The data for the request.
+     * @param data.examId
+     * @param data.requestBody
+     * @returns ExamAttemptPublic Successful Response
+     * @throws ApiError
+     */
+    public static createExamAttempt(data: ExamsCreateExamAttemptData): CancelablePromise<ExamsCreateExamAttemptResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/exams/{exam_id}/attempts',
+            path: {
+                exam_id: data.examId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Exam Attempt
+     * Update an exam attempt.
+     *
+     * Only the examiner or admins can update attempts.
+     * @param data The data for the request.
+     * @param data.attemptId
+     * @param data.requestBody
+     * @returns ExamAttemptPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateExamAttempt(data: ExamsUpdateExamAttemptData): CancelablePromise<ExamsUpdateExamAttemptResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/exams/attempts/{attempt_id}',
+            path: {
+                attempt_id: data.attemptId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class LessonsService {
+    /**
+     * Read Lessons By Book
+     * Retrieve lessons for a specific book.
+     * @param data The data for the request.
+     * @param data.bookId
+     * @param data.skip
+     * @param data.limit
+     * @returns LessonsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readLessonsByBook(data: LessonsReadLessonsByBookData): CancelablePromise<LessonsReadLessonsByBookResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/lessons/book/{book_id}',
+            path: {
+                book_id: data.bookId
+            },
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Lesson
+     * Get lesson by ID.
+     * @param data The data for the request.
+     * @param data.lessonId
+     * @returns LessonPublic Successful Response
+     * @throws ApiError
+     */
+    public static readLesson(data: LessonsReadLessonData): CancelablePromise<LessonsReadLessonResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/lessons/{lesson_id}',
+            path: {
+                lesson_id: data.lessonId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Lesson
+     * Update a lesson.
+     *
+     * Only admins can update lessons.
+     * @param data The data for the request.
+     * @param data.lessonId
+     * @param data.requestBody
+     * @returns LessonPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateLesson(data: LessonsUpdateLessonData): CancelablePromise<LessonsUpdateLessonResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/lessons/{lesson_id}',
+            path: {
+                lesson_id: data.lessonId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Lesson
+     * Delete a lesson.
+     *
+     * Only admins can delete lessons.
+     * @param data The data for the request.
+     * @param data.lessonId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteLesson(data: LessonsDeleteLessonData): CancelablePromise<LessonsDeleteLessonResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/lessons/{lesson_id}',
+            path: {
+                lesson_id: data.lessonId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Lesson
+     * Create new lesson.
+     *
+     * Only admins can create lessons.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns LessonPublic Successful Response
+     * @throws ApiError
+     */
+    public static createLesson(data: LessonsCreateLessonData): CancelablePromise<LessonsCreateLessonResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/lessons/',
+            body: data.requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }
@@ -213,6 +563,204 @@ export class LoginService {
     }
 }
 
+export class PhasesService {
+    /**
+     * Read Phases
+     * Retrieve all phases.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @returns PhasesPublic Successful Response
+     * @throws ApiError
+     */
+    public static readPhases(data: PhasesReadPhasesData = {}): CancelablePromise<PhasesReadPhasesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/phases/',
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Phase
+     * Create new phase.
+     *
+     * Only admins can create phases.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns PhasePublic Successful Response
+     * @throws ApiError
+     */
+    public static createPhase(data: PhasesCreatePhaseData): CancelablePromise<PhasesCreatePhaseResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/phases/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Phases By Program
+     * Retrieve phases for a specific program (ordered by phase order).
+     * @param data The data for the request.
+     * @param data.programId
+     * @param data.skip
+     * @param data.limit
+     * @returns PhasesPublic Successful Response
+     * @throws ApiError
+     */
+    public static readPhasesByProgram(data: PhasesReadPhasesByProgramData): CancelablePromise<PhasesReadPhasesByProgramResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/phases/program/{program_id}',
+            path: {
+                program_id: data.programId
+            },
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Phase
+     * Get phase by ID.
+     * @param data The data for the request.
+     * @param data.phaseId
+     * @returns PhasePublic Successful Response
+     * @throws ApiError
+     */
+    public static readPhase(data: PhasesReadPhaseData): CancelablePromise<PhasesReadPhaseResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/phases/{phase_id}',
+            path: {
+                phase_id: data.phaseId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Phase
+     * Update a phase.
+     *
+     * Only admins can update phases.
+     * @param data The data for the request.
+     * @param data.phaseId
+     * @param data.requestBody
+     * @returns PhasePublic Successful Response
+     * @throws ApiError
+     */
+    public static updatePhase(data: PhasesUpdatePhaseData): CancelablePromise<PhasesUpdatePhaseResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/phases/{phase_id}',
+            path: {
+                phase_id: data.phaseId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Phase
+     * Delete a phase.
+     *
+     * Only admins can delete phases.
+     * @param data The data for the request.
+     * @param data.phaseId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deletePhase(data: PhasesDeletePhaseData): CancelablePromise<PhasesDeletePhaseResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/phases/{phase_id}',
+            path: {
+                phase_id: data.phaseId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Add Book To Phase
+     * Add a book to a phase.
+     *
+     * Only admins can manage phase books.
+     * @param data The data for the request.
+     * @param data.phaseId
+     * @param data.bookId
+     * @param data.order
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static addBookToPhase(data: PhasesAddBookToPhaseData): CancelablePromise<PhasesAddBookToPhaseResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/phases/{phase_id}/books/{book_id}',
+            path: {
+                phase_id: data.phaseId,
+                book_id: data.bookId
+            },
+            query: {
+                order: data.order
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Remove Book From Phase
+     * Remove a book from a phase.
+     *
+     * Only admins can manage phase books.
+     * @param data The data for the request.
+     * @param data.phaseId
+     * @param data.bookId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static removeBookFromPhase(data: PhasesRemoveBookFromPhaseData): CancelablePromise<PhasesRemoveBookFromPhaseResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/phases/{phase_id}/books/{book_id}',
+            path: {
+                phase_id: data.phaseId,
+                book_id: data.bookId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
 export class PrivateService {
     /**
      * Create User
@@ -228,6 +776,620 @@ export class PrivateService {
             url: '/api/v1/private/users/',
             body: data.requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class ProgramsService {
+    /**
+     * Read Programs
+     * Retrieve programs.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @returns ProgramsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readPrograms(data: ProgramsReadProgramsData = {}): CancelablePromise<ProgramsReadProgramsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/programs/',
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Program
+     * Create new program.
+     *
+     * Only admins can create programs.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns ProgramPublic Successful Response
+     * @throws ApiError
+     */
+    public static createProgram(data: ProgramsCreateProgramData): CancelablePromise<ProgramsCreateProgramResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/programs/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Program
+     * Get program by ID.
+     * @param data The data for the request.
+     * @param data.programId
+     * @returns ProgramPublic Successful Response
+     * @throws ApiError
+     */
+    public static readProgram(data: ProgramsReadProgramData): CancelablePromise<ProgramsReadProgramResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/programs/{program_id}',
+            path: {
+                program_id: data.programId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Program
+     * Update a program.
+     *
+     * Only admins can update programs.
+     * @param data The data for the request.
+     * @param data.programId
+     * @param data.requestBody
+     * @returns ProgramPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateProgram(data: ProgramsUpdateProgramData): CancelablePromise<ProgramsUpdateProgramResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/programs/{program_id}',
+            path: {
+                program_id: data.programId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Program
+     * Delete a program.
+     *
+     * Only admins can delete programs.
+     * @param data The data for the request.
+     * @param data.programId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteProgram(data: ProgramsDeleteProgramData): CancelablePromise<ProgramsDeleteProgramResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/programs/{program_id}',
+            path: {
+                program_id: data.programId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class QuestionsService {
+    /**
+     * Read Questions
+     * Retrieve all questions.
+     *
+     * Only admins are supposed to read all questions.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @returns QuestionsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readQuestions(data: QuestionsReadQuestionsData = {}): CancelablePromise<QuestionsReadQuestionsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/questions/',
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Question
+     * Create new question.
+     *
+     * Only admins can create questions.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns QuestionPublic Successful Response
+     * @throws ApiError
+     */
+    public static createQuestion(data: QuestionsCreateQuestionData): CancelablePromise<QuestionsCreateQuestionResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/questions/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Questions By Lesson
+     * Retrieve questions for a specific lesson.
+     * @param data The data for the request.
+     * @param data.lessonId
+     * @param data.skip
+     * @param data.limit
+     * @returns QuestionsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readQuestionsByLesson(data: QuestionsReadQuestionsByLessonData): CancelablePromise<QuestionsReadQuestionsByLessonResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/questions/lesson/{lesson_id}',
+            path: {
+                lesson_id: data.lessonId
+            },
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Question
+     * Get question by ID.
+     * @param data The data for the request.
+     * @param data.questionId
+     * @returns QuestionPublic Successful Response
+     * @throws ApiError
+     */
+    public static readQuestion(data: QuestionsReadQuestionData): CancelablePromise<QuestionsReadQuestionResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/questions/{question_id}',
+            path: {
+                question_id: data.questionId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Question
+     * Update a question.
+     *
+     * Only admins can update questions.
+     * @param data The data for the request.
+     * @param data.questionId
+     * @param data.requestBody
+     * @returns QuestionPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateQuestion(data: QuestionsUpdateQuestionData): CancelablePromise<QuestionsUpdateQuestionResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/questions/{question_id}',
+            path: {
+                question_id: data.questionId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Question
+     * Delete a question.
+     *
+     * Only admins can delete questions.
+     * @param data The data for the request.
+     * @param data.questionId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteQuestion(data: QuestionsDeleteQuestionData): CancelablePromise<QuestionsDeleteQuestionResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/questions/{question_id}',
+            path: {
+                question_id: data.questionId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class SessionsService {
+    /**
+     * Read Sessions
+     * Retrieve sessions.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @returns ProgramSessionsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readSessions(data: SessionsReadSessionsData = {}): CancelablePromise<SessionsReadSessionsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/sessions/',
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Session
+     * Create new session.
+     *
+     * Only admins can create sessions.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns ProgramSessionPublic Successful Response
+     * @throws ApiError
+     */
+    public static createSession(data: SessionsCreateSessionData): CancelablePromise<SessionsCreateSessionResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/sessions/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Sessions By Program
+     * Retrieve sessions for a specific program.
+     * @param data The data for the request.
+     * @param data.programId
+     * @param data.skip
+     * @param data.limit
+     * @returns ProgramSessionsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readSessionsByProgram(data: SessionsReadSessionsByProgramData): CancelablePromise<SessionsReadSessionsByProgramResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/sessions/program/{program_id}',
+            path: {
+                program_id: data.programId
+            },
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Session
+     * Get session by ID.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @returns ProgramSessionPublic Successful Response
+     * @throws ApiError
+     */
+    public static readSession(data: SessionsReadSessionData): CancelablePromise<SessionsReadSessionResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/sessions/{session_id}',
+            path: {
+                session_id: data.sessionId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Session
+     * Update a session.
+     *
+     * Only admins can update sessions.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @param data.requestBody
+     * @returns ProgramSessionPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateSession(data: SessionsUpdateSessionData): CancelablePromise<SessionsUpdateSessionResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/sessions/{session_id}',
+            path: {
+                session_id: data.sessionId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Session
+     * Delete a session.
+     *
+     * Only admins can delete sessions.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteSession(data: SessionsDeleteSessionData): CancelablePromise<SessionsDeleteSessionResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/sessions/{session_id}',
+            path: {
+                session_id: data.sessionId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Add Student To Session
+     * Add a student to a session.
+     *
+     * Only admins can enroll students.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @param data.userId
+     * @returns ProgramSessionPublic Successful Response
+     * @throws ApiError
+     */
+    public static addStudentToSession(data: SessionsAddStudentToSessionData): CancelablePromise<SessionsAddStudentToSessionResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/sessions/{session_id}/students/{user_id}',
+            path: {
+                session_id: data.sessionId,
+                user_id: data.userId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Remove Student From Session
+     * Remove a student from a session.
+     *
+     * Only admins can unenroll students.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @param data.userId
+     * @returns ProgramSessionPublic Successful Response
+     * @throws ApiError
+     */
+    public static removeStudentFromSession(data: SessionsRemoveStudentFromSessionData): CancelablePromise<SessionsRemoveStudentFromSessionResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/sessions/{session_id}/students/{user_id}',
+            path: {
+                session_id: data.sessionId,
+                user_id: data.userId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Add Teacher To Session
+     * Add a teacher to a session.
+     *
+     * Only admins can assign teachers.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @param data.userId
+     * @returns ProgramSessionPublic Successful Response
+     * @throws ApiError
+     */
+    public static addTeacherToSession(data: SessionsAddTeacherToSessionData): CancelablePromise<SessionsAddTeacherToSessionResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/sessions/{session_id}/teachers/{user_id}',
+            path: {
+                session_id: data.sessionId,
+                user_id: data.userId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Remove Teacher From Session
+     * Remove a teacher from a session.
+     *
+     * Only admins can remove teachers.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @param data.userId
+     * @returns ProgramSessionPublic Successful Response
+     * @throws ApiError
+     */
+    public static removeTeacherFromSession(data: SessionsRemoveTeacherFromSessionData): CancelablePromise<SessionsRemoveTeacherFromSessionResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/sessions/{session_id}/teachers/{user_id}',
+            path: {
+                session_id: data.sessionId,
+                user_id: data.userId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Session Events
+     * Get all events for a session.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @param data.skip
+     * @param data.limit
+     * @returns SessionEventsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readSessionEvents(data: SessionsReadSessionEventsData): CancelablePromise<SessionsReadSessionEventsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/sessions/{session_id}/events',
+            path: {
+                session_id: data.sessionId
+            },
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Session Event
+     * Create a new session event.
+     *
+     * Only admins and teachers can create session events.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @param data.requestBody
+     * @returns SessionEventPublic Successful Response
+     * @throws ApiError
+     */
+    public static createSessionEvent(data: SessionsCreateSessionEventData): CancelablePromise<SessionsCreateSessionEventResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/sessions/{session_id}/events',
+            path: {
+                session_id: data.sessionId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Session Lessons
+     * Get all lessons for a session.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @param data.skip
+     * @param data.limit
+     * @returns SessionEventsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readSessionLessons(data: SessionsReadSessionLessonsData): CancelablePromise<SessionsReadSessionLessonsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/sessions/{session_id}/lessons',
+            path: {
+                session_id: data.sessionId
+            },
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Session Breaks
+     * Get all breaks for a session.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @param data.skip
+     * @param data.limit
+     * @returns SessionEventsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readSessionBreaks(data: SessionsReadSessionBreaksData): CancelablePromise<SessionsReadSessionBreaksResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/sessions/{session_id}/breaks',
+            path: {
+                session_id: data.sessionId
+            },
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
             errors: {
                 422: 'Validation Error'
             }

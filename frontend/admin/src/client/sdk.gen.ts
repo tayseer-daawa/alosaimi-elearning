@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { BooksReadBooksData, BooksReadBooksResponse, BooksCreateBookData, BooksCreateBookResponse, BooksReadBookData, BooksReadBookResponse, BooksUpdateBookData, BooksUpdateBookResponse, BooksDeleteBookData, BooksDeleteBookResponse, ExamsReadExamsBySessionData, ExamsReadExamsBySessionResponse, ExamsReadExamsByBookData, ExamsReadExamsByBookResponse, ExamsReadExamData, ExamsReadExamResponse, ExamsUpdateExamData, ExamsUpdateExamResponse, ExamsDeleteExamData, ExamsDeleteExamResponse, ExamsCreateExamData, ExamsCreateExamResponse, ExamsReadExamAttemptsData, ExamsReadExamAttemptsResponse, ExamsCreateExamAttemptData, ExamsCreateExamAttemptResponse, ExamsReadStudentExamAttemptsData, ExamsReadStudentExamAttemptsResponse, ExamsUpdateExamAttemptData, ExamsUpdateExamAttemptResponse, LessonsReadLessonsData, LessonsReadLessonsResponse, LessonsCreateLessonData, LessonsCreateLessonResponse, LessonsReadLessonsByBookData, LessonsReadLessonsByBookResponse, LessonsReadLessonData, LessonsReadLessonResponse, LessonsUpdateLessonData, LessonsUpdateLessonResponse, LessonsDeleteLessonData, LessonsDeleteLessonResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PhasesReadPhasesData, PhasesReadPhasesResponse, PhasesCreatePhaseData, PhasesCreatePhaseResponse, PhasesReadPhasesByProgramData, PhasesReadPhasesByProgramResponse, PhasesReadPhaseData, PhasesReadPhaseResponse, PhasesUpdatePhaseData, PhasesUpdatePhaseResponse, PhasesDeletePhaseData, PhasesDeletePhaseResponse, PhasesAddBookToPhaseData, PhasesAddBookToPhaseResponse, PhasesRemoveBookFromPhaseData, PhasesRemoveBookFromPhaseResponse, PrivateCreateUserData, PrivateCreateUserResponse, ProgramsReadProgramsData, ProgramsReadProgramsResponse, ProgramsCreateProgramData, ProgramsCreateProgramResponse, ProgramsReadProgramData, ProgramsReadProgramResponse, ProgramsUpdateProgramData, ProgramsUpdateProgramResponse, ProgramsDeleteProgramData, ProgramsDeleteProgramResponse, QuestionsReadQuestionsData, QuestionsReadQuestionsResponse, QuestionsCreateQuestionData, QuestionsCreateQuestionResponse, QuestionsReadQuestionsByLessonData, QuestionsReadQuestionsByLessonResponse, QuestionsReadQuestionData, QuestionsReadQuestionResponse, QuestionsUpdateQuestionData, QuestionsUpdateQuestionResponse, QuestionsDeleteQuestionData, QuestionsDeleteQuestionResponse, SessionsReadSessionsData, SessionsReadSessionsResponse, SessionsCreateSessionData, SessionsCreateSessionResponse, SessionsReadSessionsByProgramData, SessionsReadSessionsByProgramResponse, SessionsReadSessionData, SessionsReadSessionResponse, SessionsUpdateSessionData, SessionsUpdateSessionResponse, SessionsDeleteSessionData, SessionsDeleteSessionResponse, SessionsAddStudentToSessionData, SessionsAddStudentToSessionResponse, SessionsRemoveStudentFromSessionData, SessionsRemoveStudentFromSessionResponse, SessionsAddTeacherToSessionData, SessionsAddTeacherToSessionResponse, SessionsRemoveTeacherFromSessionData, SessionsRemoveTeacherFromSessionResponse, SessionsReadSessionEventsData, SessionsReadSessionEventsResponse, SessionsCreateSessionEventData, SessionsCreateSessionEventResponse, SessionsReadSessionLessonsData, SessionsReadSessionLessonsResponse, SessionsReadSessionBreaksData, SessionsReadSessionBreaksResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { BooksReadBooksData, BooksReadBooksResponse, BooksCreateBookData, BooksCreateBookResponse, BooksReadBookData, BooksReadBookResponse, BooksUpdateBookData, BooksUpdateBookResponse, BooksDeleteBookData, BooksDeleteBookResponse, ExamsReadExamsBySessionData, ExamsReadExamsBySessionResponse, ExamsReadExamData, ExamsReadExamResponse, ExamsUpdateExamData, ExamsUpdateExamResponse, ExamsDeleteExamData, ExamsDeleteExamResponse, ExamsCreateExamData, ExamsCreateExamResponse, ExamsReadStudentExamAttemptsData, ExamsReadStudentExamAttemptsResponse, ExamsReadMyExamAttemptsData, ExamsReadMyExamAttemptsResponse, ExamsCreateExamAttemptData, ExamsCreateExamAttemptResponse, ExamsUpdateExamAttemptData, ExamsUpdateExamAttemptResponse, LessonsReadLessonsByBookData, LessonsReadLessonsByBookResponse, LessonsReadLessonData, LessonsReadLessonResponse, LessonsUpdateLessonData, LessonsUpdateLessonResponse, LessonsDeleteLessonData, LessonsDeleteLessonResponse, LessonsCreateLessonData, LessonsCreateLessonResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PhasesReadPhasesData, PhasesReadPhasesResponse, PhasesCreatePhaseData, PhasesCreatePhaseResponse, PhasesReadPhasesByProgramData, PhasesReadPhasesByProgramResponse, PhasesReadPhaseData, PhasesReadPhaseResponse, PhasesUpdatePhaseData, PhasesUpdatePhaseResponse, PhasesDeletePhaseData, PhasesDeletePhaseResponse, PhasesAddBookToPhaseData, PhasesAddBookToPhaseResponse, PhasesRemoveBookFromPhaseData, PhasesRemoveBookFromPhaseResponse, PrivateCreateUserData, PrivateCreateUserResponse, ProgramsReadProgramsData, ProgramsReadProgramsResponse, ProgramsCreateProgramData, ProgramsCreateProgramResponse, ProgramsReadProgramData, ProgramsReadProgramResponse, ProgramsUpdateProgramData, ProgramsUpdateProgramResponse, ProgramsDeleteProgramData, ProgramsDeleteProgramResponse, QuestionsReadQuestionsData, QuestionsReadQuestionsResponse, QuestionsCreateQuestionData, QuestionsCreateQuestionResponse, QuestionsReadQuestionsByLessonData, QuestionsReadQuestionsByLessonResponse, QuestionsReadQuestionData, QuestionsReadQuestionResponse, QuestionsUpdateQuestionData, QuestionsUpdateQuestionResponse, QuestionsDeleteQuestionData, QuestionsDeleteQuestionResponse, SessionsReadSessionsData, SessionsReadSessionsResponse, SessionsCreateSessionData, SessionsCreateSessionResponse, SessionsReadSessionsByProgramData, SessionsReadSessionsByProgramResponse, SessionsReadSessionData, SessionsReadSessionResponse, SessionsUpdateSessionData, SessionsUpdateSessionResponse, SessionsDeleteSessionData, SessionsDeleteSessionResponse, SessionsAddStudentToSessionData, SessionsAddStudentToSessionResponse, SessionsRemoveStudentFromSessionData, SessionsRemoveStudentFromSessionResponse, SessionsAddTeacherToSessionData, SessionsAddTeacherToSessionResponse, SessionsRemoveTeacherFromSessionData, SessionsRemoveTeacherFromSessionResponse, SessionsReadSessionEventsData, SessionsReadSessionEventsResponse, SessionsCreateSessionEventData, SessionsCreateSessionEventResponse, SessionsReadSessionLessonsData, SessionsReadSessionLessonsResponse, SessionsReadSessionBreaksData, SessionsReadSessionBreaksResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class BooksService {
     /**
@@ -85,7 +85,7 @@ export class BooksService {
      */
     public static updateBook(data: BooksUpdateBookData): CancelablePromise<BooksUpdateBookResponse> {
         return __request(OpenAPI, {
-            method: 'PUT',
+            method: 'PATCH',
             url: '/api/v1/books/{book_id}',
             path: {
                 book_id: data.bookId
@@ -126,6 +126,8 @@ export class ExamsService {
     /**
      * Read Exams By Session
      * Retrieve exams for a specific session.
+     *
+     * You must be enrolled or teaching the session.
      * @param data The data for the request.
      * @param data.sessionId
      * @param data.skip
@@ -151,35 +153,10 @@ export class ExamsService {
     }
     
     /**
-     * Read Exams By Book
-     * Retrieve exams for a specific book.
-     * @param data The data for the request.
-     * @param data.bookId
-     * @param data.skip
-     * @param data.limit
-     * @returns ExamsPublic Successful Response
-     * @throws ApiError
-     */
-    public static readExamsByBook(data: ExamsReadExamsByBookData): CancelablePromise<ExamsReadExamsByBookResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/exams/book/{book_id}',
-            path: {
-                book_id: data.bookId
-            },
-            query: {
-                skip: data.skip,
-                limit: data.limit
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
      * Read Exam
      * Get exam by ID.
+     *
+     * You must be enrolled or teaching the session for this exam.
      * @param data The data for the request.
      * @param data.examId
      * @returns ExamPublic Successful Response
@@ -202,7 +179,7 @@ export class ExamsService {
      * Update Exam
      * Update an exam.
      *
-     * Only admins and teachers can update exams.
+     * Only admins can update exams.
      * @param data The data for the request.
      * @param data.examId
      * @param data.requestBody
@@ -211,7 +188,7 @@ export class ExamsService {
      */
     public static updateExam(data: ExamsUpdateExamData): CancelablePromise<ExamsUpdateExamResponse> {
         return __request(OpenAPI, {
-            method: 'PUT',
+            method: 'PATCH',
             url: '/api/v1/exams/{exam_id}',
             path: {
                 exam_id: data.examId
@@ -251,7 +228,7 @@ export class ExamsService {
      * Create Exam
      * Create new exam.
      *
-     * Only admins and teachers can create exams.
+     * Only admins can create exams.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns ExamPublic Successful Response
@@ -270,27 +247,44 @@ export class ExamsService {
     }
     
     /**
-     * Read Exam Attempts
-     * Get all attempts for a specific exam.
+     * Read Student Exam Attempts
+     * Get attempts for a specific student on a specific exam.
      *
-     * Teachers and admins can see all attempts.
+     * Only admins can see student's attempts.
      * @param data The data for the request.
      * @param data.examId
-     * @param data.skip
-     * @param data.limit
+     * @param data.studentId
      * @returns ExamAttemptsPublic Successful Response
      * @throws ApiError
      */
-    public static readExamAttempts(data: ExamsReadExamAttemptsData): CancelablePromise<ExamsReadExamAttemptsResponse> {
+    public static readStudentExamAttempts(data: ExamsReadStudentExamAttemptsData): CancelablePromise<ExamsReadStudentExamAttemptsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/exams/{exam_id}/attempts/student/{student_id}',
+            path: {
+                exam_id: data.examId,
+                student_id: data.studentId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read My Exam Attempts
+     * Get current user's attempts for a specific exam.
+     * @param data The data for the request.
+     * @param data.examId
+     * @returns ExamAttemptsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readMyExamAttempts(data: ExamsReadMyExamAttemptsData): CancelablePromise<ExamsReadMyExamAttemptsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/exams/{exam_id}/attempts',
             path: {
                 exam_id: data.examId
-            },
-            query: {
-                skip: data.skip,
-                limit: data.limit
             },
             errors: {
                 422: 'Validation Error'
@@ -302,7 +296,7 @@ export class ExamsService {
      * Create Exam Attempt
      * Create a new exam attempt.
      *
-     * Teachers and admins can create attempts. Must check max_attempts.
+     * Teachers and admins can create attempts.
      * @param data The data for the request.
      * @param data.examId
      * @param data.requestBody
@@ -325,31 +319,6 @@ export class ExamsService {
     }
     
     /**
-     * Read Student Exam Attempts
-     * Get attempts for a specific student on a specific exam.
-     *
-     * Students can only see their own attempts. Teachers and admins can see all.
-     * @param data The data for the request.
-     * @param data.examId
-     * @param data.studentId
-     * @returns ExamAttemptsPublic Successful Response
-     * @throws ApiError
-     */
-    public static readStudentExamAttempts(data: ExamsReadStudentExamAttemptsData): CancelablePromise<ExamsReadStudentExamAttemptsResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/exams/{exam_id}/attempts/student/{student_id}',
-            path: {
-                exam_id: data.examId,
-                student_id: data.studentId
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
      * Update Exam Attempt
      * Update an exam attempt.
      *
@@ -362,7 +331,7 @@ export class ExamsService {
      */
     public static updateExamAttempt(data: ExamsUpdateExamAttemptData): CancelablePromise<ExamsUpdateExamAttemptResponse> {
         return __request(OpenAPI, {
-            method: 'PUT',
+            method: 'PATCH',
             url: '/api/v1/exams/attempts/{attempt_id}',
             path: {
                 attempt_id: data.attemptId
@@ -377,51 +346,6 @@ export class ExamsService {
 }
 
 export class LessonsService {
-    /**
-     * Read Lessons
-     * Retrieve all lessons.
-     * @param data The data for the request.
-     * @param data.skip
-     * @param data.limit
-     * @returns LessonsPublic Successful Response
-     * @throws ApiError
-     */
-    public static readLessons(data: LessonsReadLessonsData = {}): CancelablePromise<LessonsReadLessonsResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/lessons/',
-            query: {
-                skip: data.skip,
-                limit: data.limit
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Create Lesson
-     * Create new lesson.
-     *
-     * Only admins can create lessons.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns LessonPublic Successful Response
-     * @throws ApiError
-     */
-    public static createLesson(data: LessonsCreateLessonData): CancelablePromise<LessonsCreateLessonResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/lessons/',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
     /**
      * Read Lessons By Book
      * Retrieve lessons for a specific book.
@@ -513,6 +437,28 @@ export class LessonsService {
             path: {
                 lesson_id: data.lessonId
             },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Lesson
+     * Create new lesson.
+     *
+     * Only admins can create lessons.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns LessonPublic Successful Response
+     * @throws ApiError
+     */
+    public static createLesson(data: LessonsCreateLessonData): CancelablePromise<LessonsCreateLessonResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/lessons/',
+            body: data.requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }
@@ -917,7 +863,7 @@ export class ProgramsService {
      */
     public static updateProgram(data: ProgramsUpdateProgramData): CancelablePromise<ProgramsUpdateProgramResponse> {
         return __request(OpenAPI, {
-            method: 'PUT',
+            method: 'PATCH',
             url: '/api/v1/programs/{program_id}',
             path: {
                 program_id: data.programId
@@ -958,6 +904,8 @@ export class QuestionsService {
     /**
      * Read Questions
      * Retrieve all questions.
+     *
+     * Only admins are supposed to read all questions.
      * @param data The data for the request.
      * @param data.skip
      * @param data.limit
@@ -982,7 +930,7 @@ export class QuestionsService {
      * Create Question
      * Create new question.
      *
-     * Only admins and teachers can create questions.
+     * Only admins can create questions.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns QuestionPublic Successful Response
@@ -1052,7 +1000,7 @@ export class QuestionsService {
      * Update Question
      * Update a question.
      *
-     * Only admins and teachers can update questions.
+     * Only admins can update questions.
      * @param data The data for the request.
      * @param data.questionId
      * @param data.requestBody
@@ -1078,7 +1026,7 @@ export class QuestionsService {
      * Delete Question
      * Delete a question.
      *
-     * Only admins and teachers can delete questions.
+     * Only admins can delete questions.
      * @param data The data for the request.
      * @param data.questionId
      * @returns Message Successful Response
@@ -1105,7 +1053,7 @@ export class SessionsService {
      * @param data The data for the request.
      * @param data.skip
      * @param data.limit
-     * @returns SessionsPublic Successful Response
+     * @returns ProgramSessionsPublic Successful Response
      * @throws ApiError
      */
     public static readSessions(data: SessionsReadSessionsData = {}): CancelablePromise<SessionsReadSessionsResponse> {
@@ -1129,7 +1077,7 @@ export class SessionsService {
      * Only admins can create sessions.
      * @param data The data for the request.
      * @param data.requestBody
-     * @returns SessionPublic Successful Response
+     * @returns ProgramSessionPublic Successful Response
      * @throws ApiError
      */
     public static createSession(data: SessionsCreateSessionData): CancelablePromise<SessionsCreateSessionResponse> {
@@ -1151,7 +1099,7 @@ export class SessionsService {
      * @param data.programId
      * @param data.skip
      * @param data.limit
-     * @returns SessionsPublic Successful Response
+     * @returns ProgramSessionsPublic Successful Response
      * @throws ApiError
      */
     public static readSessionsByProgram(data: SessionsReadSessionsByProgramData): CancelablePromise<SessionsReadSessionsByProgramResponse> {
@@ -1176,7 +1124,7 @@ export class SessionsService {
      * Get session by ID.
      * @param data The data for the request.
      * @param data.sessionId
-     * @returns SessionPublic Successful Response
+     * @returns ProgramSessionPublic Successful Response
      * @throws ApiError
      */
     public static readSession(data: SessionsReadSessionData): CancelablePromise<SessionsReadSessionResponse> {
@@ -1200,12 +1148,12 @@ export class SessionsService {
      * @param data The data for the request.
      * @param data.sessionId
      * @param data.requestBody
-     * @returns SessionPublic Successful Response
+     * @returns ProgramSessionPublic Successful Response
      * @throws ApiError
      */
     public static updateSession(data: SessionsUpdateSessionData): CancelablePromise<SessionsUpdateSessionResponse> {
         return __request(OpenAPI, {
-            method: 'PUT',
+            method: 'PATCH',
             url: '/api/v1/sessions/{session_id}',
             path: {
                 session_id: data.sessionId
@@ -1249,7 +1197,7 @@ export class SessionsService {
      * @param data The data for the request.
      * @param data.sessionId
      * @param data.userId
-     * @returns SessionPublic Successful Response
+     * @returns ProgramSessionPublic Successful Response
      * @throws ApiError
      */
     public static addStudentToSession(data: SessionsAddStudentToSessionData): CancelablePromise<SessionsAddStudentToSessionResponse> {
@@ -1274,7 +1222,7 @@ export class SessionsService {
      * @param data The data for the request.
      * @param data.sessionId
      * @param data.userId
-     * @returns SessionPublic Successful Response
+     * @returns ProgramSessionPublic Successful Response
      * @throws ApiError
      */
     public static removeStudentFromSession(data: SessionsRemoveStudentFromSessionData): CancelablePromise<SessionsRemoveStudentFromSessionResponse> {
@@ -1299,7 +1247,7 @@ export class SessionsService {
      * @param data The data for the request.
      * @param data.sessionId
      * @param data.userId
-     * @returns SessionPublic Successful Response
+     * @returns ProgramSessionPublic Successful Response
      * @throws ApiError
      */
     public static addTeacherToSession(data: SessionsAddTeacherToSessionData): CancelablePromise<SessionsAddTeacherToSessionResponse> {
@@ -1324,7 +1272,7 @@ export class SessionsService {
      * @param data The data for the request.
      * @param data.sessionId
      * @param data.userId
-     * @returns SessionPublic Successful Response
+     * @returns ProgramSessionPublic Successful Response
      * @throws ApiError
      */
     public static removeTeacherFromSession(data: SessionsRemoveTeacherFromSessionData): CancelablePromise<SessionsRemoveTeacherFromSessionResponse> {
