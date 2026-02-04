@@ -3,6 +3,7 @@ from datetime import date
 from typing import TYPE_CHECKING
 
 from pydantic import model_validator
+from sqlalchemy import CheckConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
@@ -36,6 +37,12 @@ class ExamUpdate(SQLModel):
 
 
 class Exam(ExamBase, table=True):
+    __table_args__ = (
+        CheckConstraint(
+            "start_date <= deadline", name="check_exam_start_before_deadline"
+        ),
+    )
+
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     # Relationships
