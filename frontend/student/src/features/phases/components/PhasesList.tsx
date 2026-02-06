@@ -2,7 +2,7 @@ import { stages } from '@/shared/api/mockData';
 import { Box, Flex, Text, Grid, Button, Image } from '@chakra-ui/react';
 import { useState } from 'react';
 import headphones from "/assets/headphones.svg";
-import { useNavigate } from '@tanstack/react-router';
+import {  useNavigate, useParams } from '@tanstack/react-router';
 
 
 export const PhasesList = () => {
@@ -12,6 +12,7 @@ export const PhasesList = () => {
         setExpandedStage(expandedStage === stageId ? null : stageId);
     };
     const navigate = useNavigate()
+    const { programId } = useParams({ strict: false })
 
     return (
         <Grid
@@ -75,7 +76,7 @@ export const PhasesList = () => {
 
                             <Text
                                 fontSize={{
-                                    base: 'sm',
+                                    base: 'md',
                                     lg: 'xl'
                                 }}
                                 color={
@@ -109,7 +110,14 @@ export const PhasesList = () => {
                                             borderRadius="4px"
                                             fontSize="md"
                                             fontWeight="semibold"
-                                            onClick={() => navigate({ to: '/books' })}
+                                            onClick={() => navigate({
+                                                to: '/programs/$programId/phases/$phaseId/books/$bookId',
+                                                params: {
+                                                    programId: programId?.toString() || '',
+                                                    phaseId: stage.id.toString(),
+                                                    bookId: lesson.id.toString(),
+                                                }
+                                            })}
                                         >
                                             {lesson.label}
                                         </Button>

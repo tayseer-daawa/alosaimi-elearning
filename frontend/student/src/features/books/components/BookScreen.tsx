@@ -2,8 +2,10 @@ import { Box, Flex, Button, Heading, Image } from '@chakra-ui/react';
 import { BooksList } from './BooksList';
 import MenuIcon from '/assets/menu.svg'
 import { Breadcrumbs } from '@/shared/components/BreadcrumbsNavigation';
+import { useParams } from '@tanstack/react-router';
 
-export default function BooksScreen() {
+export default function BookScreen() {
+    const { programId, phaseId, bookId } = useParams({ strict: false })
 
     return (
         <Box minH="100vh" display="flex" flexDirection="column" py={4} px={6} dir="rtl">
@@ -51,19 +53,20 @@ export default function BooksScreen() {
             <Breadcrumbs
                 breadcrumbs={[
                     {
-                        label: 'البرامج',
-                        url: '/programs',
+                        label: `البرنامج ${programId}`,
+                        url: `/programs`,
                     },
                     {
-                        label: 'المراحل',
-                        url: '/phases',
+                        label: `المرحلة ${phaseId}`,
+                        url: `/programs/${programId}/phases`,
                     },
                     {
-                        label: 'الكتب',
+                        label: `الكتاب ${bookId}`,
                         isCurrent: true,
                     },
                 ]}
             />
+
 
             {/* Books List */}
             <Box mt={10} px={{

@@ -16,7 +16,11 @@ export const ProgramsList = () => {
                     subtitle={lesson.subtitle ?? ""}
                     description={lesson.description ?? ""}
                     progress={lesson.progress}
-                    onPlay={() => navigate({to : '/phases'})}
+                    onPlay={() => navigate({
+                        to: '/programs/$programId/phases',
+                        params: { programId: (lesson.id).toString() },
+                    })
+                    }
                 />
             );
         }

@@ -12,11 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSignupRouteImport } from './routes/_layout/signup'
-import { Route as LayoutProgramsRouteImport } from './routes/_layout/programs'
-import { Route as LayoutPhasesRouteImport } from './routes/_layout/phases'
 import { Route as LayoutExampleRouteImport } from './routes/_layout/example'
-import { Route as LayoutCourseRouteImport } from './routes/_layout/course'
-import { Route as LayoutBooksRouteImport } from './routes/_layout/books'
+import { Route as LayoutProgramsIndexRouteImport } from './routes/_layout/programs/index'
+import { Route as LayoutProgramsProgramIdPhasesIndexRouteImport } from './routes/_layout/programs/$programId/phases/index'
+import { Route as LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRouteImport } from './routes/_layout/programs/$programId/phases/$phaseId/books/$bookId/index'
+import { Route as LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRouteImport } from './routes/_layout/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/index'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -32,90 +32,95 @@ const LayoutSignupRoute = LayoutSignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutProgramsRoute = LayoutProgramsRouteImport.update({
-  id: '/programs',
-  path: '/programs',
-  getParentRoute: () => LayoutRoute,
-} as any)
-const LayoutPhasesRoute = LayoutPhasesRouteImport.update({
-  id: '/phases',
-  path: '/phases',
-  getParentRoute: () => LayoutRoute,
-} as any)
 const LayoutExampleRoute = LayoutExampleRouteImport.update({
   id: '/example',
   path: '/example',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutCourseRoute = LayoutCourseRouteImport.update({
-  id: '/course',
-  path: '/course',
+const LayoutProgramsIndexRoute = LayoutProgramsIndexRouteImport.update({
+  id: '/programs/',
+  path: '/programs/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutBooksRoute = LayoutBooksRouteImport.update({
-  id: '/books',
-  path: '/books',
-  getParentRoute: () => LayoutRoute,
-} as any)
+const LayoutProgramsProgramIdPhasesIndexRoute =
+  LayoutProgramsProgramIdPhasesIndexRouteImport.update({
+    id: '/programs/$programId/phases/',
+    path: '/programs/$programId/phases/',
+    getParentRoute: () => LayoutRoute,
+  } as any)
+const LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRoute =
+  LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRouteImport.update({
+    id: '/programs/$programId/phases/$phaseId/books/$bookId/',
+    path: '/programs/$programId/phases/$phaseId/books/$bookId/',
+    getParentRoute: () => LayoutRoute,
+  } as any)
+const LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute =
+  LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRouteImport.update(
+    {
+      id: '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/',
+      path: '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/',
+      getParentRoute: () => LayoutRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
-  '/books': typeof LayoutBooksRoute
-  '/course': typeof LayoutCourseRoute
   '/example': typeof LayoutExampleRoute
-  '/phases': typeof LayoutPhasesRoute
-  '/programs': typeof LayoutProgramsRoute
   '/signup': typeof LayoutSignupRoute
   '/': typeof LayoutIndexRoute
+  '/programs': typeof LayoutProgramsIndexRoute
+  '/programs/$programId/phases': typeof LayoutProgramsProgramIdPhasesIndexRoute
+  '/programs/$programId/phases/$phaseId/books/$bookId': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRoute
+  '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/books': typeof LayoutBooksRoute
-  '/course': typeof LayoutCourseRoute
   '/example': typeof LayoutExampleRoute
-  '/phases': typeof LayoutPhasesRoute
-  '/programs': typeof LayoutProgramsRoute
   '/signup': typeof LayoutSignupRoute
   '/': typeof LayoutIndexRoute
+  '/programs': typeof LayoutProgramsIndexRoute
+  '/programs/$programId/phases': typeof LayoutProgramsProgramIdPhasesIndexRoute
+  '/programs/$programId/phases/$phaseId/books/$bookId': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRoute
+  '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
-  '/_layout/books': typeof LayoutBooksRoute
-  '/_layout/course': typeof LayoutCourseRoute
   '/_layout/example': typeof LayoutExampleRoute
-  '/_layout/phases': typeof LayoutPhasesRoute
-  '/_layout/programs': typeof LayoutProgramsRoute
   '/_layout/signup': typeof LayoutSignupRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/_layout/programs/': typeof LayoutProgramsIndexRoute
+  '/_layout/programs/$programId/phases/': typeof LayoutProgramsProgramIdPhasesIndexRoute
+  '/_layout/programs/$programId/phases/$phaseId/books/$bookId/': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRoute
+  '/_layout/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/books'
-    | '/course'
     | '/example'
-    | '/phases'
-    | '/programs'
     | '/signup'
     | '/'
+    | '/programs'
+    | '/programs/$programId/phases'
+    | '/programs/$programId/phases/$phaseId/books/$bookId'
+    | '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/books'
-    | '/course'
     | '/example'
-    | '/phases'
-    | '/programs'
     | '/signup'
     | '/'
+    | '/programs'
+    | '/programs/$programId/phases'
+    | '/programs/$programId/phases/$phaseId/books/$bookId'
+    | '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId'
   id:
     | '__root__'
     | '/_layout'
-    | '/_layout/books'
-    | '/_layout/course'
     | '/_layout/example'
-    | '/_layout/phases'
-    | '/_layout/programs'
     | '/_layout/signup'
     | '/_layout/'
+    | '/_layout/programs/'
+    | '/_layout/programs/$programId/phases/'
+    | '/_layout/programs/$programId/phases/$phaseId/books/$bookId/'
+    | '/_layout/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,20 +150,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSignupRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/programs': {
-      id: '/_layout/programs'
-      path: '/programs'
-      fullPath: '/programs'
-      preLoaderRoute: typeof LayoutProgramsRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/phases': {
-      id: '/_layout/phases'
-      path: '/phases'
-      fullPath: '/phases'
-      preLoaderRoute: typeof LayoutPhasesRouteImport
-      parentRoute: typeof LayoutRoute
-    }
     '/_layout/example': {
       id: '/_layout/example'
       path: '/example'
@@ -166,41 +157,58 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutExampleRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/course': {
-      id: '/_layout/course'
-      path: '/course'
-      fullPath: '/course'
-      preLoaderRoute: typeof LayoutCourseRouteImport
+    '/_layout/programs/': {
+      id: '/_layout/programs/'
+      path: '/programs'
+      fullPath: '/programs'
+      preLoaderRoute: typeof LayoutProgramsIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/books': {
-      id: '/_layout/books'
-      path: '/books'
-      fullPath: '/books'
-      preLoaderRoute: typeof LayoutBooksRouteImport
+    '/_layout/programs/$programId/phases/': {
+      id: '/_layout/programs/$programId/phases/'
+      path: '/programs/$programId/phases'
+      fullPath: '/programs/$programId/phases'
+      preLoaderRoute: typeof LayoutProgramsProgramIdPhasesIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/programs/$programId/phases/$phaseId/books/$bookId/': {
+      id: '/_layout/programs/$programId/phases/$phaseId/books/$bookId/'
+      path: '/programs/$programId/phases/$phaseId/books/$bookId'
+      fullPath: '/programs/$programId/phases/$phaseId/books/$bookId'
+      preLoaderRoute: typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/': {
+      id: '/_layout/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/'
+      path: '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId'
+      fullPath: '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId'
+      preLoaderRoute: typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
   }
 }
 
 interface LayoutRouteChildren {
-  LayoutBooksRoute: typeof LayoutBooksRoute
-  LayoutCourseRoute: typeof LayoutCourseRoute
   LayoutExampleRoute: typeof LayoutExampleRoute
-  LayoutPhasesRoute: typeof LayoutPhasesRoute
-  LayoutProgramsRoute: typeof LayoutProgramsRoute
   LayoutSignupRoute: typeof LayoutSignupRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
+  LayoutProgramsIndexRoute: typeof LayoutProgramsIndexRoute
+  LayoutProgramsProgramIdPhasesIndexRoute: typeof LayoutProgramsProgramIdPhasesIndexRoute
+  LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRoute: typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRoute
+  LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute: typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutBooksRoute: LayoutBooksRoute,
-  LayoutCourseRoute: LayoutCourseRoute,
   LayoutExampleRoute: LayoutExampleRoute,
-  LayoutPhasesRoute: LayoutPhasesRoute,
-  LayoutProgramsRoute: LayoutProgramsRoute,
   LayoutSignupRoute: LayoutSignupRoute,
   LayoutIndexRoute: LayoutIndexRoute,
+  LayoutProgramsIndexRoute: LayoutProgramsIndexRoute,
+  LayoutProgramsProgramIdPhasesIndexRoute:
+    LayoutProgramsProgramIdPhasesIndexRoute,
+  LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRoute:
+    LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRoute,
+  LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute:
+    LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute,
 }
 
 const LayoutRouteWithChildren =

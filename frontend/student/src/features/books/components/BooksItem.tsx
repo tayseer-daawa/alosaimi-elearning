@@ -1,6 +1,6 @@
 import { books } from '@/shared/api/mockData';
 import { Box, Flex, Text } from '@chakra-ui/react';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useParams } from '@tanstack/react-router';
 
 type Book = typeof books[number]
 
@@ -10,6 +10,8 @@ interface BooksItemProps {
 
 export const BooksItem = ({ book }: BooksItemProps) => {
     const navigate = useNavigate()
+    const { programId, phaseId, bookId } = useParams({ strict: false })
+
     return (
         <Box key={book.id}>
             <Box
@@ -32,7 +34,7 @@ export const BooksItem = ({ book }: BooksItemProps) => {
                     </Flex>
 
                     <Text
-                        fontSize={{ base: "sm", lg: "xl" }}
+                        fontSize={{ base: "md", lg: "xl" }}
                         color="brand.secondary"
                         lineHeight="tall"
                         textAlign="justify"
@@ -59,7 +61,15 @@ export const BooksItem = ({ book }: BooksItemProps) => {
                                     textDecoration="underline"
                                     cursor="pointer"
                                     _hover={{ opacity: 0.8 }}
-                                    onClick={() => navigate({ to: '/course' })}
+                                    onClick={() => navigate({
+                                        to: '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId',
+                                        params: {
+                                            programId: programId?.toString() || '',
+                                            phaseId: phaseId?.toString() || '',
+                                            bookId: bookId?.toString() || '',
+                                            courseId: course.id.toString(),
+                                        }
+                                    })}
                                 >
                                     {`المقرر ${index + 1} : ${course.title}`}
                                 </Text>
