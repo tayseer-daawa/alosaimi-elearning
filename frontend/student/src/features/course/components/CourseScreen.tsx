@@ -4,9 +4,11 @@ import { MoveRight, MoveLeft } from 'lucide-react';
 import AudioPlayer from './AudioPlayer';
 import { Breadcrumbs } from '@/shared/components/BreadcrumbsNavigation';
 import MenuIcon from '/assets/menu.svg'
+import { useParams } from '@tanstack/react-router';
 
 export default function CourseScreen() {
   const [activeTab, setActiveTab] = useState('content');
+  const { programId, phaseId, bookId, courseId } = useParams({ strict: false })
 
 
   return (
@@ -21,8 +23,7 @@ export default function CourseScreen() {
     >
       {/* Header */}
       <Box >
-        <Container maxW="container.lg" px={4} py={4}>
-          {/* Breadcrumb */}
+        <Container maxW="container.lg" px={8} py={4}>
           <Flex
             display={{
               base: 'none',
@@ -54,34 +55,36 @@ export default function CourseScreen() {
           <Breadcrumbs
             breadcrumbs={[
               {
-                label: 'البرامج',
-                url: '/programs',
+                label: `البرنامج ${programId}`,
+                url: `/programs`,
               },
               {
-                label: 'المرحلة 1',
-                url: '/phases',
+                label: `المرحلة ${phaseId}`,
+                url: `/programs/${programId}/phases/${phaseId}`,
               },
               {
-                label: 'الكتاب 1',
-                url: '/books',
+                label: `الكتاب ${bookId}`,
+                url: `/programs/${programId}/phases/${phaseId}/books/${bookId}`,
               },
               {
-                label: 'المقرر 1',
+                label: `المقرر ${courseId}`,
                 isCurrent: true,
                 hasDropdown: true,
                 options: [
-                  { label: 'المقرر 1', url: '/course' },
-                  { label: 'المقرر 2', url: '/course' },
-                  { label: 'المقرر 3', url: '/course' },
-                  { label: 'المقرر 4', url: '/course' },
+                  { label: 'المقرر 1', url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/1` },
+                  { label: 'المقرر 2', url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/2` },
+                  { label: 'المقرر 3', url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/3` },
+                  { label: 'المقرر 4', url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/4` },
                 ],
-              }
+              },
             ]}
           />
+
 
         </Container>
       </Box>
       <Flex
+        mt={2}
         display={{
           base: 'flex',
           lg: 'none'
@@ -94,9 +97,8 @@ export default function CourseScreen() {
           _hover={{ color: 'gray.800' }}
         >
           <MoveRight size={20} />
-          <Text>التالي</Text>
+          <Text >السابق</Text>
         </Button>
-
         <Text
           fontSize="2xl"
           fontWeight="semibold"
@@ -111,16 +113,16 @@ export default function CourseScreen() {
           color="brand.primary"
           _hover={{ color: 'gray.800' }}
         >
-          <Text >السابق</Text>
+          <Text>التالي</Text>
           <MoveLeft size={20} />
         </Button>
       </Flex>
 
       {/* Content */}
       <Container
-      bg={'white'}
+        bg={'white'}
         w={{
-          base: '80%',
+          base: '85%',
           lg: '100%'
         }}
         mx={'auto'}
@@ -178,8 +180,8 @@ export default function CourseScreen() {
               }}
               textAlign="justify"
               lineHeight={{
-                base:1.8,
-                lg:2
+                base: 1.8,
+                lg: 2
               }}
 
             >

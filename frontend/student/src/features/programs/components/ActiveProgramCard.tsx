@@ -44,6 +44,7 @@ export const ActiveProgramCard = ({
             h={{
                 lg: '200px'
             }}
+            onClick={() => onPlay?.()}
         >
             {/* Badge */}
             <Badge
@@ -109,7 +110,6 @@ export const ActiveProgramCard = ({
                     borderRadius="full"
                     bg="brand.secondary"
                     p={0}
-                    onClick={() => onPlay?.()}
                 >
                     <Icon as={Play} boxSize={5} color="white" fill="white" />
                 </Button>
@@ -147,7 +147,7 @@ export const ActiveProgramCard = ({
             {/* Content */}
             <Box mt={4}>
                 <Text
-                    fontSize="sm"
+                    fontSize="md"
                     display={{
                         lg: 'none'
                     }}

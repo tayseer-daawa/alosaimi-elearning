@@ -2,8 +2,10 @@ import { Box, Flex, Button, Image, Heading } from '@chakra-ui/react';
 import { PhasesList } from './PhasesList';
 import MenuIcon from '/assets/menu.svg'
 import { Breadcrumbs } from '@/shared/components/BreadcrumbsNavigation';
+import { useParams } from '@tanstack/react-router';
 
 export default function PhasesScreen() {
+  const { programId } = useParams({ strict: false })
 
   return (
     <Box minH="100vh" display="flex" flexDirection="column" py={4} px={6} dir="rtl">
@@ -51,8 +53,8 @@ export default function PhasesScreen() {
       <Breadcrumbs
         breadcrumbs={[
           {
-            label: 'البرامج',
-            url: '/programs',
+            label: `البرنامج ${programId}`,
+            url: `/programs`,
           },
           {
             label: 'المراحل',

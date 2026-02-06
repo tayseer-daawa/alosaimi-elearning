@@ -34,7 +34,7 @@ export function Breadcrumbs({ breadcrumbs }: BreadcrumbsProps) {
       fontSize="sm"
       color="gray.500"
       gap={1}
-      mb={4}
+      mt={4}
       flexWrap="wrap"
     >
       {breadcrumbs.map((crumb, index) => (
