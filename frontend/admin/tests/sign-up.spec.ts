@@ -67,7 +67,15 @@ test("Sign up with valid name, email, and password", async ({ page }) => {
   const password = randomPassword()
 
   await page.goto("/signup")
-  await fillForm(page, firstName, fatherName, familyName, email, password, password)
+  await fillForm(
+    page,
+    firstName,
+    fatherName,
+    familyName,
+    email,
+    password,
+    password,
+  )
   await page.getByRole("button", { name: "Sign Up" }).click()
 })
 
@@ -98,13 +106,29 @@ test("Sign up with existing email", async ({ page }) => {
   // Sign up with an email
   await page.goto("/signup")
 
-  await fillForm(page, firstName, fatherName, familyName, email, password, password)
+  await fillForm(
+    page,
+    firstName,
+    fatherName,
+    familyName,
+    email,
+    password,
+    password,
+  )
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   // Sign up again with the same email
   await page.goto("/signup")
 
-  await fillForm(page, firstName, fatherName, familyName, email, password, password)
+  await fillForm(
+    page,
+    firstName,
+    fatherName,
+    familyName,
+    email,
+    password,
+    password,
+  )
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await page
@@ -121,7 +145,15 @@ test("Sign up with weak password", async ({ page }) => {
 
   await page.goto("/signup")
 
-  await fillForm(page, firstName, fatherName, familyName, email, password, password)
+  await fillForm(
+    page,
+    firstName,
+    fatherName,
+    familyName,
+    email,
+    password,
+    password,
+  )
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(
@@ -139,7 +171,15 @@ test("Sign up with mismatched passwords", async ({ page }) => {
 
   await page.goto("/signup")
 
-  await fillForm(page, firstName, fatherName, familyName, email, password, password2)
+  await fillForm(
+    page,
+    firstName,
+    fatherName,
+    familyName,
+    email,
+    password,
+    password2,
+  )
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Passwords do not match")).toBeVisible()
@@ -154,7 +194,15 @@ test("Sign up with missing first name", async ({ page }) => {
 
   await page.goto("/signup")
 
-  await fillForm(page, firstName, fatherName, familyName, email, password, password)
+  await fillForm(
+    page,
+    firstName,
+    fatherName,
+    familyName,
+    email,
+    password,
+    password,
+  )
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("First Name is required")).toBeVisible()
@@ -169,7 +217,15 @@ test("Sign up with missing email", async ({ page }) => {
 
   await page.goto("/signup")
 
-  await fillForm(page, firstName, fatherName, familyName, email, password, password)
+  await fillForm(
+    page,
+    firstName,
+    fatherName,
+    familyName,
+    email,
+    password,
+    password,
+  )
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Email is required")).toBeVisible()
@@ -184,7 +240,15 @@ test("Sign up with missing password", async ({ page }) => {
 
   await page.goto("/signup")
 
-  await fillForm(page, firstName, fatherName, familyName, email, password, password)
+  await fillForm(
+    page,
+    firstName,
+    fatherName,
+    familyName,
+    email,
+    password,
+    password,
+  )
   await page.getByRole("button", { name: "Sign Up" }).click()
 
   await expect(page.getByText("Password is required")).toBeVisible()

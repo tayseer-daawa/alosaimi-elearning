@@ -44,7 +44,9 @@ test.describe("Edit user name and email successfully", () => {
     await expect(page.getByText("User updated successfully")).toBeVisible()
     // Check if the new name is displayed on the page
     await expect(
-      page.getByLabel("My profile").getByText(updatedFirstName, { exact: true }),
+      page
+        .getByLabel("My profile")
+        .getByText(updatedFirstName, { exact: true }),
     ).toBeVisible()
   })
 
