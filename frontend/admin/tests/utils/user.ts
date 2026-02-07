@@ -2,13 +2,17 @@ import { expect, type Page } from "@playwright/test"
 
 export async function signUpNewUser(
   page: Page,
-  name: string,
+  firstName: string,
+  fatherName: string,
+  familyName: string,
   email: string,
   password: string,
 ) {
   await page.goto("/signup")
 
-  await page.getByPlaceholder("Full Name").fill(name)
+  await page.getByPlaceholder("First Name").fill(firstName)
+  await page.getByPlaceholder("Father Name").fill(fatherName)
+  await page.getByPlaceholder("Family Name").fill(familyName)
   await page.getByPlaceholder("Email").fill(email)
   await page.getByPlaceholder("Password", { exact: true }).fill(password)
   await page.getByPlaceholder("Confirm Password").fill(password)

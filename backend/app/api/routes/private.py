@@ -1,5 +1,3 @@
-from typing import Any
-
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -16,19 +14,25 @@ router = APIRouter(tags=["private"], prefix="/private")
 class PrivateUserCreate(BaseModel):
     email: str
     password: str
-    full_name: str
+    first_name: str
+    father_name: str
+    family_name: str
+    is_male: bool
     is_verified: bool = False
 
 
 @router.post("/users/", response_model=UserPublic)
-def create_user(user_in: PrivateUserCreate, session: SessionDep) -> Any:
+def create_user(user_in: PrivateUserCreate, session: SessionDep) -> User:
     """
     Create a new user.
     """
 
     user = User(
         email=user_in.email,
-        full_name=user_in.full_name,
+        first_name=user_in.first_name,
+        father_name=user_in.father_name,
+        family_name=user_in.family_name,
+        is_male=user_in.is_male,
         hashed_password=get_password_hash(user_in.password),
     )
 

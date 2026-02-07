@@ -63,7 +63,7 @@ function UsersTable() {
       <Table.Root size={{ base: "sm", md: "md" }}>
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader w="sm">Full name</Table.ColumnHeader>
+            <Table.ColumnHeader w="sm">Name</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Email</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Role</Table.ColumnHeader>
             <Table.ColumnHeader w="sm">Status</Table.ColumnHeader>
@@ -73,8 +73,9 @@ function UsersTable() {
         <Table.Body>
           {users?.map((user) => (
             <Table.Row key={user.id} opacity={isPlaceholderData ? 0.5 : 1}>
-              <Table.Cell color={!user.full_name ? "gray" : "inherit"}>
-                {user.full_name || "N/A"}
+              <Table.Cell color={!user.first_name ? "gray" : "inherit"}>
+                {`${user.first_name || ""} ${user.father_name || ""} ${user.family_name || ""}`.trim() ||
+                  "N/A"}
                 {currentUser?.id === user.id && (
                   <Badge ml="1" colorScheme="teal">
                     You

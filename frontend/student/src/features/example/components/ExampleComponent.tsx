@@ -9,5 +9,5 @@ export default function ExampleComponent() {
     <div>
       <h2>Example Component</h2>
     </div>
-  );
+  )
 }

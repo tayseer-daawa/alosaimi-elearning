@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+commit_msg_file="$1"
+commit_msg="$(head -n 1 "$commit_msg_file")"
+pattern='^(feat|fix|test|bench|docs|chore|refactor|perf)\((backend|frontend|tools|ci|common).*\): '
+
+if ! [[ "$commit_msg" =~ $pattern ]]; then
+    echo "[!] Commit message does not follow the required format." >&2
+    echo "" >&2
+    echo "Expected:" >&2
+    echo "  <type>(<scope>): <message>" >&2
+    echo "" >&2
+    echo "Where:" >&2
+    echo "  type  = feat | fix | test | bench | docs | chore | refactor | perf" >&2
+    echo "  scope = backend | frontend | tools | ci | common" >&2
+    echo "" >&2
+    echo "Example:" >&2
+    echo "  fix(backend): handle null user id" >&2
+    echo "" >&2
+    echo "Your message:" >&2
+    echo "  $commit_msg" >&2
+    exit 1
+fi
+
+exit 0
