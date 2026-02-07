@@ -1,24 +1,25 @@
-#!/usr/bin/env node
+#!/usr/bin/env bash
 
-const fs = require("fs");
+commit_msg_file="$1"
+commit_msg="$(head -n 1 "$commit_msg_file")"
+pattern='^(feat|fix|test|bench|docs|chore|refactor|perf)\((backend|frontend|tools|ci|common).*\): '
 
-const commitMsgFile = process.argv[2];
-const commitMsg = fs.readFileSync(commitMsgFile, "utf8").split("\n")[0];
+if ! [[ "$commit_msg" =~ $pattern ]]; then
+    echo "[!] Commit message does not follow the required format." >&2
+    echo "" >&2
+    echo "Expected:" >&2
+    echo "  <type>(<scope>): <message>" >&2
+    echo "" >&2
+    echo "Where:" >&2
+    echo "  type  = feat | fix | test | bench | docs | chore | refactor | perf" >&2
+    echo "  scope = backend | frontend | tools | ci | common" >&2
+    echo "" >&2
+    echo "Example:" >&2
+    echo "  fix(backend): handle null user id" >&2
+    echo "" >&2
+    echo "Your message:" >&2
+    echo "  $commit_msg" >&2
+    exit 1
+fi
 
-const pattern = /^(feat|fix|test|bench|docs|chore|refactor|perf)\((backend|frontend|tools|ci|common).*\): /;
-
-if (!pattern.test(commitMsg)) {
-  console.error("[!] Commit message does not follow the required format.\n");
-  console.error("Expected:");
-  console.error("  <type>(<scope>): <message>\n");
-  console.error("Where:");
-  console.error("  type  = feat | fix | test | bench | docs | chore | refactor | perf");
-  console.error("  scope = backend | frontend | tools | ci | common\n");
-  console.error("Example:");
-  console.error("  fix(backend): handle null user id\n");
-  console.error("Your message:");
-  console.error(`  ${commitMsg}`);
-  process.exit(1);
-}
-
-process.exit(0);
+exit 0
