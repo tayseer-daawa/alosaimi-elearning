@@ -120,6 +120,30 @@ Depending on your workflow, you could want to exclude it from Git, for example i
 
 One way to do it could be to add each environment variable to your CI/CD system, and updating the `docker-compose.yml` file to read that specific env var instead of reading the `.env` file.
 
+## Commit Mesage Guidelines and Compliance
+
+We follow a structured commit message format based on Conventional Commits:
+
+`<type>(<scope>): <short description>`
+
+Allowed Types: `feat | fix | test | bench | docs | chore | refactor | perf`
+
+Allowed Scopes: `backend | frontend | tools | ci | common`
+
+Example: `feat(backend): add new API endpoint for user registration`
+
+### Local Validation
+
+This repository uses a Git commit-msg hook to validate commit messages locally.
+
+After cloning:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+> CI will also validate commit messages on pull requests.
+
 ## Pre-commits and code linting
 
 we are using a tool called [pre-commit](https://pre-commit.com/) for code linting and formatting.
