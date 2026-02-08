@@ -12,9 +12,5 @@ function Layout() {
     return <Outlet />
   }
 
-  return (
-    <>
-      <Outlet />
-    </>
-  )
+  return <Outlet />
 }

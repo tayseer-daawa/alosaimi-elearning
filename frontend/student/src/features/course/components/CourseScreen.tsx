@@ -1,40 +1,56 @@
-import { useState } from 'react';
-import { Box, Button, Flex, Text, Container, Heading, Image } from '@chakra-ui/react';
-import { MoveRight, MoveLeft } from 'lucide-react';
-import AudioPlayer from './AudioPlayer';
-import { Breadcrumbs } from '@/shared/components/BreadcrumbsNavigation';
-import MenuIcon from '/assets/menu.svg'
-import { useParams } from '@tanstack/react-router';
+import {
+  Box,
+  Button,
+  Container,
+  Flex,
+  Heading,
+  Image,
+  Text,
+} from "@chakra-ui/react"
+import { useParams } from "@tanstack/react-router"
+import { MoveLeft, MoveRight } from "lucide-react"
+import { useState } from "react"
+import { Breadcrumbs } from "@/shared/components/BreadcrumbsNavigation"
+import MenuIcon from "/assets/menu.svg"
+import AudioPlayer from "./AudioPlayer"
 
 export default function CourseScreen() {
-  const [activeTab, setActiveTab] = useState('content');
+  const [activeTab, setActiveTab] = useState("content")
   const { programId, phaseId, bookId, courseId } = useParams({ strict: false })
 
-
   return (
-    <Box minH="100vh" dir="rtl"
+    <Box
+      minH="100vh"
+      dir="rtl"
       px={{
-        lg: '16'
+        lg: "16",
       }}
       py={{
-        lg: '10'
+        lg: "10",
       }}
-      overflow={'auto'}
+      overflow={"auto"}
     >
       {/* Header */}
-      <Box >
+      <Box>
         <Container maxW="container.lg" px={8} py={4}>
           <Flex
             display={{
-              base: 'none',
-              lg: 'flex'
+              base: "none",
+              lg: "flex",
             }}
-            align="center" justify="center" h={'100%'} >
+            align="center"
+            justify="center"
+            h={"100%"}
+          >
             <Button
-              position={'absolute'} right={{
+              position={"absolute"}
+              right={{
                 base: 0,
-                lg: 0
-              }} variant="ghost" p={2}>
+                lg: 0,
+              }}
+              variant="ghost"
+              p={2}
+            >
               <Image
                 src={MenuIcon}
                 boxSize={{ base: 6, lg: 12 }}
@@ -42,12 +58,13 @@ export default function CourseScreen() {
               />
             </Button>
 
-            <Heading size={
-              {
-                base: 'xl',
-                lg: '5xl'
-              }
-            } color="brand.primary">
+            <Heading
+              size={{
+                base: "xl",
+                lg: "5xl",
+              }}
+              color="brand.primary"
+            >
               المقررات
             </Heading>
           </Flex>
@@ -71,33 +88,47 @@ export default function CourseScreen() {
                 isCurrent: true,
                 hasDropdown: true,
                 options: [
-                  { label: 'المقرر 1', url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/1` },
-                  { label: 'المقرر 2', url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/2` },
-                  { label: 'المقرر 3', url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/3` },
-                  { label: 'المقرر 4', url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/4` },
+                  {
+                    label: "المقرر 1",
+                    url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/1`,
+                  },
+                  {
+                    label: "المقرر 2",
+                    url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/2`,
+                  },
+                  {
+                    label: "المقرر 3",
+                    url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/3`,
+                  },
+                  {
+                    label: "المقرر 4",
+                    url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/4`,
+                  },
                 ],
               },
             ]}
           />
-
-
         </Container>
       </Box>
       <Flex
         mt={2}
         display={{
-          base: 'flex',
-          lg: 'none'
+          base: "flex",
+          lg: "none",
         }}
-        justify="space-between" alignItems={'center'} mb={8} px={3}>
+        justify="space-between"
+        alignItems={"center"}
+        mb={8}
+        px={3}
+      >
         <Button
           variant="ghost"
           size="sm"
           color="brand.primary"
-          _hover={{ color: 'gray.800' }}
+          _hover={{ color: "gray.800" }}
         >
           <MoveRight size={20} />
-          <Text >السابق</Text>
+          <Text>السابق</Text>
         </Button>
         <Text
           fontSize="2xl"
@@ -111,7 +142,7 @@ export default function CourseScreen() {
           variant="ghost"
           size="sm"
           color="brand.primary"
-          _hover={{ color: 'gray.800' }}
+          _hover={{ color: "gray.800" }}
         >
           <Text>التالي</Text>
           <MoveLeft size={20} />
@@ -120,79 +151,89 @@ export default function CourseScreen() {
 
       {/* Content */}
       <Container
-        bg={'white'}
+        bg={"white"}
         w={{
-          base: '85%',
-          lg: '100%'
+          base: "85%",
+          lg: "100%",
         }}
-        mx={'auto'}
+        mx={"auto"}
         mt={{
-          lg: '20'
+          lg: "20",
         }}
         mb={{
-          base: '32'
+          base: "32",
         }}
-
         px={4}
         py={8}
         boxShadow={{
-          base: 'lg',
-          lg: 'none'
-
-        }} borderRadius={4}  >
+          base: "lg",
+          lg: "none",
+        }}
+        borderRadius={4}
+      >
         {/* Tabs */}
         <Flex
           display={{
-            base: 'flex',
-            lg: 'none'
+            base: "flex",
+            lg: "none",
           }}
-          mb={6} gap={2}>
+          mb={6}
+          gap={2}
+        >
           <Button
-            size={'sm'}
+            size={"sm"}
             flex={1}
-            onClick={() => setActiveTab('content')}
-            bg={activeTab === 'content' ? 'brand.primary' : 'white'}
-            color={activeTab === 'content' ? 'white' : 'gray.600'}
+            onClick={() => setActiveTab("content")}
+            bg={activeTab === "content" ? "brand.primary" : "white"}
+            color={activeTab === "content" ? "white" : "gray.600"}
             borderRadius="lg"
             fontWeight="medium"
           >
             الكتاب
           </Button>
           <Button
-            size={'sm'}
+            size={"sm"}
             flex={1}
-            onClick={() => setActiveTab('notes')}
-            bg={activeTab === 'notes' ? 'gray.200' : 'gray.100'}
-            color={activeTab === 'notes' ? 'gray.800' : 'gray.600'}
+            onClick={() => setActiveTab("notes")}
+            bg={activeTab === "notes" ? "gray.200" : "gray.100"}
+            color={activeTab === "notes" ? "gray.800" : "gray.600"}
             borderRadius="lg"
             fontWeight="medium"
           >
             الملاحظات
           </Button>
         </Flex>
-        {activeTab === 'content' && (
-          <Box p={2} >
+        {activeTab === "content" && (
+          <Box p={2}>
             <Text
               color="brand.primary"
               fontSize={{
-                base: 'md',
-                lg: '2xl'
+                base: "md",
+                lg: "2xl",
               }}
               textAlign="justify"
               lineHeight={{
                 base: 1.8,
-                lg: 2
+                lg: 2,
               }}
-
             >
-              إنَّ الحمدَ للهِ نحمَدُه ونَستعينُه ونستغفرُه ونستهديهِ ونشكرُه، ونعوذُ  باللهِ منْ شرورِ أنفُسِنا ومِن سيئاتِ أعمالِنا، مَنْ يهْدِ اللهُ فلا  مُضلَّ لهُ، ومَنْ يُضْلِلْ فلا هاديَ لهُ. وأشهدُ أن لا إلـهَ إلا اللهُ  وحْدَهُ لا شريكَ لهُ، ولا مَثِيلَ ولا شبيهَ ولا ضِدَّ ولا نِدَّ لَهُ.  وأشهدُ أنَّ سيّدَنا وحبيبَنا وعظيمَنا وقائدَنا وَقُرَّةَ أَعْيُنِنا  مُحَمَّدًا عبدُه ورسولُه، وصفيُّه وحبيبُه، مَنْ بعثَهُ اللهُ رحمةً  للعالمينَ، هاديًا ومُبشِّرًا ونذيرًا، بَلَّغَ الرسالةَ وأدَّى الأمانةَ  ونصحَ الأُمَّةَ، فجزاهُ اللهُ عنَّا خيرَ ما جَزَى نبيًّا مِنْ أنبيائهِ.  اللهُمَّ صَلِّ على سَيِّدِنا مُحمَّدٍ وعلَى ءالِه وأَصْحَابِهِ  الطَّيِّبِينَ الطَّاهِرينَ.
+              إنَّ الحمدَ للهِ نحمَدُه ونَستعينُه ونستغفرُه ونستهديهِ ونشكرُه، ونعوذُ باللهِ
+              منْ شرورِ أنفُسِنا ومِن سيئاتِ أعمالِنا، مَنْ يهْدِ اللهُ فلا مُضلَّ لهُ، ومَنْ يُضْلِلْ
+              فلا هاديَ لهُ. وأشهدُ أن لا إلـهَ إلا اللهُ وحْدَهُ لا شريكَ لهُ، ولا مَثِيلَ
+              ولا شبيهَ ولا ضِدَّ ولا نِدَّ لَهُ. وأشهدُ أنَّ سيّدَنا وحبيبَنا وعظيمَنا وقائدَنا
+              وَقُرَّةَ أَعْيُنِنا مُحَمَّدًا عبدُه ورسولُه، وصفيُّه وحبيبُه، مَنْ بعثَهُ اللهُ رحمةً
+              للعالمينَ، هاديًا ومُبشِّرًا ونذيرًا، بَلَّغَ الرسالةَ وأدَّى الأمانةَ ونصحَ
+              الأُمَّةَ، فجزاهُ اللهُ عنَّا خيرَ ما جَزَى نبيًّا مِنْ أنبيائهِ. اللهُمَّ صَلِّ على
+              سَيِّدِنا مُحمَّدٍ وعلَى ءالِه وأَصْحَابِهِ الطَّيِّبِينَ الطَّاهِرينَ.
             </Text>
           </Box>
         )}
 
-        {activeTab === 'notes' && (
-          <Box >
-            <Text color="gray.500" textAlign="center">لا توجد ملاحظات حتى الآن</Text>
+        {activeTab === "notes" && (
+          <Box>
+            <Text color="gray.500" textAlign="center">
+              لا توجد ملاحظات حتى الآن
+            </Text>
           </Box>
         )}
       </Container>
@@ -208,9 +249,7 @@ export default function CourseScreen() {
         borderColor="brand.secondary"
       >
         <AudioPlayer />
-
       </Box>
-
     </Box>
-  );
+  )
 }
