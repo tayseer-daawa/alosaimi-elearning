@@ -1,35 +1,45 @@
-import { Box, Flex, Button, Image, Heading } from '@chakra-ui/react';
-import { PhasesList } from './PhasesList';
-import MenuIcon from '/assets/menu.svg'
-import { Breadcrumbs } from '@/shared/components/BreadcrumbsNavigation';
-import { useParams } from '@tanstack/react-router';
+import { Box, Button, Flex, Heading, Image } from "@chakra-ui/react"
+import { useParams } from "@tanstack/react-router"
+import { Breadcrumbs } from "@/shared/components/BreadcrumbsNavigation"
+import MenuIcon from "/assets/menu.svg"
+import { PhasesList } from "./PhasesList"
 
 export default function PhasesScreen() {
   const { programId } = useParams({ strict: false })
 
   return (
-    <Box minH="100vh" display="flex" flexDirection="column" py={4} px={6} dir="rtl">
-
+    <Box
+      minH="100vh"
+      display="flex"
+      flexDirection="column"
+      py={4}
+      px={6}
+      dir="rtl"
+    >
       {/* Breadcrumb */}
       <Box
         display={{
-          base: 'none',
-          lg: 'block'
+          base: "none",
+          lg: "block",
         }}
-        position={'relative'}
+        position={"relative"}
         h={{
-          lg: '100px'
+          lg: "100px",
         }}
-        w={'full'}
+        w={"full"}
         mt={5}
         mb={10}
       >
-
-        <Flex align="center" justify="center" h={'100%'} >
-          <Button position={'absolute'} right={{
-            base: 0,
-            lg: 14
-          }} variant="ghost" p={2}>
+        <Flex align="center" justify="center" h={"100%"}>
+          <Button
+            position={"absolute"}
+            right={{
+              base: 0,
+              lg: 14,
+            }}
+            variant="ghost"
+            p={2}
+          >
             <Image
               src={MenuIcon}
               boxSize={{ base: 6, lg: 12 }}
@@ -37,16 +47,15 @@ export default function PhasesScreen() {
             />
           </Button>
 
-          <Heading size={
-            {
-              base: 'xl',
-              lg: '5xl'
-            }
-          } color="brand.primary">
+          <Heading
+            size={{
+              base: "xl",
+              lg: "5xl",
+            }}
+            color="brand.primary"
+          >
             المراحل
           </Heading>
-
-
         </Flex>
       </Box>
 
@@ -57,22 +66,21 @@ export default function PhasesScreen() {
             url: `/programs`,
           },
           {
-            label: 'المراحل',
+            label: "المراحل",
             isCurrent: true,
           },
         ]}
       />
 
       {/* Stages List */}
-      <Box mt={10}
+      <Box
+        mt={10}
         px={{
-          lg: '16'
+          lg: "16",
         }}
       >
         <PhasesList />
-
       </Box>
-
     </Box>
-  );
+  )
 }

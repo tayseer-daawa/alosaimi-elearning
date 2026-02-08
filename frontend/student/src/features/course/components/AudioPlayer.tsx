@@ -1,145 +1,164 @@
-import { Box, IconButton, Text, Flex, Slider, HStack, Button, Image } from '@chakra-ui/react';
-import { Play, Pause, Volume2, ChevronLeft, ChevronRight, VolumeX, SkipForward, SkipBack } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
-import audioFile from '/assets/audio/020.mp3'
-import AudioIcon from '/assets/audio-icon.svg'
+import {
+  Box,
+  Button,
+  Flex,
+  HStack,
+  IconButton,
+  Image,
+  Slider,
+  Text,
+} from "@chakra-ui/react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Pause,
+  Play,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  VolumeX,
+} from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import audioFile from "/assets/audio/020.mp3"
+import AudioIcon from "/assets/audio-icon.svg"
 export default function AudioPlayer() {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [audioUrl] = useState(audioFile);
-  const [volume, setVolume] = useState(1); // 1 = 100% volume
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [audioUrl] = useState(audioFile)
+  const [volume, setVolume] = useState(1) // 1 = 100% volume
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false)
+  const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    const audio = audioRef.current
+    if (!audio) return
 
     const updateTime = () => {
-      setCurrentTime(audio.currentTime);
-    };
+      setCurrentTime(audio.currentTime)
+    }
 
     const updateDuration = () => {
-      if (audio.duration && !isNaN(audio.duration)) {
-        setDuration(audio.duration);
+      if (audio.duration && !Number.isNaN(audio.duration)) {
+        setDuration(audio.duration)
       }
-    };
+    }
 
     const handleEnded = () => {
-      setIsPlaying(false);
-      setCurrentTime(0);
-    };
+      setIsPlaying(false)
+      setCurrentTime(0)
+    }
 
-    audio.addEventListener('timeupdate', updateTime);
-    audio.addEventListener('loadedmetadata', updateDuration);
-    audio.addEventListener('durationchange', updateDuration);
-    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener("timeupdate", updateTime)
+    audio.addEventListener("loadedmetadata", updateDuration)
+    audio.addEventListener("durationchange", updateDuration)
+    audio.addEventListener("ended", handleEnded)
 
     return () => {
-      audio.removeEventListener('timeupdate', updateTime);
-      audio.removeEventListener('loadedmetadata', updateDuration);
-      audio.removeEventListener('durationchange', updateDuration);
-      audio.removeEventListener('ended', handleEnded);
-    };
-  }, [audioUrl]);
+      audio.removeEventListener("timeupdate", updateTime)
+      audio.removeEventListener("loadedmetadata", updateDuration)
+      audio.removeEventListener("durationchange", updateDuration)
+      audio.removeEventListener("ended", handleEnded)
+    }
+  }, [])
 
   const togglePlay = async () => {
-    const audio = audioRef.current;
+    const audio = audioRef.current
     if (!audio || !audioUrl) {
-      alert('الرجاء اختيار ملف صوتي أولاً');
-      return;
+      alert("الرجاء اختيار ملف صوتي أولاً")
+      return
     }
 
     try {
       if (isPlaying) {
-        audio.pause();
-        setIsPlaying(false);
+        audio.pause()
+        setIsPlaying(false)
       } else {
-        await audio.play();
-        setIsPlaying(true);
+        await audio.play()
+        setIsPlaying(true)
       }
     } catch (error) {
-      console.error('Error playing audio:', error);
-      setIsPlaying(false);
+      console.error("Error playing audio:", error)
+      setIsPlaying(false)
     }
-  };
+  }
 
   const handleProgressChange = (value: number[]) => {
-    const audio = audioRef.current;
-    const newTime = value[0];
-    setCurrentTime(newTime);
+    const audio = audioRef.current
+    const newTime = value[0]
+    setCurrentTime(newTime)
     if (audio) {
-      audio.currentTime = newTime;
+      audio.currentTime = newTime
     }
-  };
+  }
 
   const handleVolumeChange = (value: number) => {
-    setVolume(value);
+    setVolume(value)
     if (audioRef.current) {
-      audioRef.current.volume = value;
+      audioRef.current.volume = value
     }
-  };
+  }
 
   const toggleMute = () => {
     if (volume > 0) {
-      setVolume(0);
-      if (audioRef.current) audioRef.current.volume = 0;
+      setVolume(0)
+      if (audioRef.current) audioRef.current.volume = 0
     } else {
-      setVolume(1);
-      if (audioRef.current) audioRef.current.volume = 1;
+      setVolume(1)
+      if (audioRef.current) audioRef.current.volume = 1
     }
-  };
+  }
 
   return (
     <Box
       borderTopWidth={1}
-      position={'relative'}
+      position={"relative"}
       mx="auto"
       px={6}
       py={4}
-      dir="rtl">
+      dir="rtl"
+    >
       {/* Hidden Audio Element */}
+      {/* biome-ignore lint/a11y/useMediaCaption: Captions are not available yet */}
       <audio ref={audioRef} src={audioUrl} preload="metadata" />
-
 
       {/* Title Button with Navigation */}
       <Box
         position="absolute"
         display={{
-          base: 'flex',
-          lg: 'none'
+          base: "flex",
+          lg: "none",
         }}
         alignItems="center"
-        justifyContent={'space-around'}
+        justifyContent={"space-around"}
         top={-5}
-        bg={'brand.secondary'}
+        bg={"brand.secondary"}
         color="white"
         borderRadius="full"
         textAlign="center"
         mx="auto"
         left="50%"
         transform="translateX(-50%)"
-        w={'60%'}
+        w={"60%"}
       >
         <IconButton
           variant="ghost"
           color="white"
-          _hover={{ bg: 'whiteAlpha.200' }}
+          _hover={{ bg: "whiteAlpha.200" }}
           size="sm"
           aria-label="Previous"
         >
           <ChevronRight size={20} />
         </IconButton>
 
-        <Text fontSize="sm" fontWeight="medium" >
+        <Text fontSize="sm" fontWeight="medium">
           شرح الشيخ العصيمي
         </Text>
 
         <IconButton
           variant="ghost"
           color="white"
-          _hover={{ bg: 'whiteAlpha.200' }}
+          _hover={{ bg: "whiteAlpha.200" }}
           size="sm"
           aria-label="Next"
         >
@@ -148,23 +167,24 @@ export default function AudioPlayer() {
       </Box>
 
       {/* Player Controls */}
-      <Flex align="center" w="full" px={{
-        lg: 24
-      }} gap={4}>
-
-         <Button variant="ghost" p={2}
-         display={{
-          base: 'none',
-          lg:'block'
-         }}
-         >
-            <Image
-              src={AudioIcon}
-              boxSize={5}
-              objectFit="contain"
-            />
-          </Button>
-
+      <Flex
+        align="center"
+        w="full"
+        px={{
+          lg: 24,
+        }}
+        gap={4}
+      >
+        <Button
+          variant="ghost"
+          p={2}
+          display={{
+            base: "none",
+            lg: "block",
+          }}
+        >
+          <Image src={AudioIcon} boxSize={5} objectFit="contain" />
+        </Button>
 
         {/* Volume Control */}
         <Box position="relative">
@@ -173,7 +193,7 @@ export default function AudioPlayer() {
             onMouseEnter={() => setShowVolumeSlider(true)}
             variant="ghost"
             color="#2D836E"
-            _hover={{ color: '#1a4d4a' }}
+            _hover={{ color: "#1a4d4a" }}
             aria-label="الصوت"
           >
             {volume === 0 ? <VolumeX size={24} /> : <Volume2 size={24} />}
@@ -199,7 +219,9 @@ export default function AudioPlayer() {
                 <Text fontSize="xs" color="gray.600">
                   {Math.round(volume * 100)}%
                 </Text>
-                <Slider.Root height="200px" orientation="vertical"
+                <Slider.Root
+                  height="200px"
+                  orientation="vertical"
                   min={0}
                   max={100}
                   value={[Math.round(volume * 100)]}
@@ -209,21 +231,23 @@ export default function AudioPlayer() {
                 >
                   <Slider.Control>
                     <Slider.Track>
-                      <Slider.Range bg={'brand.primary'} />
+                      <Slider.Range bg={"brand.primary"} />
                     </Slider.Track>
-                    <Slider.Thumbs borderColor={'brand.primary'} />
+                    <Slider.Thumbs borderColor={"brand.primary"} />
                   </Slider.Control>
                 </Slider.Root>
               </Flex>
             </Box>
           )}
-
         </Box>
 
         {/* Progress Bar */}
-        <Box flex={1} px={{
-          lg: 12
-        }}>
+        <Box
+          flex={1}
+          px={{
+            lg: 12,
+          }}
+        >
           <Slider.Root
             min={0}
             max={duration || 100}
@@ -237,21 +261,20 @@ export default function AudioPlayer() {
                 borderRadius="4px"
                 bg="#e5e7eb"
                 opacity={audioUrl ? 1 : 0.5}
-                cursor={audioUrl ? 'pointer' : 'not-allowed'}
+                cursor={audioUrl ? "pointer" : "not-allowed"}
               >
-                <Slider.Range bg={'brand.secondary'} />
+                <Slider.Range bg={"brand.secondary"} />
               </Slider.Track>
 
               <Slider.Thumbs
                 boxSize={3}
-                bg={'white'}
-                borderColor={'brand.secondary'}
+                bg={"white"}
+                borderColor={"brand.secondary"}
                 borderRadius="full"
               />
             </Slider.Control>
           </Slider.Root>
         </Box>
-
 
         {/* Play/Pause Button */}
         <HStack gap={10}>
@@ -259,13 +282,13 @@ export default function AudioPlayer() {
           <IconButton
             h={10}
             w={10}
-            bg={'white'}
+            bg={"white"}
             color="brand.secondary"
             borderRadius="full"
             aria-label="السابق"
-            display={{ base: 'none', lg: 'inline-flex' }}
+            display={{ base: "none", lg: "inline-flex" }}
           >
-            <SkipForward fill='#2D836E' />
+            <SkipForward fill="#2D836E" />
           </IconButton>
 
           {/* Play / Pause – always visible */}
@@ -276,7 +299,7 @@ export default function AudioPlayer() {
             bg="brand.secondary"
             color="white"
             borderRadius="full"
-            aria-label={isPlaying ? 'إيقاف مؤقت' : 'تشغيل'}
+            aria-label={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
             opacity={audioUrl ? 1 : 0.5}
           >
             {isPlaying ? <Pause fill="white" /> : <Play fill="white" />}
@@ -290,13 +313,12 @@ export default function AudioPlayer() {
             color="brand.secondary"
             borderRadius="full"
             aria-label="التالي"
-            display={{ base: 'none', lg: 'inline-flex' }}
+            display={{ base: "none", lg: "inline-flex" }}
           >
-            <SkipBack fill='#2D836E' />
+            <SkipBack fill="#2D836E" />
           </IconButton>
         </HStack>
-
       </Flex>
     </Box>
-  );
+  )
 }
