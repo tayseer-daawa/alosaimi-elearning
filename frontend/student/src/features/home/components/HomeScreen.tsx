@@ -1,9 +1,9 @@
 import { useNavigate } from "@tanstack/react-router"
 import { lessons } from "@/shared/api/mockData"
-import WelcomeScreenComponents from "./WelcomeScreenComponents"
+import HomeScreenComponents from "./HomeScreenComponents"
 
 // Example usage component
-export default function WelcomeScreen() {
+export default function HomeScreen() {
   const navigate = useNavigate()
 
   const handleContinueLearning = () => {
@@ -28,7 +28,7 @@ export default function WelcomeScreen() {
   }
 
   return (
-    <WelcomeScreenComponents
+    <HomeScreenComponents
       allLessons={lessons}
       userName="أحمد" // You can get this from your auth context or user state
       onContinueLearning={handleContinueLearning}
