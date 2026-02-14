@@ -60,7 +60,7 @@ export default function SignupScreen() {
           </VStack>
 
 
-          <VStack gap={{ base: 8, md: 10, lg: 12 }} flex="1" justify="center">
+          <VStack gap={{ base: 8, md: 10, lg: 12 }} flex="1" justify="center" w={{ base: "100%", md: "75%", lg: "65%" }} alignSelf="center">
             {step === "name" && (
               <CustomField
                 label="الاسم الكامل"
@@ -88,7 +88,6 @@ export default function SignupScreen() {
               <Field.Root
                 invalid={!!error}
                 required
-                w={{ base: "100%", md: "75%", lg: "65%" }}
                 gap={{ base: 3, md: 4 }}
               >
                 <Field.Label
