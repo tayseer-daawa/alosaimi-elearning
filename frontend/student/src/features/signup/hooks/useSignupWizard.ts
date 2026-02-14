@@ -104,7 +104,6 @@ export function useSignupWizard() {
   return {
     step,
     title,
-    canContinue,
     error,
     isSubmitting,
     fullName,

@@ -19,7 +19,6 @@ const CustomField = ({
       invalid={!!error}
       required
       gap={{ base: 3, md: 4 }}
-      w={{ base: "100%", md: "75%", lg: "65%" }}
     >
       <Field.Label
         fontSize={{ base: "sm", md: "2xl", lg: "3xl" }}
