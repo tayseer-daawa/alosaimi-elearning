@@ -1,4 +1,4 @@
-import { Box, Button, Field, Flex, Image, Text, VStack } from "@chakra-ui/react"
+import { Box, Button, Field, Flex, Text, VStack } from "@chakra-ui/react"
 import { CustomField, ErrorText } from "@/shared/components/CustomField"
 import { useSignupWizard } from "../hooks/useSignupWizard"
 import { YesNoToggle } from "./YesNoToggle"
@@ -59,79 +59,77 @@ export default function SignupScreen() {
             </Text>
           </VStack>
 
-          {step === "welcome" ? (
-            <Image src="/assets/mecque.svg" alt="Mecque illustration" />
-          ) : (
-            <VStack gap={{ base: 8, md: 10, lg: 12 }} flex="1" justify="center">
-              {step === "name" && (
-                <CustomField
-                  label="الاسم الكامل"
-                  state={fullName}
-                  stateSetter={setFullName}
-                  autoComplete="name"
-                  handleKeyDownEnter={handleKeyDownEnter}
-                  error={error}
-                />
-              )}
 
-              {step === "email" && (
-                <CustomField
-                  label="البريد الإلكتروني"
-                  state={email}
-                  stateSetter={setEmail}
-                  autoComplete="email"
-                  type="email"
-                  handleKeyDownEnter={handleKeyDownEnter}
-                  error={error}
-                />
-              )}
+          <VStack gap={{ base: 8, md: 10, lg: 12 }} flex="1" justify="center">
+            {step === "name" && (
+              <CustomField
+                label="الاسم الكامل"
+                state={fullName}
+                stateSetter={setFullName}
+                autoComplete="name"
+                handleKeyDownEnter={handleKeyDownEnter}
+                error={error}
+              />
+            )}
 
-              {step === "goal" && (
-                <Field.Root
-                  invalid={!!error}
-                  required
-                  w={{ base: "100%", md: "75%", lg: "65%" }}
-                  gap={{ base: 3, md: 4 }}
+            {step === "email" && (
+              <CustomField
+                label="البريد الإلكتروني"
+                state={email}
+                stateSetter={setEmail}
+                autoComplete="email"
+                type="email"
+                handleKeyDownEnter={handleKeyDownEnter}
+                error={error}
+              />
+            )}
+
+            {step === "goal" && (
+              <Field.Root
+                invalid={!!error}
+                required
+                w={{ base: "100%", md: "75%", lg: "65%" }}
+                gap={{ base: 3, md: 4 }}
+              >
+                <Field.Label
+                  fontSize={{ base: "sm", md: "2xl", lg: "3xl" }}
+                  color="text.default"
                 >
-                  <Field.Label
-                    fontSize={{ base: "sm", md: "2xl", lg: "3xl" }}
-                    color="text.default"
-                  >
-                    {"هل تريد تلقي بعض الاشعارات على البريد الالكتروني؟"}
-                    <Field.RequiredIndicator />
-                  </Field.Label>
-                  <YesNoToggle
-                    value={wantsNotifications}
-                    onChange={setWantsNotifications}
-                  />
+                  {"هل تريد تلقي بعض الاشعارات على البريد الالكتروني؟"}
+                  <Field.RequiredIndicator />
+                </Field.Label>
+                <YesNoToggle
+                  value={wantsNotifications}
+                  onChange={setWantsNotifications}
+                />
 
-                  <ErrorText error={error} />
-                </Field.Root>
-              )}
+                <ErrorText error={error} />
+              </Field.Root>
+            )}
 
-              {step === "password" && (
-                <VStack w="100%" gap={{ base: 6, md: 8 }} align="center">
-                  <CustomField
-                    label="كلمة السر"
-                    state={password}
-                    stateSetter={setPassword}
-                    type="password"
-                    autoComplete="new-password"
-                    handleKeyDownEnter={handleKeyDownEnter}
-                  />
-                  <CustomField
-                    label="تأكيد كلمة السر"
-                    state={confirmPassword}
-                    stateSetter={setConfirmPassword}
-                    type="password"
-                    autoComplete="new-password"
-                    handleKeyDownEnter={handleKeyDownEnter}
-                    error={error}
-                  />
-                </VStack>
-              )}
-            </VStack>
-          )}
+            {step === "password" && (
+              <VStack w="100%" gap={{ base: 6, md: 8 }} align="center">
+                <CustomField
+                  label="كلمة السر"
+                  state={password}
+                  stateSetter={setPassword}
+                  type="password"
+                  autoComplete="new-password"
+                  handleKeyDownEnter={handleKeyDownEnter}
+                />
+                <CustomField
+                  label="تأكيد كلمة السر"
+                  state={confirmPassword}
+                  stateSetter={setConfirmPassword}
+                  type="password"
+                  autoComplete="new-password"
+                  handleKeyDownEnter={handleKeyDownEnter}
+                  error={error}
+                />
+              </VStack>
+            )}
+          </VStack>
+
 
           <Button
             size={{ base: "md", md: "lg" }}
@@ -141,7 +139,7 @@ export default function SignupScreen() {
             loading={isSubmitting}
             disabled={isSubmitting}
           >
-            {step === "welcome" ? "دخول" : "مواصلة"}
+            مواصلة
           </Button>
         </Flex>
       </Box>
