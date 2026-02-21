@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Text, VStack } from "@chakra-ui/react"
+import { useNavigate } from "@tanstack/react-router"
 import { CustomField } from "@/shared/components/CustomField"
 import { useLoginWizard } from "../hooks/useLoginWizard"
-import { useNavigate } from "@tanstack/react-router"
 
 export default function LoginScreen() {
   const {
@@ -53,7 +53,12 @@ export default function LoginScreen() {
               {title}
             </Text>
           </VStack>
-          <VStack gap={{ base: 8, md: 10, lg: 12 }} flex="1" justify="center" w={{ base: "100%", md: "75%", lg: "65%" }} alignSelf="center"
+          <VStack
+            gap={{ base: 8, md: 10, lg: 12 }}
+            flex="1"
+            justify="center"
+            w={{ base: "100%", md: "75%", lg: "65%" }}
+            alignSelf="center"
           >
             <CustomField
               label="البريد الإلكتروني"
@@ -78,7 +83,9 @@ export default function LoginScreen() {
                 alignSelf="self-start"
                 fontSize={{ base: "sm", md: "xl", lg: "xl" }}
                 marginTop={{
-                  base: 0, md: 4, lg: 6
+                  base: 0,
+                  md: 4,
+                  lg: 6,
                 }}
                 fontWeight="500"
                 color="text.default"
@@ -103,6 +110,6 @@ export default function LoginScreen() {
           </Button>
         </Flex>
       </Box>
-    </Box >
+    </Box>
   )
 }
