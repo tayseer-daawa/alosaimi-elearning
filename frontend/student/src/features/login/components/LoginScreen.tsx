@@ -77,7 +77,7 @@ export default function LoginScreen() {
               />
               <Button
                 alignSelf="self-start"
-                fontSize={{ base: "sm", md: "2xl", lg: "3xl" }}
+                fontSize={{ base: "sm", md: "xl", lg: "xl" }}
                 marginTop={{
                   base: 0, md: 4, lg: 6
                 }}
