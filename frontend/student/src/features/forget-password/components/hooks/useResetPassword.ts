@@ -37,7 +37,7 @@ export function useResetPassword() {
 
     setIsSubmitting(true)
     try {
-      await mockSubmit({ password })
+      await mockSubmit()
       await navigate({ to: "/login" })
     } finally {
       setIsSubmitting(false)
