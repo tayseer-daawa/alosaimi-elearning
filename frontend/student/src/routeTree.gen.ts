@@ -13,7 +13,9 @@ import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutWelcomeRouteImport } from './routes/_layout/welcome'
 import { Route as LayoutSignupRouteImport } from './routes/_layout/signup'
+import { Route as LayoutResetPasswordRouteImport } from './routes/_layout/reset-password'
 import { Route as LayoutLoginRouteImport } from './routes/_layout/login'
+import { Route as LayoutForgetPasswordRouteImport } from './routes/_layout/forget-password'
 import { Route as LayoutExampleRouteImport } from './routes/_layout/example'
 import { Route as LayoutProgramsIndexRouteImport } from './routes/_layout/programs/index'
 import { Route as LayoutProgramsProgramIdPhasesIndexRouteImport } from './routes/_layout/programs/$programId/phases/index'
@@ -39,9 +41,19 @@ const LayoutSignupRoute = LayoutSignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutResetPasswordRoute = LayoutResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutLoginRoute = LayoutLoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutForgetPasswordRoute = LayoutForgetPasswordRouteImport.update({
+  id: '/forget-password',
+  path: '/forget-password',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutExampleRoute = LayoutExampleRouteImport.update({
@@ -77,7 +89,9 @@ const LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/example': typeof LayoutExampleRoute
+  '/forget-password': typeof LayoutForgetPasswordRoute
   '/login': typeof LayoutLoginRoute
+  '/reset-password': typeof LayoutResetPasswordRoute
   '/signup': typeof LayoutSignupRoute
   '/welcome': typeof LayoutWelcomeRoute
   '/': typeof LayoutIndexRoute
@@ -88,7 +102,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/example': typeof LayoutExampleRoute
+  '/forget-password': typeof LayoutForgetPasswordRoute
   '/login': typeof LayoutLoginRoute
+  '/reset-password': typeof LayoutResetPasswordRoute
   '/signup': typeof LayoutSignupRoute
   '/welcome': typeof LayoutWelcomeRoute
   '/': typeof LayoutIndexRoute
@@ -101,7 +117,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
   '/_layout/example': typeof LayoutExampleRoute
+  '/_layout/forget-password': typeof LayoutForgetPasswordRoute
   '/_layout/login': typeof LayoutLoginRoute
+  '/_layout/reset-password': typeof LayoutResetPasswordRoute
   '/_layout/signup': typeof LayoutSignupRoute
   '/_layout/welcome': typeof LayoutWelcomeRoute
   '/_layout/': typeof LayoutIndexRoute
@@ -114,7 +132,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/example'
+    | '/forget-password'
     | '/login'
+    | '/reset-password'
     | '/signup'
     | '/welcome'
     | '/'
@@ -125,7 +145,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/example'
+    | '/forget-password'
     | '/login'
+    | '/reset-password'
     | '/signup'
     | '/welcome'
     | '/'
@@ -137,7 +159,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_layout'
     | '/_layout/example'
+    | '/_layout/forget-password'
     | '/_layout/login'
+    | '/_layout/reset-password'
     | '/_layout/signup'
     | '/_layout/welcome'
     | '/_layout/'
@@ -181,11 +205,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSignupRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/reset-password': {
+      id: '/_layout/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof LayoutResetPasswordRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/login': {
       id: '/_layout/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LayoutLoginRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/forget-password': {
+      id: '/_layout/forget-password'
+      path: '/forget-password'
+      fullPath: '/forget-password'
+      preLoaderRoute: typeof LayoutForgetPasswordRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/example': {
@@ -228,7 +266,9 @@ declare module '@tanstack/react-router' {
 
 interface LayoutRouteChildren {
   LayoutExampleRoute: typeof LayoutExampleRoute
+  LayoutForgetPasswordRoute: typeof LayoutForgetPasswordRoute
   LayoutLoginRoute: typeof LayoutLoginRoute
+  LayoutResetPasswordRoute: typeof LayoutResetPasswordRoute
   LayoutSignupRoute: typeof LayoutSignupRoute
   LayoutWelcomeRoute: typeof LayoutWelcomeRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
@@ -240,7 +280,9 @@ interface LayoutRouteChildren {
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutExampleRoute: LayoutExampleRoute,
+  LayoutForgetPasswordRoute: LayoutForgetPasswordRoute,
   LayoutLoginRoute: LayoutLoginRoute,
+  LayoutResetPasswordRoute: LayoutResetPasswordRoute,
   LayoutSignupRoute: LayoutSignupRoute,
   LayoutWelcomeRoute: LayoutWelcomeRoute,
   LayoutIndexRoute: LayoutIndexRoute,
