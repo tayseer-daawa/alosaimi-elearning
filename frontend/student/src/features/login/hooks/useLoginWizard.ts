@@ -1,11 +1,7 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
-
-function mockSubmit(values: {
-  email: string
-  password: string
-}) {
+function mockSubmit(values: { email: string; password: string }) {
   return new Promise<void>((resolve) => {
     setTimeout(() => {
       localStorage.setItem("access_token", "mock-student-token")
@@ -23,23 +19,26 @@ function mockSubmit(values: {
 export function useLoginWizard() {
   const navigate = useNavigate()
 
-
   const [email, setEmail] = useState("")
 
   const [password, setPassword] = useState("")
-  const [error, setError] = useState<{ email: string | null, password: string | null } | null>(null)
+  const [error, setError] = useState<{
+    email: string | null
+    password: string | null
+  } | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const title = "أدخل معلومات الحساب"
-
 
   const canContinue = email.length > 0 && password.length > 0
 
   const validateCurrentStep = () => {
     if (canContinue) return true
-    setError({ email: !email.length ? "الرجاء إدخال بريدك الإلكتروني" : null, password: !password.length ? "الرجاء إدخال كلمة السر" : null })
+    setError({
+      email: !email.length ? "الرجاء إدخال بريدك الإلكتروني" : null,
+      password: !password.length ? "الرجاء إدخال كلمة السر" : null,
+    })
     return false
-
   }
 
   const next = async () => {
@@ -55,7 +54,6 @@ export function useLoginWizard() {
       setIsSubmitting(false)
     }
   }
-
 
   return {
     title,

@@ -45,7 +45,6 @@ export function useSignupWizard() {
 
   const title = "أدخل بعض المعلومات"
 
-
   const canContinue = useMemo(() => {
     switch (step) {
       case "name":

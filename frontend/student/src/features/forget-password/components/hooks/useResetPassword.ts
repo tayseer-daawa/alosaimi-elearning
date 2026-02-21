@@ -1,69 +1,58 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
+function mockSubmit() {
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+      localStorage.setItem("access_token", "mock-student-token")
 
-function mockSubmit(values: {
-    password: string
-}) {
-    return new Promise<void>((resolve) => {
-        setTimeout(() => {
-            localStorage.setItem("access_token", "mock-student-token")
-
-            resolve()
-        }, 600)
-    })
+      resolve()
+    }, 600)
+  })
 }
 
 export function useResetPassword() {
-    const navigate = useNavigate()
+  const navigate = useNavigate()
 
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const title = "تحديث كلمة السر"
 
-    const [password, setPassword] = useState("")
-    const [confirmPassword, setConfirmPassword] = useState("")
-    const [error, setError] = useState<string | null>(null)
-    const [isSubmitting, setIsSubmitting] = useState(false)
+  const canContinue = password.length >= 6 && password === confirmPassword
 
-    const title = "تحديث كلمة السر"
+  const validateCurrentStep = () => {
+    if (canContinue) return true
 
+    setError("كلمة السر يجب أن تكون 6 أحرف على الأقل وأن تتطابق مع التأكيد")
+    return false
+  }
 
-    const canContinue = password.length >= 6 && password === confirmPassword
+  const next = async () => {
+    setError(null)
 
+    if (!validateCurrentStep()) return
 
-    const validateCurrentStep = () => {
-        if (canContinue) return true
-
-        setError("كلمة السر يجب أن تكون 6 أحرف على الأقل وأن تتطابق مع التأكيد")
-        return false
-
+    setIsSubmitting(true)
+    try {
+      await mockSubmit({ password })
+      await navigate({ to: "/login" })
+    } finally {
+      setIsSubmitting(false)
     }
+    return
+  }
 
-    const next = async () => {
-        setError(null)
-
-        if (!validateCurrentStep()) return
-
-
-        setIsSubmitting(true)
-        try {
-            await mockSubmit({ password })
-            await navigate({ to: "/login" })
-        } finally {
-            setIsSubmitting(false)
-        }
-        return
-
-
-    }
-
-    return {
-        title,
-        error,
-        isSubmitting,
-        password,
-        setPassword,
-        confirmPassword,
-        setConfirmPassword,
-        next,
-    }
+  return {
+    title,
+    error,
+    isSubmitting,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    next,
+  }
 }
