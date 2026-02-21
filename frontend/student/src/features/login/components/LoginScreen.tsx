@@ -1,21 +1,21 @@
 import { Box, Button, Flex, Text, VStack } from "@chakra-ui/react"
 import { CustomField } from "@/shared/components/CustomField"
 import { useLoginWizard } from "../hooks/useLoginWizard"
+import { useNavigate } from "@tanstack/react-router"
 
 export default function LoginScreen() {
   const {
     title,
     error,
     isSubmitting,
-
     email,
     setEmail,
-
     password,
     setPassword,
-
     next,
   } = useLoginWizard()
+
+  const navigate = useNavigate()
 
   const handleKeyDownEnter = (e: React.KeyboardEvent) => {
     if (e.key !== "Enter") return
@@ -73,7 +73,6 @@ export default function LoginScreen() {
                 autoComplete="new-password"
                 handleKeyDownEnter={handleKeyDownEnter}
                 error={error?.password}
-
               />
               <Button
                 alignSelf="self-start"
@@ -82,15 +81,18 @@ export default function LoginScreen() {
                   base: 0, md: 4, lg: 6
                 }}
                 fontWeight="500"
-                color="text.default" variant="ghost"
+                color="text.default"
+                variant="ghost"
                 p={0}
-
-              > نسيت كلمة السر؟</Button></Box>
-
-
+                textDecoration="underline"
+                onClick={() => navigate({ to: "/forget-password" })}
+              >
+                نسيت كلمة السر؟
+              </Button>
+            </Box>
           </VStack>
           <Button
-            size={{ base: "md", md: "lg" }}
+            size={{ base: "md", md: "md" }}
             w={{ base: "80%", md: "60%", lg: "50%" }}
             alignSelf="center"
             onClick={next}
