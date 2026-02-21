@@ -91,7 +91,7 @@ export default function SignupScreen() {
                 gap={{ base: 3, md: 4 }}
               >
                 <Field.Label
-                  fontSize={{ base: "sm", md: "2xl", lg: "3xl" }}
+                  fontSize={{ base: "md", md: "xl", lg: "xl" }}
                   color="text.default"
                 >
                   {"هل تريد تلقي بعض الاشعارات على البريد الالكتروني؟"}
@@ -131,7 +131,7 @@ export default function SignupScreen() {
 
 
           <Button
-            size={{ base: "md", md: "lg" }}
+            size={{ base: "md", md: "md" }}
             w={{ base: "80%", md: "60%", lg: "50%" }}
             alignSelf="center"
             onClick={next}
