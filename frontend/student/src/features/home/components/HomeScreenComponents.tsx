@@ -24,7 +24,7 @@ interface Lesson {
   isActive: boolean
 }
 
-interface WelcomeScreenProps {
+interface HomeScreenProps {
   currentLesson?: Lesson
   allLessons?: Lesson[]
   userName?: string
@@ -32,13 +32,13 @@ interface WelcomeScreenProps {
   onViewAllPrograms?: () => void
 }
 
-export default function WelcomeScreenComponents({
+export default function HomeScreenComponents({
   currentLesson,
   allLessons = [],
   userName = "الطالب",
   onContinueLearning,
   onViewAllPrograms,
-}: WelcomeScreenProps) {
+}: HomeScreenProps) {
   // Get active lesson or first lesson with progress
   const activeLesson =
     currentLesson || allLessons.find((l) => l.isActive) || allLessons[0]

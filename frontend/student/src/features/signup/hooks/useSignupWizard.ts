@@ -1,9 +1,9 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 
-type Step = "welcome" | "name" | "email" | "goal" | "password"
+type Step = "name" | "email" | "goal" | "password"
 
-const steps: Step[] = ["welcome", "name", "email", "goal", "password"]
+const steps: Step[] = ["name", "email", "goal", "password"]
 
 function mockSubmit(values: {
   fullName: string
@@ -31,7 +31,7 @@ export function useSignupWizard() {
   const navigate = useNavigate()
 
   const [stepIndex, setStepIndex] = useState(0)
-  const step = steps[stepIndex] ?? "welcome"
+  const step = steps[stepIndex] ?? "name"
 
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
@@ -43,15 +43,10 @@ export function useSignupWizard() {
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const title = useMemo(() => {
-    if (step === "welcome") return "مرحبا بك في موقع برامج الشيخ العصيمي"
-    return "أدخل بعض المعلومات"
-  }, [step])
+  const title = "أدخل بعض المعلومات"
 
   const canContinue = useMemo(() => {
     switch (step) {
-      case "welcome":
-        return true
       case "name":
         return fullName.trim().length > 1
       case "email":
@@ -108,7 +103,6 @@ export function useSignupWizard() {
   return {
     step,
     title,
-    canContinue,
     error,
     isSubmitting,
     fullName,

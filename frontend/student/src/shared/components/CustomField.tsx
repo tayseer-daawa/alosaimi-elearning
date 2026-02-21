@@ -15,14 +15,9 @@ const CustomField = ({
   error?: string | null
 } & Omit<InputProps, "value" | "onChange">) => {
   return (
-    <Field.Root
-      invalid={!!error}
-      required
-      gap={{ base: 3, md: 4 }}
-      w={{ base: "100%", md: "75%", lg: "65%" }}
-    >
+    <Field.Root invalid={!!error} required gap={{ base: 3, md: 4 }}>
       <Field.Label
-        fontSize={{ base: "sm", md: "2xl", lg: "3xl" }}
+        fontSize={{ base: "md", md: "xl", lg: "xl" }}
         fontWeight="500"
         color="text.default"
       >
@@ -30,7 +25,7 @@ const CustomField = ({
       </Field.Label>
       <Input
         size={{ base: "md", lg: "lg" }}
-        fontSize={{ base: "xl", md: "5xl", lg: "5xl" }}
+        fontSize={{ base: "xl", md: "xl", lg: "xl" }}
         fontWeight={600}
         variant="flushed"
         onChange={(e) => stateSetter(e.target.value)}
@@ -38,7 +33,7 @@ const CustomField = ({
         placeholder=""
         borderBottomWidth={{ base: "2px", md: "3px", lg: "4px" }}
         _focus={{ borderColor: "brand.primary", borderBottomWidth: "3px" }}
-        height={{ base: "3.25rem", md: 32, lg: 24 }}
+        height={{ base: "3.25rem", md: 16, lg: 12 }}
         {...props}
       />
       <ErrorText error={error} />
@@ -49,7 +44,7 @@ const CustomField = ({
 const ErrorText = ({ error }: { error?: string | null }) => {
   return (
     <Field.ErrorText
-      fontSize={{ base: "md", md: "2xl", lg: "3xl" }}
+      fontSize={{ base: "sm", md: "xl", lg: "xl" }}
       lineHeight={{ base: "short", md: "shorter" }}
       color="red.500"
       textAlign="start"
