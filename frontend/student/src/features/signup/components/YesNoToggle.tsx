@@ -10,8 +10,8 @@ export function YesNoToggle({
   const yesSelected = value === true
   const noSelected = value === false
 
-  const baseWordFontSize = { base: "lg", md: "2xl", lg: "3xl" } as const
-  const selectedWordFontSize = { base: "2xl", md: "5xl", lg: "5xl" } as const
+  const baseWordFontSize = { base: "xl", md: "xl", lg: "xl" } as const
+  const selectedWordFontSize = { base: "2xl", md: "3xl", lg: "3xl" } as const
 
   return (
     <Box w="100%">
@@ -54,7 +54,7 @@ export function YesNoToggle({
 
       <Box
         mt={{ base: 3, md: 4 }}
-        borderBottomWidth={{ base: "2px", md: "3px", lg: "4px" }}
+        borderBottomWidth={{ base: "2px", md: "3px", lg: "3px" }}
         borderColor="brand.primary"
       />
     </Box>
