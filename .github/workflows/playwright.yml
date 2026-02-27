@@ -103,7 +103,7 @@ jobs:
       run: npm ci
       working-directory: frontend/admin
     - name: Download blob reports from GitHub Actions Artifacts
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         path: frontend/admin/all-blob-reports
         pattern: blob-report-*
