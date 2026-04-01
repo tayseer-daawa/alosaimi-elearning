@@ -1,6 +1,6 @@
 import { Box, Button, Flex, Text, VStack } from "@chakra-ui/react"
 import { CustomField } from "@/shared/components/CustomField"
-import { useResetPassword } from "./hooks/useResetPassword"
+import { useResetPassword } from "../hooks/useResetPassword"
 
 export default function ResetPasswordScreen() {
   const {
