@@ -1,4 +1,5 @@
-import { Box, Button, Field, Flex, Text, VStack } from "@chakra-ui/react"
+import AuthBtnCta from "@/shared/components/AuthBtnCta"
+import { Field, Text, VStack } from "@chakra-ui/react"
 import { CustomField, ErrorText } from "@/shared/components/CustomField"
 import { useSignupWizard } from "../hooks/useSignupWizard"
 import { YesNoToggle } from "./YesNoToggle"
@@ -113,16 +114,9 @@ export default function SignupScreen() {
         )}
       </VStack>
 
-      <Button
-        size={{ base: "md", md: "md" }}
-        w={{ base: "80%", md: "60%", lg: "50%" }}
-        alignSelf="center"
-        onClick={next}
-        loading={isSubmitting}
-        disabled={isSubmitting}
-      >
+      <AuthBtnCta onClick={next} loading={isSubmitting} disabled={isSubmitting}>
         مواصلة
-      </Button>
+      </AuthBtnCta>
     </AuthLayout>
   )
 }

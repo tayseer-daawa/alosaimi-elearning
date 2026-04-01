@@ -1,4 +1,5 @@
-import { Button, Text, VStack } from "@chakra-ui/react"
+import AuthBtnCta from "@/shared/components/AuthBtnCta"
+import { Text, VStack } from "@chakra-ui/react"
 import { CustomField } from "@/shared/components/CustomField"
 import { useResetPassword } from "../hooks/useResetPassword"
 import AuthLayout from "@/shared/components/AuthLayout"
@@ -62,16 +63,9 @@ export default function ResetPasswordScreen() {
         </VStack>
       </VStack>
 
-      <Button
-        alignSelf="center"
-        size={{ base: "md", md: "md" }}
-        w={{ base: "80%", md: "60%", lg: "50%" }}
-        onClick={next}
-        loading={isSubmitting}
-        disabled={isSubmitting}
-      >
+      <AuthBtnCta onClick={next} loading={isSubmitting} disabled={isSubmitting}>
         مواصلة
-      </Button>
+      </AuthBtnCta>
     </AuthLayout>
   )
 }
