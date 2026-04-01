@@ -1,5 +1,6 @@
 import AuthBtnCta from "@/shared/components/AuthBtnCta"
-import { Button, Text, VStack } from "@chakra-ui/react"
+import AuthInlineBtn from "@/shared/components/AuthInlineBtn"
+import { Text, VStack } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
 import { CustomField } from "@/shared/components/CustomField"
 import { useForgetPassword } from "../hooks/useForgetPassword"
@@ -58,23 +59,9 @@ export default function ForgetPasswordScreen() {
             الإلكتروني.
           </Text>
         )}
-        <Button
-          alignSelf="self-start"
-          fontSize={{ base: "sm", md: "xl", lg: "xl" }}
-          marginTop={{
-            base: 0,
-            md: 4,
-            lg: 6,
-          }}
-          fontWeight="500"
-          color="text.default"
-          variant="ghost"
-          p={0}
-          textDecoration="underline"
-          onClick={() => navigate({ to: "/login" })}
-        >
+        <AuthInlineBtn onClick={() => navigate({ to: "/" })}>
           العودة إلى تسجيل الدخول
-        </Button>
+        </AuthInlineBtn>
       </VStack>
 
       <AuthBtnCta onClick={next} loading={isSubmitting} disabled={isSubmitting}>
