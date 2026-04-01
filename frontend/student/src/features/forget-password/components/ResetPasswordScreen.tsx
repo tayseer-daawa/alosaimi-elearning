@@ -1,4 +1,4 @@
-import AuthBtnCta from "@/shared/components/AuthBtnCta"
+import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import { Text, VStack } from "@chakra-ui/react"
 import { CustomField } from "@/shared/components/CustomField"
 import { useResetPassword } from "../hooks/useResetPassword"
@@ -63,9 +63,9 @@ export default function ResetPasswordScreen() {
         </VStack>
       </VStack>
 
-      <AuthBtnCta onClick={next} loading={isSubmitting} disabled={isSubmitting}>
+      <AuthCtaBtn onClick={next} loading={isSubmitting} disabled={isSubmitting}>
         مواصلة
-      </AuthBtnCta>
+      </AuthCtaBtn>
     </AuthLayout>
   )
 }
