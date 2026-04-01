@@ -20,7 +20,7 @@ const WelcomeScreen = () => {
       <Image src="/assets/mecque.svg" alt="Mecque illustration" />
 
       <Button
-        size={{ base: "md", md: "lg" }}
+        size={{ base: "md", md: "md" }}
         w={{ base: "80%", md: "60%", lg: "50%" }}
         alignSelf="center"
         onClick={() => navigate({ to: "/signup" })}
@@ -29,7 +29,7 @@ const WelcomeScreen = () => {
       </Button>
 
       <Button
-        size={{ base: "md", md: "lg" }}
+        size={{ base: "md", md: "md" }}
         w={{ base: "80%", md: "60%", lg: "50%" }}
         alignSelf="center"
         onClick={() => navigate({ to: "/login" })}
