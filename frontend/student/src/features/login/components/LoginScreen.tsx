@@ -1,4 +1,4 @@
-import AuthBtnCta from "@/shared/components/AuthBtnCta"
+import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import AuthInlineBtn from "@/shared/components/AuthInlineBtn"
 import { Box, Button, Text, VStack } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
@@ -69,9 +69,9 @@ export default function LoginScreen() {
           </AuthInlineBtn>
         </Box>
       </VStack>
-      <AuthBtnCta onClick={next} loading={isSubmitting} disabled={isSubmitting}>
+      <AuthCtaBtn onClick={next} loading={isSubmitting} disabled={isSubmitting}>
         مواصلة
-      </AuthBtnCta>
+      </AuthCtaBtn>
     </AuthLayout>
   )
 }

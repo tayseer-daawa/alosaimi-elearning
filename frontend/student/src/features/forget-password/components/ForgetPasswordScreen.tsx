@@ -1,4 +1,4 @@
-import AuthBtnCta from "@/shared/components/AuthBtnCta"
+import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import AuthInlineBtn from "@/shared/components/AuthInlineBtn"
 import { Text, VStack } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
@@ -64,9 +64,9 @@ export default function ForgetPasswordScreen() {
         </AuthInlineBtn>
       </VStack>
 
-      <AuthBtnCta onClick={next} loading={isSubmitting} disabled={isSubmitting}>
+      <AuthCtaBtn onClick={next} loading={isSubmitting} disabled={isSubmitting}>
         إرسال
-      </AuthBtnCta>
+      </AuthCtaBtn>
     </AuthLayout>
   )
 }

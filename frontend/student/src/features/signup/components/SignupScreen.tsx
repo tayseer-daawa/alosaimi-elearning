@@ -1,4 +1,4 @@
-import AuthBtnCta from "@/shared/components/AuthBtnCta"
+import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import { Field, Text, VStack } from "@chakra-ui/react"
 import { CustomField, ErrorText } from "@/shared/components/CustomField"
 import { useSignupWizard } from "../hooks/useSignupWizard"
@@ -114,9 +114,9 @@ export default function SignupScreen() {
         )}
       </VStack>
 
-      <AuthBtnCta onClick={next} loading={isSubmitting} disabled={isSubmitting}>
+      <AuthCtaBtn onClick={next} loading={isSubmitting} disabled={isSubmitting}>
         مواصلة
-      </AuthBtnCta>
+      </AuthCtaBtn>
     </AuthLayout>
   )
 }
