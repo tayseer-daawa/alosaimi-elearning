@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Text, VStack } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
 import { CustomField } from "@/shared/components/CustomField"
-import { useForgetPassword } from "./hooks/useForgetPassword"
+import { useForgetPassword } from "../hooks/useForgetPassword"
 
 export default function ForgetPasswordScreen() {
   const { error, isSubmitting, email, setEmail, next, success } =
