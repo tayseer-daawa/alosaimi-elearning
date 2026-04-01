@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Text, VStack } from "@chakra-ui/react"
+import { Box, Button, Text, VStack } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
 import { CustomField } from "@/shared/components/CustomField"
 import { useLoginWizard } from "../hooks/useLoginWizard"
