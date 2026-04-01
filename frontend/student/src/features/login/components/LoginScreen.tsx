@@ -1,10 +1,10 @@
+import { Box, Text, VStack } from "@chakra-ui/react"
+import { useNavigate } from "@tanstack/react-router"
 import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import AuthInlineBtn from "@/shared/components/AuthInlineBtn"
-import { Box, Button, Text, VStack } from "@chakra-ui/react"
-import { useNavigate } from "@tanstack/react-router"
+import AuthLayout from "@/shared/components/AuthLayout"
 import { CustomField } from "@/shared/components/CustomField"
 import { useLoginWizard } from "../hooks/useLoginWizard"
-import AuthLayout from "@/shared/components/AuthLayout"
 
 export default function LoginScreen() {
   const {

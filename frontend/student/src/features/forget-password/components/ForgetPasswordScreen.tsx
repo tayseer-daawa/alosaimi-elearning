@@ -1,10 +1,10 @@
-import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
-import AuthInlineBtn from "@/shared/components/AuthInlineBtn"
 import { Text, VStack } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
+import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
+import AuthInlineBtn from "@/shared/components/AuthInlineBtn"
+import AuthLayout from "@/shared/components/AuthLayout"
 import { CustomField } from "@/shared/components/CustomField"
 import { useForgetPassword } from "../hooks/useForgetPassword"
-import AuthLayout from "@/shared/components/AuthLayout"
 
 export default function ForgetPasswordScreen() {
   const { error, isSubmitting, email, setEmail, next, success } =
@@ -55,8 +55,7 @@ export default function ForgetPasswordScreen() {
             mt={2}
             textAlign="center"
           >
-            تم إرسال البريد الإلكتروني بنجاح. يرجى التحقق من بريدك
-            الإلكتروني.
+            تم إرسال البريد الإلكتروني بنجاح. يرجى التحقق من بريدك الإلكتروني.
           </Text>
         )}
         <AuthInlineBtn onClick={() => navigate({ to: "/" })}>

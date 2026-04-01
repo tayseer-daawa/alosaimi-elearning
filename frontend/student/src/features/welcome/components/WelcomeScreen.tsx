@@ -1,7 +1,7 @@
-import AuthLayout from "@/shared/components/AuthLayout"
-import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import { Image, Text, VStack } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
+import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
+import AuthLayout from "@/shared/components/AuthLayout"
 
 const WelcomeScreen = () => {
   const navigate = useNavigate()
