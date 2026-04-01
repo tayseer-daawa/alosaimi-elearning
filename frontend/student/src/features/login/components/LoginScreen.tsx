@@ -1,4 +1,5 @@
 import AuthBtnCta from "@/shared/components/AuthBtnCta"
+import AuthInlineBtn from "@/shared/components/AuthInlineBtn"
 import { Box, Button, Text, VStack } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
 import { CustomField } from "@/shared/components/CustomField"
@@ -63,23 +64,9 @@ export default function LoginScreen() {
             handleKeyDownEnter={handleKeyDownEnter}
             error={error?.password}
           />
-          <Button
-            alignSelf="self-start"
-            fontSize={{ base: "sm", md: "xl", lg: "xl" }}
-            marginTop={{
-              base: 0,
-              md: 4,
-              lg: 6,
-            }}
-            fontWeight="500"
-            color="text.default"
-            variant="ghost"
-            p={0}
-            textDecoration="underline"
-            onClick={() => navigate({ to: "/forget-password" })}
-          >
+          <AuthInlineBtn onClick={() => navigate({ to: "/forget-password" })}>
             نسيت كلمة السر؟
-          </Button>
+          </AuthInlineBtn>
         </Box>
       </VStack>
       <AuthBtnCta onClick={next} loading={isSubmitting} disabled={isSubmitting}>
