@@ -1,8 +1,8 @@
-import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import { Text, VStack } from "@chakra-ui/react"
+import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
+import AuthLayout from "@/shared/components/AuthLayout"
 import { CustomField } from "@/shared/components/CustomField"
 import { useResetPassword } from "../hooks/useResetPassword"
-import AuthLayout from "@/shared/components/AuthLayout"
 
 export default function ResetPasswordScreen() {
   const {

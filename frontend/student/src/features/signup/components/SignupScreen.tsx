@@ -1,9 +1,9 @@
-import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import { Field, Text, VStack } from "@chakra-ui/react"
+import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
+import AuthLayout from "@/shared/components/AuthLayout"
 import { CustomField, ErrorText } from "@/shared/components/CustomField"
 import { useSignupWizard } from "../hooks/useSignupWizard"
 import { YesNoToggle } from "./YesNoToggle"
-import AuthLayout from "@/shared/components/AuthLayout"
 
 export default function SignupScreen() {
   const {
