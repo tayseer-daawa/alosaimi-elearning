@@ -1,3 +1,4 @@
+import AuthBtnCta from "@/shared/components/AuthBtnCta"
 import { Box, Button, Text, VStack } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
 import { CustomField } from "@/shared/components/CustomField"
@@ -81,16 +82,9 @@ export default function LoginScreen() {
           </Button>
         </Box>
       </VStack>
-      <Button
-        size={{ base: "md", md: "md" }}
-        w={{ base: "80%", md: "60%", lg: "50%" }}
-        alignSelf="center"
-        onClick={next}
-        loading={isSubmitting}
-        disabled={isSubmitting}
-      >
+      <AuthBtnCta onClick={next} loading={isSubmitting} disabled={isSubmitting}>
         مواصلة
-      </Button>
+      </AuthBtnCta>
     </AuthLayout>
   )
 }

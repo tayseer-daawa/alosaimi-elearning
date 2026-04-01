@@ -1,5 +1,6 @@
 import AuthLayout from "@/shared/components/AuthLayout"
-import { Button, Image, Text, VStack } from "@chakra-ui/react"
+import AuthBtnCta from "@/shared/components/AuthBtnCta"
+import { Image, Text, VStack } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
 
 const WelcomeScreen = () => {
@@ -19,23 +20,13 @@ const WelcomeScreen = () => {
 
       <Image src="/assets/mecque.svg" alt="Mecque illustration" />
 
-      <Button
-        size={{ base: "md", md: "md" }}
-        w={{ base: "80%", md: "60%", lg: "50%" }}
-        alignSelf="center"
-        onClick={() => navigate({ to: "/signup" })}
-      >
+      <AuthBtnCta onClick={() => navigate({ to: "/signup" })}>
         حساب جديد
-      </Button>
+      </AuthBtnCta>
 
-      <Button
-        size={{ base: "md", md: "md" }}
-        w={{ base: "80%", md: "60%", lg: "50%" }}
-        alignSelf="center"
-        onClick={() => navigate({ to: "/login" })}
-      >
+      <AuthBtnCta onClick={() => navigate({ to: "/login" })}>
         تسجيل دخول
-      </Button>
+      </AuthBtnCta>
     </AuthLayout>
   )
 }
