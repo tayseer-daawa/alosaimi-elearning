@@ -26,7 +26,8 @@ const WelcomeScreen = () => {
 
         <AuthCtaBtn onClick={() => navigate({ to: "/login" })}>
           تسجيل دخول
-        </AuthCtaBtn></VStack>
+        </AuthCtaBtn>
+      </VStack>
     </AuthLayout>
   )
 }

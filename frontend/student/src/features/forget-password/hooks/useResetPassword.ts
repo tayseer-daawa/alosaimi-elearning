@@ -1,6 +1,6 @@
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import { useState } from "react"
-import { LoginService, ApiError } from "@/client"
+import { ApiError, LoginService } from "@/client"
 
 export function useResetPassword() {
   const navigate = useNavigate()
@@ -42,15 +42,15 @@ export function useResetPassword() {
       await LoginService.resetPassword({
         requestBody: {
           token: token,
-          new_password: password
-        }
+          new_password: password,
+        },
       })
       console.log("Password reset successful! Navigating to login...")
       await navigate({ to: "/login" })
     } catch (err: any) {
       console.error("DEBUG: raw error from LoginService.resetPassword:", err)
       console.dir(err)
-      
+
       if (err instanceof ApiError) {
         console.error("DEBUG: ApiError body:", err.body)
         const detail = err.body?.detail

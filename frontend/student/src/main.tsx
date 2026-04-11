@@ -1,10 +1,10 @@
 import { RouterProvider } from "@tanstack/react-router"
 import React from "react"
 import ReactDOM from "react-dom/client"
+import { OpenAPI } from "./client"
 import { QueryProvider } from "./providers/query"
 import { ThemeProvider } from "./providers/theme"
 import { router } from "./routes/router"
-import { OpenAPI } from "./client"
 
 // Point the API client to the VITE_API_URL
 OpenAPI.BASE = import.meta.env.VITE_API_URL || ""

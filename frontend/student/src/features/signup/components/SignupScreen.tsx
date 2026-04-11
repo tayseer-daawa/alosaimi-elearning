@@ -1,11 +1,11 @@
 import { Field, Text, VStack } from "@chakra-ui/react"
+import { Link } from "@tanstack/react-router"
 import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import AuthLayout from "@/shared/components/AuthLayout"
 import { CustomField, ErrorText } from "@/shared/components/CustomField"
 import { useSignupWizard } from "../hooks/useSignupWizard"
-import { YesNoToggle } from "./YesNoToggle"
 import { GenderToggle } from "./GenderToggle"
-import { Link } from "@tanstack/react-router"
+import { YesNoToggle } from "./YesNoToggle"
 
 export default function SignupScreen() {
   const {
@@ -107,10 +107,7 @@ export default function SignupScreen() {
               {"الجنس"}
               <Field.RequiredIndicator />
             </Field.Label>
-            <GenderToggle
-              value={isMale}
-              onChange={setIsMale}
-            />
+            <GenderToggle value={isMale} onChange={setIsMale} />
 
             <ErrorText error={error} />
           </Field.Root>
@@ -158,12 +155,28 @@ export default function SignupScreen() {
       </VStack>
 
       <VStack gap={4} w="100%">
-        <AuthCtaBtn onClick={next} loading={isSubmitting} disabled={isSubmitting}>
+        <AuthCtaBtn
+          onClick={next}
+          loading={isSubmitting}
+          disabled={isSubmitting}
+        >
           مواصلة
         </AuthCtaBtn>
-        <Text color="text.muted" fontSize={{ base: "sm", md: "md" }} textAlign="center" fontWeight={500}>
+        <Text
+          color="text.muted"
+          fontSize={{ base: "sm", md: "md" }}
+          textAlign="center"
+          fontWeight={500}
+        >
           لديك حساب؟{" "}
-          <Link to="/login" style={{ color: "var(--chakra-colors-brand-primary)", fontWeight: 700, textDecoration: "underline" }}>
+          <Link
+            to="/login"
+            style={{
+              color: "var(--chakra-colors-brand-primary)",
+              fontWeight: 700,
+              textDecoration: "underline",
+            }}
+          >
             تسجيل الدخول
           </Link>
         </Text>

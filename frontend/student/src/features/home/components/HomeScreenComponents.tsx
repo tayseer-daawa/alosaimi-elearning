@@ -7,13 +7,13 @@ import {
   HStack,
   Icon,
   Image,
+  Menu,
   Text,
   VStack,
-  Menu,
 } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
 
-import { BookOpen, GraduationCap, MoveLeft, LogOut } from "lucide-react"
+import { BookOpen, GraduationCap, LogOut, MoveLeft } from "lucide-react"
 import MenuIcon from "/assets/menu.svg"
 
 interface Lesson {
@@ -68,15 +68,23 @@ export default function HomeScreenComponents({
         mt={{ base: 3, lg: 5 }}
         mb={{ base: 8, lg: 10 }}
       >
-        <Flex align="center" justify="center" h="100%" w="full" position="relative">
+        <Flex
+          align="center"
+          justify="center"
+          h="100%"
+          w="full"
+          position="relative"
+        >
           <Box position="absolute" right={{ base: 0, lg: 14 }} zIndex="10">
-            <Menu.Root dir="rtl" positioning={{ placement: "bottom-start", offset: { mainAxis: 8 } }}>
+            <Menu.Root
+              dir="rtl"
+              positioning={{
+                placement: "bottom-start",
+                offset: { mainAxis: 8 },
+              }}
+            >
               <Menu.Trigger asChild>
-                <Button
-                  variant="ghost"
-                  p={2}
-                  _hover={{ bg: "transparent" }}
-                >
+                <Button variant="ghost" p={2} _hover={{ bg: "transparent" }}>
                   <Image
                     src={MenuIcon}
                     boxSize={{ base: 6, lg: 12 }}
@@ -84,7 +92,14 @@ export default function HomeScreenComponents({
                   />
                 </Button>
               </Menu.Trigger>
-              <Menu.Content minW="200px" p={2} borderRadius="xl" boxShadow="lg" bg="white" zIndex="popover">
+              <Menu.Content
+                minW="200px"
+                p={2}
+                borderRadius="xl"
+                boxShadow="lg"
+                bg="white"
+                zIndex="popover"
+              >
                 <Menu.Item
                   value="logout"
                   color="red.500"
@@ -99,7 +114,9 @@ export default function HomeScreenComponents({
                 >
                   <HStack gap={3} w="100%">
                     <Icon as={LogOut} boxSize={5} />
-                    <Text fontWeight="600" fontSize="md">تسجيل الخروج</Text>
+                    <Text fontWeight="600" fontSize="md">
+                      تسجيل الخروج
+                    </Text>
                   </HStack>
                 </Menu.Item>
               </Menu.Content>
