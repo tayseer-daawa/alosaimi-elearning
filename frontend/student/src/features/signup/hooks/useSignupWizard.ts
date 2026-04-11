@@ -6,7 +6,9 @@ type Step = "name" | "email" | "goal" | "password"
 const steps: Step[] = ["name", "email", "goal", "password"]
 
 function mockSubmit(values: {
-  fullName: string
+  firstName: string
+  fatherName: string
+  familyName: string
   email: string
   wantsNotifications: boolean | null
   password: string
@@ -17,7 +19,9 @@ function mockSubmit(values: {
       localStorage.setItem(
         "mock_student_profile",
         JSON.stringify({
-          fullName: values.fullName,
+          firstName: values.firstName,
+          fatherName: values.fatherName,
+          familyName: values.familyName,
           email: values.email,
           wantsNotifications: values.wantsNotifications,
         }),
@@ -33,7 +37,9 @@ export function useSignupWizard() {
   const [stepIndex, setStepIndex] = useState(0)
   const step = steps[stepIndex] ?? "name"
 
-  const [fullName, setFullName] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [fatherName, setFatherName] = useState("")
+  const [familyName, setFamilyName] = useState("")
   const [email, setEmail] = useState("")
   const [wantsNotifications, setWantsNotifications] = useState<boolean | null>(
     null,
@@ -48,7 +54,7 @@ export function useSignupWizard() {
   const canContinue = useMemo(() => {
     switch (step) {
       case "name":
-        return fullName.trim().length > 1
+        return firstName.trim().length > 1 && fatherName.trim().length > 1 && familyName.trim().length > 1
       case "email":
         return /\S+@\S+\.\S+/.test(email.trim())
       case "goal":
@@ -58,14 +64,14 @@ export function useSignupWizard() {
       default:
         return false
     }
-  }, [step, fullName, email, wantsNotifications, password, confirmPassword])
+  }, [step, firstName, fatherName, familyName, email, wantsNotifications, password, confirmPassword])
 
   const validateCurrentStep = () => {
     if (canContinue) return true
 
     switch (step) {
       case "name":
-        setError("الرجاء إدخال الاسم الكامل")
+        setError("الرجاء إدخال الاسم الشخصي، اسم الأب، والاسم العائلي")
         return false
       case "email":
         setError("الرجاء إدخال بريد إلكتروني صحيح")
@@ -89,7 +95,7 @@ export function useSignupWizard() {
     if (step === "password") {
       setIsSubmitting(true)
       try {
-        await mockSubmit({ fullName, email, wantsNotifications, password })
+        await mockSubmit({ firstName, fatherName, familyName, email, wantsNotifications, password })
         await navigate({ to: "/" })
       } finally {
         setIsSubmitting(false)
@@ -105,8 +111,12 @@ export function useSignupWizard() {
     title,
     error,
     isSubmitting,
-    fullName,
-    setFullName,
+    firstName,
+    setFirstName,
+    fatherName,
+    setFatherName,
+    familyName,
+    setFamilyName,
     email,
     setEmail,
     wantsNotifications,

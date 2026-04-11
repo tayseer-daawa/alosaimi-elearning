@@ -11,8 +11,12 @@ export default function SignupScreen() {
     title,
     error,
     isSubmitting,
-    fullName,
-    setFullName,
+    firstName,
+    setFirstName,
+    fatherName,
+    setFatherName,
+    familyName,
+    setFamilyName,
     email,
     setEmail,
     wantsNotifications,
@@ -51,14 +55,31 @@ export default function SignupScreen() {
         alignSelf="center"
       >
         {step === "name" && (
-          <CustomField
-            label="الاسم الكامل"
-            state={fullName}
-            stateSetter={setFullName}
-            autoComplete="name"
-            handleKeyDownEnter={handleKeyDownEnter}
-            error={error}
-          />
+          <VStack w="100%" gap={{ base: 4, md: 6 }}>
+            <CustomField
+              label="الاسم الشخصي"
+              state={firstName}
+              stateSetter={setFirstName}
+              autoComplete="given-name"
+              handleKeyDownEnter={handleKeyDownEnter}
+              error={!firstName.trim().length ? error : null}
+            />
+            <CustomField
+              label="اسم الأب"
+              state={fatherName}
+              stateSetter={setFatherName}
+              handleKeyDownEnter={handleKeyDownEnter}
+              error={!fatherName.trim().length ? error : null}
+            />
+            <CustomField
+              label="الاسم العائلي"
+              state={familyName}
+              stateSetter={setFamilyName}
+              autoComplete="family-name"
+              handleKeyDownEnter={handleKeyDownEnter}
+              error={!familyName.trim().length ? error : null}
+            />
+          </VStack>
         )}
 
         {step === "email" && (
