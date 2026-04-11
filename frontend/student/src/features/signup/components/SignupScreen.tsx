@@ -4,6 +4,7 @@ import AuthLayout from "@/shared/components/AuthLayout"
 import { CustomField, ErrorText } from "@/shared/components/CustomField"
 import { useSignupWizard } from "../hooks/useSignupWizard"
 import { YesNoToggle } from "./YesNoToggle"
+import { GenderToggle } from "./GenderToggle"
 
 export default function SignupScreen() {
   const {
@@ -19,6 +20,8 @@ export default function SignupScreen() {
     setFamilyName,
     email,
     setEmail,
+    isMale,
+    setIsMale,
     wantsNotifications,
     setWantsNotifications,
     password,
@@ -92,6 +95,24 @@ export default function SignupScreen() {
             handleKeyDownEnter={handleKeyDownEnter}
             error={error}
           />
+        )}
+
+        {step === "gender" && (
+          <Field.Root invalid={!!error} required gap={{ base: 3, md: 4 }}>
+            <Field.Label
+              fontSize={{ base: "md", md: "xl", lg: "xl" }}
+              color="text.default"
+            >
+              {"الجنس"}
+              <Field.RequiredIndicator />
+            </Field.Label>
+            <GenderToggle
+              value={isMale}
+              onChange={setIsMale}
+            />
+
+            <ErrorText error={error} />
+          </Field.Root>
         )}
 
         {step === "goal" && (
