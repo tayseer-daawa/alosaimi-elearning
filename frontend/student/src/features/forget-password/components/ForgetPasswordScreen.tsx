@@ -53,7 +53,7 @@ export default function ForgetPasswordScreen() {
             fontSize={{ base: "md", md: "lg" }}
             fontWeight="500"
             mt={2}
-            textAlign="center"
+            alignSelf="flex-start"
           >
             تم إرسال البريد الإلكتروني بنجاح. يرجى التحقق من بريدك الإلكتروني.
           </Text>
