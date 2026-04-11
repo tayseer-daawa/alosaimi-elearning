@@ -1,12 +1,10 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
-import { UsersService, ApiError } from "@/client"
+import { ApiError, UsersService } from "@/client"
 
 type Step = "name" | "email" | "gender" | "goal" | "password"
 
 const steps: Step[] = ["name", "email", "gender", "goal", "password"]
-
-
 
 export function useSignupWizard() {
   const navigate = useNavigate()
@@ -32,7 +30,11 @@ export function useSignupWizard() {
   const canContinue = useMemo(() => {
     switch (step) {
       case "name":
-        return firstName.trim().length > 1 && fatherName.trim().length > 1 && familyName.trim().length > 1
+        return (
+          firstName.trim().length > 1 &&
+          fatherName.trim().length > 1 &&
+          familyName.trim().length > 1
+        )
       case "email":
         return /\S+@\S+\.\S+/.test(email.trim())
       case "gender":
@@ -44,7 +46,17 @@ export function useSignupWizard() {
       default:
         return false
     }
-  }, [step, firstName, fatherName, familyName, email, isMale, wantsNotifications, password, confirmPassword])
+  }, [
+    step,
+    firstName,
+    fatherName,
+    familyName,
+    email,
+    isMale,
+    wantsNotifications,
+    password,
+    confirmPassword,
+  ])
 
   const validateCurrentStep = () => {
     if (canContinue) return true

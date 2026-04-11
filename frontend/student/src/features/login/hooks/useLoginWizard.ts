@@ -1,7 +1,6 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
-import { LoginService, UsersService, ApiError } from "@/client"
-
+import { ApiError, LoginService, UsersService } from "@/client"
 
 export function useLoginWizard() {
   const navigate = useNavigate()
@@ -47,13 +46,16 @@ export function useLoginWizard() {
       const profile = await UsersService.readUserMe()
       localStorage.setItem(
         "mock_student_profile",
-        JSON.stringify({ email: profile.email })
+        JSON.stringify({ email: profile.email }),
       )
 
       await navigate({ to: "/" })
     } catch (err: any) {
       if (err instanceof ApiError) {
-        setError({ email: "البريد الإلكتروني أو كلمة السر غير صحيحة", password: null })
+        setError({
+          email: "البريد الإلكتروني أو كلمة السر غير صحيحة",
+          password: null,
+        })
       } else {
         setError({ email: "حدث خطأ غير متوقع للاتصال بالخادم", password: null })
       }

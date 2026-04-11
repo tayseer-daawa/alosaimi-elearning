@@ -1,5 +1,5 @@
 import { Box, Text, VStack } from "@chakra-ui/react"
-import { useNavigate, Link } from "@tanstack/react-router"
+import { Link, useNavigate } from "@tanstack/react-router"
 import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import AuthInlineBtn from "@/shared/components/AuthInlineBtn"
 import AuthLayout from "@/shared/components/AuthLayout"
@@ -70,12 +70,28 @@ export default function LoginScreen() {
         </Box>
       </VStack>
       <VStack gap={4} w="100%">
-        <AuthCtaBtn onClick={next} loading={isSubmitting} disabled={isSubmitting}>
+        <AuthCtaBtn
+          onClick={next}
+          loading={isSubmitting}
+          disabled={isSubmitting}
+        >
           مواصلة
         </AuthCtaBtn>
-        <Text color="text.muted" fontSize={{ base: "sm", md: "md" }} textAlign="center" fontWeight={500}>
+        <Text
+          color="text.muted"
+          fontSize={{ base: "sm", md: "md" }}
+          textAlign="center"
+          fontWeight={500}
+        >
           ليس لديك حساب؟{" "}
-          <Link to="/signup" style={{ color: "var(--chakra-colors-brand-primary)", fontWeight: 700, textDecoration: "underline" }}>
+          <Link
+            to="/signup"
+            style={{
+              color: "var(--chakra-colors-brand-primary)",
+              fontWeight: 700,
+              textDecoration: "underline",
+            }}
+          >
             إنشاء حساب
           </Link>
         </Text>

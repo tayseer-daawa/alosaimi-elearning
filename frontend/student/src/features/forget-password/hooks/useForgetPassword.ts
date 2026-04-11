@@ -1,6 +1,5 @@
 import { useState } from "react"
-import { LoginService, ApiError } from "@/client"
-
+import { ApiError, LoginService } from "@/client"
 
 export function useForgetPassword() {
   const [email, setEmail] = useState("")
@@ -31,7 +30,7 @@ export function useForgetPassword() {
     } catch (err: any) {
       console.error("DEBUG: raw error from LoginService.recoverPassword:", err)
       console.dir(err)
-      
+
       if (err instanceof ApiError) {
         console.error("DEBUG: ApiError body:", err.body)
         const detail = err.body?.detail
