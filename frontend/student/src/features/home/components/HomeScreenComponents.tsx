@@ -9,9 +9,11 @@ import {
   Image,
   Text,
   VStack,
+  Menu,
 } from "@chakra-ui/react"
+import { useNavigate } from "@tanstack/react-router"
 
-import { BookOpen, GraduationCap, MoveLeft } from "lucide-react"
+import { BookOpen, GraduationCap, MoveLeft, LogOut } from "lucide-react"
 import MenuIcon from "/assets/menu.svg"
 
 interface Lesson {
@@ -39,6 +41,8 @@ export default function HomeScreenComponents({
   onContinueLearning,
   onViewAllPrograms,
 }: HomeScreenProps) {
+  const navigate = useNavigate()
+
   // Get active lesson or first lesson with progress
   const activeLesson =
     currentLesson || allLessons.find((l) => l.isActive) || allLessons[0]
@@ -64,19 +68,43 @@ export default function HomeScreenComponents({
         mt={{ base: 3, lg: 5 }}
         mb={{ base: 8, lg: 10 }}
       >
-        <Flex align="center" justify="center" h="100%">
-          <Button
-            position="absolute"
-            right={{ base: 0, lg: 14 }}
-            variant="ghost"
-            p={2}
-          >
-            <Image
-              src={MenuIcon}
-              boxSize={{ base: 6, lg: 12 }}
-              objectFit="contain"
-            />
-          </Button>
+        <Flex align="center" justify="center" h="100%" w="full" position="relative">
+          <Box position="absolute" right={{ base: 0, lg: 14 }} zIndex="10">
+            <Menu.Root dir="rtl" positioning={{ placement: "bottom-start", offset: { mainAxis: 8 } }}>
+              <Menu.Trigger asChild>
+                <Button
+                  variant="ghost"
+                  p={2}
+                  _hover={{ bg: "transparent" }}
+                >
+                  <Image
+                    src={MenuIcon}
+                    boxSize={{ base: 6, lg: 12 }}
+                    objectFit="contain"
+                  />
+                </Button>
+              </Menu.Trigger>
+              <Menu.Content minW="200px" p={2} borderRadius="xl" boxShadow="lg" bg="white" zIndex="popover">
+                <Menu.Item
+                  value="logout"
+                  color="red.500"
+                  cursor="pointer"
+                  onClick={() => {
+                    localStorage.removeItem("access_token")
+                    localStorage.removeItem("mock_student_profile")
+                    navigate({ to: "/welcome" })
+                  }}
+                  _hover={{ bg: "red.50" }}
+                  borderRadius="md"
+                >
+                  <HStack gap={3} w="100%">
+                    <Icon as={LogOut} boxSize={5} />
+                    <Text fontWeight="600" fontSize="md">تسجيل الخروج</Text>
+                  </HStack>
+                </Menu.Item>
+              </Menu.Content>
+            </Menu.Root>
+          </Box>
 
           <VStack gap={{ base: 1, lg: 2 }}>
             <Heading size={{ base: "xl", lg: "5xl" }} color="brand.primary">
