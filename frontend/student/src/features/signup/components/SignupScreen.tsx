@@ -5,6 +5,7 @@ import { CustomField, ErrorText } from "@/shared/components/CustomField"
 import { useSignupWizard } from "../hooks/useSignupWizard"
 import { YesNoToggle } from "./YesNoToggle"
 import { GenderToggle } from "./GenderToggle"
+import { Link } from "@tanstack/react-router"
 
 export default function SignupScreen() {
   const {
@@ -156,9 +157,17 @@ export default function SignupScreen() {
         )}
       </VStack>
 
-      <AuthCtaBtn onClick={next} loading={isSubmitting} disabled={isSubmitting}>
-        مواصلة
-      </AuthCtaBtn>
+      <VStack gap={4} w="100%">
+        <AuthCtaBtn onClick={next} loading={isSubmitting} disabled={isSubmitting}>
+          مواصلة
+        </AuthCtaBtn>
+        <Text color="text.muted" fontSize={{ base: "sm", md: "md" }} textAlign="center" fontWeight={500}>
+          لديك حساب؟{" "}
+          <Link to="/login" style={{ color: "var(--chakra-colors-brand-primary)", fontWeight: 700, textDecoration: "underline" }}>
+            تسجيل الدخول
+          </Link>
+        </Text>
+      </VStack>
     </AuthLayout>
   )
 }
