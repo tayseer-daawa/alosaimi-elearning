@@ -1,37 +1,12 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
+import { UsersService, ApiError } from "@/client"
 
 type Step = "name" | "email" | "gender" | "goal" | "password"
 
 const steps: Step[] = ["name", "email", "gender", "goal", "password"]
 
-function mockSubmit(values: {
-  firstName: string
-  fatherName: string
-  familyName: string
-  email: string
-  isMale: boolean | null
-  wantsNotifications: boolean | null
-  password: string
-}) {
-  return new Promise<void>((resolve) => {
-    setTimeout(() => {
-      localStorage.setItem("access_token", "mock-student-token")
-      localStorage.setItem(
-        "mock_student_profile",
-        JSON.stringify({
-          firstName: values.firstName,
-          fatherName: values.fatherName,
-          familyName: values.familyName,
-          email: values.email,
-          isMale: values.isMale,
-          wantsNotifications: values.wantsNotifications,
-        }),
-      )
-      resolve()
-    }, 600)
-  })
-}
+
 
 export function useSignupWizard() {
   const navigate = useNavigate()
@@ -103,8 +78,30 @@ export function useSignupWizard() {
     if (step === "password") {
       setIsSubmitting(true)
       try {
-        await mockSubmit({ firstName, fatherName, familyName, email, isMale, wantsNotifications, password })
-        await navigate({ to: "/" })
+        await UsersService.registerUser({
+          requestBody: {
+            first_name: firstName,
+            father_name: fatherName,
+            family_name: familyName,
+            email: email,
+            is_male: isMale as boolean,
+            password: password,
+          },
+        })
+        await navigate({ to: "/login" })
+      } catch (err: any) {
+        if (err instanceof ApiError) {
+          const detail = err.body?.detail
+          if (typeof detail === "string") {
+            setError(detail)
+          } else if (Array.isArray(detail) && detail.length > 0) {
+            setError(detail[0].msg)
+          } else {
+            setError("حدث خطأ أثناء الاتصال بالخادم")
+          }
+        } else {
+          setError("تعذر إنشاء الحساب، يرجى المحاولة لاحقاً")
+        }
       } finally {
         setIsSubmitting(false)
       }
