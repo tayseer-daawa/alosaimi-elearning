@@ -19,14 +19,14 @@ const WelcomeScreen = () => {
       </VStack>
 
       <Image src="/assets/mecque.svg" alt="Mecque illustration" />
+      <VStack gap={{ base: 2, md: 3 }}>
+        <AuthCtaBtn onClick={() => navigate({ to: "/signup" })}>
+          حساب جديد
+        </AuthCtaBtn>
 
-      <AuthCtaBtn onClick={() => navigate({ to: "/signup" })}>
-        حساب جديد
-      </AuthCtaBtn>
-
-      <AuthCtaBtn onClick={() => navigate({ to: "/login" })}>
-        تسجيل دخول
-      </AuthCtaBtn>
+        <AuthCtaBtn onClick={() => navigate({ to: "/login" })}>
+          تسجيل دخول
+        </AuthCtaBtn></VStack>
     </AuthLayout>
   )
 }

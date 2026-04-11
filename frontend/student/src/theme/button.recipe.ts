@@ -37,7 +37,7 @@ export const buttonRecipe = defineRecipe({
         h: "9",
         px: "4",
         fontSize: "sm",
-        borderRadius: "sm",
+        borderRadius: "xs",
       },
       md: {
         h: "4rem",
