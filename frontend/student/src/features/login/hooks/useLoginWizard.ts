@@ -1,20 +1,7 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
+import { LoginService, UsersService, ApiError } from "@/client"
 
-function mockSubmit(values: { email: string; password: string }) {
-  return new Promise<void>((resolve) => {
-    setTimeout(() => {
-      localStorage.setItem("access_token", "mock-student-token")
-      localStorage.setItem(
-        "mock_student_profile",
-        JSON.stringify({
-          email: values.email,
-        }),
-      )
-      resolve()
-    }, 600)
-  })
-}
 
 export function useLoginWizard() {
   const navigate = useNavigate()
@@ -48,8 +35,28 @@ export function useLoginWizard() {
 
     setIsSubmitting(true)
     try {
-      await mockSubmit({ email, password })
+      const response = await LoginService.loginAccessToken({
+        formData: {
+          username: email,
+          password: password,
+        },
+      })
+
+      localStorage.setItem("access_token", response.access_token)
+
+      const profile = await UsersService.readUserMe()
+      localStorage.setItem(
+        "mock_student_profile",
+        JSON.stringify({ email: profile.email })
+      )
+
       await navigate({ to: "/" })
+    } catch (err: any) {
+      if (err instanceof ApiError) {
+        setError({ email: "البريد الإلكتروني أو كلمة السر غير صحيحة", password: null })
+      } else {
+        setError({ email: "حدث خطأ غير متوقع للاتصال بالخادم", password: null })
+      }
     } finally {
       setIsSubmitting(false)
     }
