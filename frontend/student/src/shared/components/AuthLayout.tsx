@@ -6,7 +6,7 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
     <Box
       dir="rtl"
       h="100vh"
-      p={{ base: "calc(5rem + 3vh) 2.5rem calc(3rem + 1vh)", md: 16, lg: 20 }} //Magic numbers are calculated from figma to fit different mobile heights
+      p={{ base: "calc(3rem + 3vh) 2.5rem calc(3rem + 1vh)", md: 16, lg: 20 }} //Magic numbers are calculated from figma to fit different mobile heights
     >
       <Box
         p={0}
