@@ -15,7 +15,7 @@ const CustomField = ({
   error?: string | null
 } & Omit<InputProps, "value" | "onChange">) => {
   return (
-    <Field.Root invalid={!!error} required gap={{ base: 3, md: 4 }}>
+    <Field.Root invalid={!!error} required gap={{ base: 3, md: 4 }}  >
       <Field.Label
         fontSize={{ base: "md", md: "xl", lg: "xl" }}
         fontWeight="500"
@@ -33,7 +33,7 @@ const CustomField = ({
         placeholder=""
         borderBottomWidth={{ base: "2px", md: "3px", lg: "4px" }}
         _focus={{ borderColor: "brand.primary", borderBottomWidth: "3px" }}
-        height={{ base: "3.25rem", md: 16, lg: 12 }}
+        height={{ base: "2rem", md: 16, lg: 12 }}
         {...props}
       />
       <ErrorText error={error} />
