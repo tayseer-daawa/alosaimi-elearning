@@ -1,15 +1,16 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 
-type Step = "name" | "email" | "goal" | "password"
+type Step = "name" | "email" | "gender" | "goal" | "password"
 
-const steps: Step[] = ["name", "email", "goal", "password"]
+const steps: Step[] = ["name", "email", "gender", "goal", "password"]
 
 function mockSubmit(values: {
   firstName: string
   fatherName: string
   familyName: string
   email: string
+  isMale: boolean | null
   wantsNotifications: boolean | null
   password: string
 }) {
@@ -23,6 +24,7 @@ function mockSubmit(values: {
           fatherName: values.fatherName,
           familyName: values.familyName,
           email: values.email,
+          isMale: values.isMale,
           wantsNotifications: values.wantsNotifications,
         }),
       )
@@ -41,6 +43,7 @@ export function useSignupWizard() {
   const [fatherName, setFatherName] = useState("")
   const [familyName, setFamilyName] = useState("")
   const [email, setEmail] = useState("")
+  const [isMale, setIsMale] = useState<boolean | null>(null)
   const [wantsNotifications, setWantsNotifications] = useState<boolean | null>(
     null,
   )
@@ -57,6 +60,8 @@ export function useSignupWizard() {
         return firstName.trim().length > 1 && fatherName.trim().length > 1 && familyName.trim().length > 1
       case "email":
         return /\S+@\S+\.\S+/.test(email.trim())
+      case "gender":
+        return isMale !== null
       case "goal":
         return wantsNotifications !== null
       case "password":
@@ -64,7 +69,7 @@ export function useSignupWizard() {
       default:
         return false
     }
-  }, [step, firstName, fatherName, familyName, email, wantsNotifications, password, confirmPassword])
+  }, [step, firstName, fatherName, familyName, email, isMale, wantsNotifications, password, confirmPassword])
 
   const validateCurrentStep = () => {
     if (canContinue) return true
@@ -75,6 +80,9 @@ export function useSignupWizard() {
         return false
       case "email":
         setError("الرجاء إدخال بريد إلكتروني صحيح")
+        return false
+      case "gender":
+        setError("الرجاء تحديد الجنس")
         return false
       case "goal":
         setError("الرجاء اختيار نعم أو لا")
@@ -95,7 +103,7 @@ export function useSignupWizard() {
     if (step === "password") {
       setIsSubmitting(true)
       try {
-        await mockSubmit({ firstName, fatherName, familyName, email, wantsNotifications, password })
+        await mockSubmit({ firstName, fatherName, familyName, email, isMale, wantsNotifications, password })
         await navigate({ to: "/" })
       } finally {
         setIsSubmitting(false)
@@ -119,6 +127,8 @@ export function useSignupWizard() {
     setFamilyName,
     email,
     setEmail,
+    isMale,
+    setIsMale,
     wantsNotifications,
     setWantsNotifications,
     password,
