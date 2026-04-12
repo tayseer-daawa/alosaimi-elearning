@@ -28,16 +28,12 @@ export function useResetPassword() {
 
     if (!validateCurrentStep()) return
 
-    console.log("Extracted token from URL Search Params:", token)
-
     if (!token) {
-      console.warn("DEBUG: No token found. Stopping reset process.")
       setError("رابط إعادة تعيين كلمة المرور غير صالح أو مفقود.")
       return
     }
 
     setIsSubmitting(true)
-    console.log("Attempting to reset password with token:", token)
     try {
       await LoginService.resetPassword({
         requestBody: {
@@ -45,14 +41,9 @@ export function useResetPassword() {
           new_password: password,
         },
       })
-      console.log("Password reset successful! Navigating to login...")
       await navigate({ to: "/login" })
     } catch (err: any) {
-      console.error("DEBUG: raw error from LoginService.resetPassword:", err)
-      console.dir(err)
-
       if (err instanceof ApiError) {
-        console.error("DEBUG: ApiError body:", err.body)
         const detail = (err.body as any)?.detail
         if (typeof detail === "string") {
           setError(detail)
