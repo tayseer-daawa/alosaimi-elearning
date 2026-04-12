@@ -77,7 +77,6 @@ export default function HomeScreenComponents({
         >
           <Box position="absolute" right={{ base: 0, lg: 14 }} zIndex="10">
             <Menu.Root
-              dir="rtl"
               positioning={{
                 placement: "bottom-start",
                 offset: { mainAxis: 8 },

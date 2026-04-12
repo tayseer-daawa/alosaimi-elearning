@@ -103,7 +103,7 @@ export function useSignupWizard() {
         await navigate({ to: "/login" })
       } catch (err: any) {
         if (err instanceof ApiError) {
-          const detail = err.body?.detail
+          const detail = (err.body as any)?.detail
           if (typeof detail === "string") {
             setError(detail)
           } else if (Array.isArray(detail) && detail.length > 0) {

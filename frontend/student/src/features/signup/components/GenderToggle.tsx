@@ -18,7 +18,6 @@ export function GenderToggle({
       <HStack justify="flex-start" gap={2} align="baseline">
         <Text
           as="button"
-          type="button"
           onClick={() => onChange(true)}
           aria-pressed={maleSelected}
           cursor="pointer"
@@ -40,7 +39,6 @@ export function GenderToggle({
         </Text>
         <Text
           as="button"
-          type="button"
           onClick={() => onChange(false)}
           aria-pressed={femaleSelected}
           cursor="pointer"
