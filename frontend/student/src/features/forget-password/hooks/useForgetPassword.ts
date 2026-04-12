@@ -22,17 +22,11 @@ export function useForgetPassword() {
     setSuccess(false)
     if (!validateCurrentStep()) return
     setIsSubmitting(true)
-    console.log("Attempting to request password recovery for email:", email)
     try {
       await LoginService.recoverPassword({ email })
-      console.log("Password recovery email sent successfully!")
       setSuccess(true)
     } catch (err: any) {
-      console.error("DEBUG: raw error from LoginService.recoverPassword:", err)
-      console.dir(err)
-
       if (err instanceof ApiError) {
-        console.error("DEBUG: ApiError body:", err.body)
         const detail = (err.body as any)?.detail
         if (typeof detail === "string") {
           setError(detail)
