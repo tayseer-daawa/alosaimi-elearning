@@ -83,9 +83,15 @@ export default function HomeScreenComponents({
               }}
             >
               <Menu.Trigger asChild>
-                <Button variant="ghost" p={2} _hover={{ bg: "transparent" }}>
+                <Button
+                  variant="ghost"
+                  p={2}
+                  _hover={{ bg: "transparent" }}
+                  aria-label="القائمة الرئيسية"
+                >
                   <Image
                     src={MenuIcon}
+                    alt="أيقونة القائمة"
                     boxSize={{ base: 6, lg: 12 }}
                     objectFit="contain"
                   />
