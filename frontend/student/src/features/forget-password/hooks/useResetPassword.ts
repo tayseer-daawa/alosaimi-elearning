@@ -4,8 +4,8 @@ import { ApiError, LoginService } from "@/client"
 
 export function useResetPassword() {
   const navigate = useNavigate()
-  const search = useSearch({ strict: false }) as { token?: string }
-  const token = search.token
+  const search = useSearch({ strict: false })
+  const token = typeof search.token === "string" ? search.token : undefined
 
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
