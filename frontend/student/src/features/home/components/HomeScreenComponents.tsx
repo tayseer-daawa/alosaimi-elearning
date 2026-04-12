@@ -105,7 +105,7 @@ export default function HomeScreenComponents({
                   cursor="pointer"
                   onClick={() => {
                     localStorage.removeItem("access_token")
-                    localStorage.removeItem("mock_student_profile")
+                    localStorage.removeItem("student_profile")
                     navigate({ to: "/welcome" })
                   }}
                   _hover={{ bg: "red.50" }}

@@ -45,7 +45,7 @@ export function useLoginWizard() {
 
       const profile = await UsersService.readUserMe()
       localStorage.setItem(
-        "mock_student_profile",
+        "student_profile",
         JSON.stringify({ email: profile.email }),
       )
 
