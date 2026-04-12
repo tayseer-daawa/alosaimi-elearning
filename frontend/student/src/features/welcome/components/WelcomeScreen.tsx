@@ -18,8 +18,19 @@ const WelcomeScreen = () => {
         </Text>
       </VStack>
 
-      <Image src="/assets/mecque.svg" alt="Mecque illustration" my={8} mx="auto" w={{ base: "90%", md: "75%" }} />
-      <VStack gap={{ base: 2, md: 3 }} flexDirection={{ base: "column", md: "row" }} justifyContent={"center"} w="full">
+      <Image
+        src="/assets/mecque.svg"
+        alt="Mecque illustration"
+        my={8}
+        mx="auto"
+        w={{ base: "90%", md: "75%" }}
+      />
+      <VStack
+        gap={{ base: 2, md: 3 }}
+        flexDirection={{ base: "column", md: "row" }}
+        justifyContent={"center"}
+        w="full"
+      >
         <AuthCtaBtn onClick={() => navigate({ to: "/signup" })}>
           حساب جديد
         </AuthCtaBtn>
