@@ -1,5 +1,4 @@
 services:
-
   # Local services are available on their ports, but also available on:
   # http://api.localhost.tiangolo.com: backend
   # http://dashboard.localhost.tiangolo.com: frontend
@@ -13,7 +12,14 @@ services:
       - "80:80"
       - "8090:8080"
     # Duplicate the command from docker-compose.yml to add --api.insecure=true
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     command:
+      # Enable the ping endpoint for healthchecks
+      - --ping
       # Enable Docker in Traefik, so that it reads labels from Docker services
       - --providers.docker
       # Add a constraint to only use services with the label for this stack
@@ -88,6 +94,11 @@ services:
 
   mailcatcher:
     image: schickling/mailcatcher:latest
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:1080"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     ports:
       - "1080:1080"
       - "1025:1025"
@@ -120,8 +131,10 @@ services:
         - NODE_ENV=production
     ipc: host
     depends_on:
-      - backend
-      - mailcatcher
+      backend:
+        condition: service_healthy
+      mailcatcher:
+        condition: service_healthy
     env_file:
       - .env
     environment:

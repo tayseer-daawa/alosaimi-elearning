@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:3.6
+    image: traefik:3.6.13
     ports:
       # Listen on port 80, default for HTTP, necessary to redirect to HTTPS
       - 80:80
@@ -40,7 +40,14 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # Mount the volume to store the certificates
       - traefik-public-certificates:/certificates
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     command:
+      # Enable the ping endpoint for healthchecks
+      - --ping
       # Enable Docker in Traefik, so that it reads labels from Docker services
       - --providers.docker
       # Do not expose all Docker services, only the ones explicitly exposed
