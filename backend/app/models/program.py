@@ -84,8 +84,8 @@ class Program(SQLModel, table=True):
     days_of_study: int = Field(ge=0, lt=2**7)
 
     # Relationships
-    phases: list["Phase"] = Relationship(back_populates="program", cascade_delete=True)
-    sessions: list["ProgramSession"] = Relationship(
+    phases: list[Phase] = Relationship(back_populates="program", cascade_delete=True)
+    sessions: list[ProgramSession] = Relationship(
         back_populates="program", cascade_delete=True
     )
 
@@ -112,7 +112,7 @@ class ProgramPublic(ProgramBase):
     id: uuid.UUID
 
     @staticmethod
-    def from_program(program: Program) -> "ProgramPublic":
+    def from_program(program: Program) -> ProgramPublic:
         return ProgramPublic(
             id=program.id,
             title=program.title,
@@ -125,6 +125,6 @@ class ProgramsPublic(SQLModel):
     count: int
 
     @staticmethod
-    def from_programs(programs: list[Program], count: int) -> "ProgramsPublic":
+    def from_programs(programs: list[Program], count: int) -> ProgramsPublic:
         public_programs = [ProgramPublic.from_program(program) for program in programs]
         return ProgramsPublic(data=public_programs, count=count)

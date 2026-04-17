@@ -38,11 +38,11 @@ class Lesson(LessonBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     # Relationships
-    book: "Book" = Relationship(back_populates="lessons")
-    questions: list["Question"] = Relationship(
+    book: Book = Relationship(back_populates="lessons")
+    questions: list[Question] = Relationship(
         back_populates="lesson", cascade_delete=True
     )
-    session_events: list["SessionEvent"] = Relationship(back_populates="lesson")
+    session_events: list[SessionEvent] = Relationship(back_populates="lesson")
 
 
 class LessonPublic(LessonBase):

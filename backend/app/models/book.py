@@ -35,12 +35,12 @@ class Book(BookBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     # Relationships
-    phases: list["Phase"] = Relationship(
+    phases: list[Phase] = Relationship(
         back_populates="books",
         link_model=PhaseBook,
     )
-    lessons: list["Lesson"] = Relationship(back_populates="book", cascade_delete=True)
-    exams: list["Exam"] = Relationship(back_populates="book", cascade_delete=True)
+    lessons: list[Lesson] = Relationship(back_populates="book", cascade_delete=True)
+    exams: list[Exam] = Relationship(back_populates="book", cascade_delete=True)
 
 
 class BookPublic(BookBase):

@@ -18,7 +18,7 @@ class QuestionBase(SQLModel):
     lesson_id: uuid.UUID = Field(foreign_key="lesson.id", ondelete="CASCADE")
 
     @model_validator(mode="after")
-    def validate_correct_options(self) -> "QuestionBase":
+    def validate_correct_options(self) -> QuestionBase:
         max_idx = len(self.options)
         for option in self.correct_options:
             if option < 0 or option >= max_idx:
@@ -43,7 +43,7 @@ class Question(QuestionBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     # Relationships
-    lesson: "Lesson" = Relationship(back_populates="questions")
+    lesson: Lesson = Relationship(back_populates="questions")
 
     def is_single_answer(self) -> bool:
         """Check if this question has a single correct answer"""

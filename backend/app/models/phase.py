@@ -32,8 +32,8 @@ class Phase(PhaseBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     # Relationships
-    program: "Program" = Relationship(back_populates="phases")
-    books: list["Book"] = Relationship(
+    program: Program = Relationship(back_populates="phases")
+    books: list[Book] = Relationship(
         back_populates="phases",
         link_model=PhaseBook,
     )
