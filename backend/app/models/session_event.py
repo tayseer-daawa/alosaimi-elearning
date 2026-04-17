@@ -41,8 +41,8 @@ class SessionEvent(SessionEventBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     # Relationships
-    session: "ProgramSession" = Relationship(back_populates="session_events")
-    lesson: Optional["Lesson"] = Relationship(back_populates="session_events")
+    session: ProgramSession = Relationship(back_populates="session_events")
+    lesson: Optional[Lesson] = Relationship(back_populates="session_events")
 
 
 class SessionEventPublic(SessionEventBase):

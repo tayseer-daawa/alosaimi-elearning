@@ -20,7 +20,7 @@ class ExamBase(SQLModel):
     session_id: uuid.UUID = Field(foreign_key="session.id", ondelete="CASCADE")
 
     @model_validator(mode="after")
-    def validate_dates(self) -> "ExamBase":
+    def validate_dates(self) -> ExamBase:
         if self.start_date > self.deadline:
             raise ValueError("start_date cannot be after deadline")
         return self
@@ -46,9 +46,9 @@ class Exam(ExamBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     # Relationships
-    book: "Book" = Relationship(back_populates="exams")
-    session: "ProgramSession" = Relationship(back_populates="exams")
-    attempts: list["ExamAttempt"] = Relationship(
+    book: Book = Relationship(back_populates="exams")
+    session: ProgramSession = Relationship(back_populates="exams")
+    attempts: list[ExamAttempt] = Relationship(
         back_populates="exam", cascade_delete=True
     )
 
@@ -93,15 +93,15 @@ class ExamAttempt(ExamAttemptBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     # Relationships
-    exam: "Exam" = Relationship(back_populates="attempts")
-    student: "User" = Relationship(
+    exam: Exam = Relationship(back_populates="attempts")
+    student: User = Relationship(
         back_populates="exam_attempts",
         sa_relationship_kwargs={
             "foreign_keys": "[ExamAttempt.student_id]",
             "overlaps": "examiner",
         },
     )
-    examiner: "User" = Relationship(
+    examiner: User = Relationship(
         back_populates="examined_attempts",
         sa_relationship_kwargs={
             "foreign_keys": "[ExamAttempt.examiner_id]",

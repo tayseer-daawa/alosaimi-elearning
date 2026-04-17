@@ -34,30 +34,30 @@ class ProgramSession(ProgramSessionBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     # Relationships
-    program: "Program" = Relationship(back_populates="sessions")
-    students: list["User"] = Relationship(
+    program: Program = Relationship(back_populates="sessions")
+    students: list[User] = Relationship(
         back_populates="student_sessions",
         link_model=UserSessionStudent,
         sa_relationship_kwargs={"overlaps": "teachers"},
     )
-    teachers: list["User"] = Relationship(
+    teachers: list[User] = Relationship(
         back_populates="teacher_sessions",
         link_model=UserSessionTeacher,
         sa_relationship_kwargs={"overlaps": "students"},
     )
-    session_events: list["SessionEvent"] = Relationship(
+    session_events: list[SessionEvent] = Relationship(
         back_populates="session", cascade_delete=True
     )
-    exams: list["Exam"] = Relationship(back_populates="session", cascade_delete=True)
+    exams: list[Exam] = Relationship(back_populates="session", cascade_delete=True)
 
-    def get_breaks(self) -> list["SessionEvent"]:
+    def get_breaks(self) -> list[SessionEvent]:
         """Get all breaks for this session ordered by their start date"""
         return sorted(
             [event for event in self.session_events if event.is_break],
             key=lambda e: e.event_date,
         )
 
-    def get_lessons(self) -> list["SessionEvent"]:
+    def get_lessons(self) -> list[SessionEvent]:
         """Get all lesson events for this session ordered by their event date"""
         return sorted(
             [event for event in self.session_events if not event.is_break],

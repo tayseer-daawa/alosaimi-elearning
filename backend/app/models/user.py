@@ -85,24 +85,24 @@ class User(UserBase, table=True):
     reg_date: date = Field(default_factory=date.today)
 
     # Relationships
-    student_sessions: list["ProgramSession"] = Relationship(
+    student_sessions: list[ProgramSession] = Relationship(
         back_populates="students",
         link_model=UserSessionStudent,
         sa_relationship_kwargs={"overlaps": "teacher_sessions"},
     )
-    teacher_sessions: list["ProgramSession"] = Relationship(
+    teacher_sessions: list[ProgramSession] = Relationship(
         back_populates="teachers",
         link_model=UserSessionTeacher,
         sa_relationship_kwargs={"overlaps": "student_sessions"},
     )
-    exam_attempts: list["ExamAttempt"] = Relationship(
+    exam_attempts: list[ExamAttempt] = Relationship(
         back_populates="student",
         sa_relationship_kwargs={
             "foreign_keys": "ExamAttempt.student_id",
             "overlaps": "examined_attempts",
         },
     )
-    examined_attempts: list["ExamAttempt"] = Relationship(
+    examined_attempts: list[ExamAttempt] = Relationship(
         back_populates="examiner",
         sa_relationship_kwargs={
             "foreign_keys": "ExamAttempt.examiner_id",
