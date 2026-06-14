@@ -56,6 +56,14 @@
 
 ### Configure
 
+The `.env` files are not tracked in Git. Create them from the provided templates before running the stack:
+
+```bash
+cp .env.example .env
+cp frontend/admin/.env.example frontend/admin/.env
+cp frontend/student/.env.example frontend/student/.env
+```
+
 You can update configs in the `.env` files to customize your configurations.
 
 Before deploying it, make sure you change at least the values for:

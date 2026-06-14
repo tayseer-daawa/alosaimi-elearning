@@ -116,6 +116,14 @@ docker compose watch
 
 The `.env` file is the one that contains all your configurations, generated keys and passwords, etc.
 
+It is not tracked in Git. Create it (and the per-frontend ones) from the provided templates before running the stack:
+
+```bash
+cp .env.example .env
+cp frontend/admin/.env.example frontend/admin/.env
+cp frontend/student/.env.example frontend/student/.env
+```
+
 Depending on your workflow, you could want to exclude it from Git, for example if your project is public. In that case, you would have to make sure to set up a way for your CI tools to obtain it while building or deploying your project.
 
 One way to do it could be to add each environment variable to your CI/CD system, and updating the `docker-compose.yml` file to read that specific env var instead of reading the `.env` file.
