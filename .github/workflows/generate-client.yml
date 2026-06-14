@@ -35,6 +35,9 @@ jobs:
         run: uv sync
         working-directory: backend
 
+      - name: Create .env from template
+        run: cp .env.example .env
+
       - name: Generate client
         run: uv run bash scripts/generate-client.sh
         env:
