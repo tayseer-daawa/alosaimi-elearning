@@ -28,3 +28,10 @@ openapi.json
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+.env
+.env.*
+!.env.example
+*.md
+*.test.ts
+*.spec.ts
