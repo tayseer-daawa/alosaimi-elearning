@@ -28,8 +28,9 @@ updates:
   # Docker
   - package-ecosystem: docker
     directories:
-      - /backend
-      - /frontend
+      - "/backend"
+      - "/frontend/admin"
+      - "/frontend/student"
     schedule:
       interval: weekly
     commit-message:
