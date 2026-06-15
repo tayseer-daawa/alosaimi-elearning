@@ -4,9 +4,12 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
     commit-message:
       prefix: "chore(ci):"
+    groups:
+      github-actions:
+        patterns: ["*"]
   # Python uv
   - package-ecosystem: uv
     directory: /backend
@@ -14,6 +17,9 @@ updates:
       interval: weekly
     commit-message:
       prefix: "chore(backend):"
+    groups:
+      backend-minor-patch:
+        update-types: ["minor", "patch"]
   # npm
   - package-ecosystem: npm
     directories:
@@ -25,6 +31,9 @@ updates:
       prefix: "chore(frontend):"
     ignore:
       - dependency-name: "@hey-api/openapi-ts"
+    groups:
+      frontend-minor-patch:
+        update-types: ["minor", "patch"]
   # Docker
   - package-ecosystem: docker
     directories:
