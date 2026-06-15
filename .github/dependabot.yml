@@ -16,7 +16,9 @@ updates:
       prefix: "chore(backend):"
   # npm
   - package-ecosystem: npm
-    directory: /frontend
+    directories:
+      - "/frontend/admin"
+      - "/frontend/student"
     schedule:
       interval: weekly
     commit-message:
