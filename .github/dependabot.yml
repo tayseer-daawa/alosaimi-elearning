@@ -30,6 +30,8 @@ updates:
     commit-message:
       prefix: "chore(frontend):"
     ignore:
+      # Pinned: upgrading regenerates the API client and breaks the
+      # verify-client check until the client is regenerated and committed.
       - dependency-name: "@hey-api/openapi-ts"
     groups:
       frontend-minor-patch:
