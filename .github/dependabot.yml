@@ -20,11 +20,26 @@ updates:
     groups:
       backend-minor-patch:
         update-types: ["minor", "patch"]
-  # npm
+  # npm admin app
   - package-ecosystem: npm
-    directories:
-      - "/frontend/admin"
-      - "/frontend/student"
+    directory: "/frontend/admin"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(frontend):"
+    ignore:
+      # Pinned: upgrading regenerates the API client and breaks the
+      # verify-client check until the client is regenerated and committed.
+      - dependency-name: "@hey-api/openapi-ts"
+    groups:
+      playwright:
+        patterns: ["@playwright/test"]
+      frontend-minor-patch:
+        update-types: ["minor", "patch"]
+        exclude-patterns: ["@playwright/test"]
+  # npm student app
+  - package-ecosystem: npm
+    directory: "/frontend/student"
     schedule:
       interval: weekly
     commit-message:
