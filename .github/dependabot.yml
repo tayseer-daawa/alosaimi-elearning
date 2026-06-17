@@ -26,7 +26,7 @@ updates:
     schedule:
       interval: weekly
     commit-message:
-      prefix: "chore(frontend):"
+      prefix: "chore(frontend/admin):"
     ignore:
       # Pinned: upgrading regenerates the API client and breaks the
       # verify-client check until the client is regenerated and committed.
@@ -43,7 +43,7 @@ updates:
     schedule:
       interval: weekly
     commit-message:
-      prefix: "chore(frontend):"
+      prefix: "chore(frontend/student):"
     ignore:
       # Pinned: upgrading regenerates the API client and breaks the
       # verify-client check until the client is regenerated and committed.
