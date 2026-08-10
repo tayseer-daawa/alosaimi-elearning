@@ -64,6 +64,13 @@ updates:
       interval: weekly
     commit-message:
       prefix: "chore(tools/docker):"
+    ignore:
+      # Node.js: stay on the current Active LTS major (24). New even majors spend
+      # ~6 months as "Current" (non-LTS) before Active LTS, and odd majors never go
+      # LTS. Dependabot has no LTS awareness, so block node major bumps and move the
+      # LTS major manually when the next line reaches Active LTS.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
     groups:
       playwright:
         patterns: ["mcr.microsoft.com/playwright"]
