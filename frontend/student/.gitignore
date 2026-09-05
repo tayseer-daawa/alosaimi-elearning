@@ -35,3 +35,6 @@ openapi.json
 *.md
 *.test.ts
 *.spec.ts
+# Project documentation is tracked (the blanket *.md rule above would hide it)
+!docs/*.md
+!docs/**/*.md
