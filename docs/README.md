@@ -7,7 +7,9 @@ whatever you use — your editor, Cursor, Claude Code, Copilot, or nothing at al
 
 > **Rule of thumb**
 > A fact that changes when the code changes belongs in `docs/`.
-> An instruction about *how to work* belongs in `CLAUDE.md` / `AGENTS.md`.
+> An instruction about *how to work* belongs in [`AGENTS.md`](../AGENTS.md).
+> A rule that may never be broken belongs in [`constitution.md`](./constitution.md).
+> What a *future* change must achieve belongs in [`specs/`](../specs/README.md).
 > Keep knowledge out of the AI config files, so any tool and any teammate can maintain it.
 
 ---
@@ -32,6 +34,8 @@ One repository, three deployables:
 
 | Document | Read it when |
 | --- | --- |
+| [constitution.md](./constitution.md) | **Before your first change.** The rules every spec and implementation must satisfy |
+| [../specs/](../specs/README.md) | You are starting a change — the specification-first workflow |
 | [domain.md](./domain.md) | You need to know how programs, phases, books and lessons relate |
 | [local-setup.md](./local-setup.md) | You are setting up, or the API is not responding |
 | [conventions.md](./conventions.md) | Before your first commit — commit format, branches, lint, RTL rules |
