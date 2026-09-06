@@ -69,8 +69,9 @@ another feature; anything shared is hoisted to `src/shared/`.
 
 ### C-07 — The admin app is frozen
 
-`frontend/admin` is the unmodified upstream template. It is out of scope for product work
-and for this migration. Changes there need their own issue and an explicit decision.
+`frontend/admin` is the upstream template with its example "Items" CRUD removed — no
+project-specific work has been done there. It is frozen: out of scope for product work and
+for this migration. Changes there need their own issue and an explicit decision.
 
 ---
 
@@ -88,6 +89,11 @@ Exempt: dependency bumps, CI configuration, formatting, and documentation-only c
 A requirement that cannot be checked by a test, a type, or a lint rule is not a requirement
 — it is a preference, and belongs in `conventions.md`. Acceptance criteria are written as
 observable behaviour, not implementation description.
+
+The student app has no test runner today, so "checked by a test" is not yet available
+there — see [testing.md](./testing.md#the-student-app-cannot-satisfy-c-09-yet). Until it is,
+a student-app plan states the manual check and names it as manual; it does not claim a
+requirement is verified when nothing executes it.
 
 ### C-10 — Ambiguity blocks planning, not code
 

@@ -33,8 +33,10 @@ Cross-cutting documents live at the project root:
 ```
 src/
 ├── main.tsx              app entry: providers, OpenAPI.BASE, auth interceptor
+├── providers/            QueryProvider (query.tsx), ThemeProvider (theme.tsx)
 ├── routes/               file-based routing → routeTree.gen.ts (generated)
 │   ├── __root.tsx        Outlet + lazily loaded devtools
+│   ├── router.ts         createRouter + the type registration
 │   ├── _layout.tsx       the auth guard
 │   └── _layout/…         every page, public and private
 ├── features/<name>/
@@ -44,15 +46,20 @@ src/
 ├── shared/
 │   ├── api/fetcher.tsx   legacy raw fetch wrapper — prefer the generated client
 │   ├── api/mockData.ts   fixtures still backing the learning screens
-│   ├── components/       AuthLayout, CustomField, AuthCtaBtn, Breadcrumbs
-│   └── lib/queryKeys.ts  query key factory, one entry per feature
+│   ├── components/       AuthLayout · CustomField · AuthCtaBtn · AuthInlineBtn ·
+│   │                     BreadcrumbsNavigation (exports `Breadcrumbs`)
+│   └── lib/queryKeys.ts  query key factory — only an `example` entry so far
 ├── client/               GENERATED — never edit
 └── theme.ts, theme/      Chakra system: brand tokens + button recipe
 ```
 
-`src/features/example/` is a reference implementation, not a shipping feature. It shows the
-intended repository → hook → component layering. Read it before adding a feature; see
-[ADR 0001](../../../docs/adr/0001-feature-sliced-frontend.md).
+> ⚠️ **`src/features/example/` is not a model to copy.** It looks like the reference
+> implementation of a feature slice, and its directory shape is right, but its code
+> contradicts the constitution on four counts and it calls an endpoint that does not exist.
+> It is also mounted at `/example`, so it ships. Learn the layering from
+> [ADR 0001](../../../docs/adr/0001-feature-sliced-frontend.md) and the calling pattern from
+> [data-fetching.md](./data-fetching.md) — never from that directory. Details:
+> [feature-status.md](./feature-status.md#reference-code-that-is-wrong).
 
 ---
 

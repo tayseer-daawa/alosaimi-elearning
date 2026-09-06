@@ -25,6 +25,7 @@ Update this table in the same pull request that changes a screen's data source.
 | Course + audio player | `…/courses/$courseId` | hardcoded in JSX | ⚠️ mock |
 | Exams / questions | — | — | ❌ not started |
 | Profile / settings | — | — | ❌ not started |
+| Example slice | `/example` | `fetcher` → `/api/examples` | 🚫 template debt — see below |
 
 Tracked in issues #52 (learning API integration), #50 (learning UI), #39 (flow redesign).
 
@@ -74,15 +75,23 @@ Two things will bite:
 ## Reference code that is wrong
 
 `src/features/example/` is presented as the reference implementation of a feature slice. Its
-*structure* is correct; its *contents* are not. It predates the constitution and violates
-four articles:
+*structure* is correct; its *contents* are not. It predates the constitution, and every row
+below is a reason not to copy it:
 
 | What it does | Article |
 | --- | --- |
 | `exampleRepo.ts` imports the legacy `fetcher` instead of the generated client | [C-04](../../../docs/constitution.md#c-04--the-generated-client-is-the-only-transport) |
 | Imports by relative path (`../../../shared/api/fetcher`) instead of `@/` | [conventions](../../../docs/conventions.md#typescript) |
-| Types payloads as `any` in `exampleRepo.ts` and `useCreateExample.ts` | `strict` TypeScript |
 | Calls `/api/examples`, an endpoint that does not exist | — |
+| Types payloads as `any` in `exampleRepo.ts` and `useCreateExample.ts` | **nothing enforces this** — see below |
+
+It also **ships**: `src/routes/_layout/example.tsx` mounts `ExampleComponent` at `/example`,
+inside the authenticated layout. It is in the route tree and in the bundle.
+
+On the `any` row: neither tool catches it. `strict` does not ban an explicit `any`, and
+`biome.json` sets `"noExplicitAny": "off"`. The shipped auth hooks use `catch (err: any)`
+and `(err.body as any)` for the same reason. Treat it as debt to clear per slice, or turn
+the Biome rule on — but do not expect a build to tell you about it.
 
 Copy the layering (`api/` → `hooks/` → `components/`) from
 [ADR 0001](../../../docs/adr/0001-feature-sliced-frontend.md) and take the calling pattern
@@ -97,9 +106,11 @@ not as a precedent.
 
 | Gap | Where |
 | --- | --- |
+| Signup renders the API's **English** `detail` (and 422 `msg`) straight to the user — breaks [C-01](../../../docs/constitution.md#c-01--arabic-right-to-left-no-i18n-layer) | `useSignupWizard.ts` |
 | Home greets a hardcoded `"أحمد"` although `student_profile` is in localStorage and `/users/me` returns real names | `HomeScreen.tsx` |
 | Inactive program cards `console.log` on click instead of navigating | `ProgramsList.tsx` |
 | Course "previous" / "next" buttons render but do nothing | `CourseScreen.tsx` |
 | Page header (menu button + centred heading) is duplicated across four screens | `*Screen.tsx` |
 | `Layout()` branches on `/signup` and returns the same `<Outlet />` either way | `routes/_layout.tsx` |
 | Playwright `testDir: './tests'` does not exist, and `baseURL` is `:5173` (the admin port) | `playwright.config.ts` |
+| `queryKeys.detail(id: string \| number)` accepts an integer id, against [C-03](../../../docs/constitution.md#c-03--identifiers-are-uuids) | `shared/lib/queryKeys.ts` |

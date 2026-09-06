@@ -19,9 +19,14 @@ Enforced by a local git hook **and** by CI.
 | **type** | `feat` · `fix` · `test` · `bench` · `docs` · `chore` · `refactor` · `perf` |
 | **scope** | `backend` · `frontend` · `tools` · `ci` · `common` |
 
+A scope may carry a `/sub` suffix, and most of the history does — the checked pattern is
+`\((backend|frontend|tools|ci|common).*\)`, so anything after the base scope passes. Use it
+when the change is confined to one part:
+
 ```
 feat(frontend): wire programs list to ProgramsService
-fix(frontend): clear stale token on 401
+fix(frontend/student): clear stale token on 401
+chore(tools/docker): pin the nginx image
 docs(common): document the phase-book many-to-many
 ```
 

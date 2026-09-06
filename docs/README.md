@@ -59,7 +59,7 @@ This repository was generated from
 [full-stack-fastapi-template](https://github.com/fastapi/full-stack-fastapi-template).
 Some root-level files still come from it:
 
-- `README.md` — the **template's** readme, not ours. Ignore it.
+- `README.md` — everything below its banner is the **template's** readme, not ours.
 - [`development.md`](../development.md) — genuinely useful: Docker Compose, ports, pre-commit.
 - [`deployment.md`](../deployment.md) — Traefik and production deployment.
 
@@ -70,5 +70,6 @@ Some root-level files still come from it:
 Docs are part of the change, not a follow-up task. If a pull request changes behaviour,
 routing, data flow or a convention, it updates the matching document in the same PR.
 
-Two documents are **generated** and must never be hand-edited — they carry a banner
-saying so. Regenerate them instead of correcting them by hand.
+No document here is generated yet. [api-map.md](./api-map.md) is derived from the
+generated client but is maintained by hand — it carries a banner saying so. When a
+generator lands, that banner changes and the file stops being editable by hand.

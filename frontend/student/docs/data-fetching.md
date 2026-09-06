@@ -9,9 +9,11 @@ the pattern for everything after.
 
 ## The layering
 
-Three layers, one direction. This is the rule
-[ADR 0001](../../../docs/adr/0001-feature-sliced-frontend.md) records and
-`src/features/example/` demonstrates.
+Three layers, one direction. The rule is recorded in
+[ADR 0001](../../../docs/adr/0001-feature-sliced-frontend.md). `src/features/example/` is
+laid out this way but **its code is wrong — do not copy it**, see
+[feature-status.md](./feature-status.md#reference-code-that-is-wrong). The snippets below
+are the pattern.
 
 | Layer | Location | May contain | Must not contain |
 | --- | --- | --- | --- |
@@ -46,8 +48,13 @@ Argument and response types are in `src/client/types.gen.ts`, named after the op
 
 ## Query keys
 
-One factory, `src/shared/lib/queryKeys.ts`, one entry per feature. Every key is built from
-it so that invalidation is predictable.
+One factory, `src/shared/lib/queryKeys.ts`. Every key is built from it so that invalidation
+is predictable — one entry per feature.
+
+Today it holds a single `example` entry, and no real screen uses it. The first wired
+feature adds the second entry and sets the shape for the rest. Note the existing entry
+types `detail(id: string | number)`; ids are UUID strings ([C-03](../../../docs/constitution.md#c-03--identifiers-are-uuids)),
+so new entries take `string` and the `number` should go when that slice is cleared.
 
 ```ts
 export const queryKeys = {
@@ -115,27 +122,41 @@ List endpoints return `{ data, count }`, not a bare array.
 ## Error handling
 
 The generated client throws `ApiError` for a server rejection and a plain `Error` for a
-network failure. Distinguish them, and always show Arabic to the user:
+network failure. Distinguish them, and always show Arabic to the user.
+
+FastAPI returns `detail` as a string for a business error and as an array of validation
+objects for a 422. **Both are English.** Never render either — read the status and the
+detail to decide *which* Arabic message to show, and log the original for yourself:
 
 ```ts
 import { ApiError } from "@/client"
 
+function arabicMessage(err: unknown): string {
+  if (!(err instanceof ApiError)) return "تعذر الاتصال بالخادم"
+
+  const detail = (err.body as { detail?: unknown })?.detail
+  console.error("API error", err.status, detail)   // English stays in the console
+
+  if (err.status === 422) return "البيانات المدخلة غير صحيحة"
+  if (err.status === 401 || err.status === 403) return "غير مصرح لك بهذا الإجراء"
+  if (err.status === 409) return "هذا البريد الإلكتروني مسجل مسبقاً"
+  return "حدث خطأ أثناء الاتصال بالخادم"
+}
+
 catch (err) {
-  if (err instanceof ApiError) {
-    const detail = (err.body as any)?.detail
-    if (typeof detail === "string") setError(detail)
-    else if (Array.isArray(detail) && detail.length) setError(detail[0].msg)
-    else setError("حدث خطأ أثناء الاتصال بالخادم")
-  } else {
-    setError("تعذر الاتصال بالخادم")
-  }
+  setError(arabicMessage(err))
 }
 ```
 
-FastAPI returns `detail` as a string for a business error and as an array of validation
-objects for a 422 — hence both branches.
+Add a case per status the endpoint actually returns; keep the fallback generic. This is
+[C-01](../../../docs/constitution.md#c-01--arabic-right-to-left-no-i18n-layer), not a
+preference.
 
-**Never let an English API message reach the screen.**
+> ⚠️ **The shipped auth hooks do not do this yet.** `useSignupWizard` passes the raw
+> `detail` string, and `detail[0].msg` for a 422, straight into the UI — so a signup with a
+> 7-character password shows an English pydantic message. Fixing it is Phase 1 debt for the
+> signup slice ([C-11](../../../docs/constitution.md#c-11--debt-in-a-slice-is-paid-before-that-slice-gains-behaviour));
+> do not copy the current code.
 
 ---
 

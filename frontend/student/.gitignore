@@ -35,6 +35,11 @@ openapi.json
 *.md
 *.test.ts
 *.spec.ts
-# Project documentation is tracked (the blanket *.md rule above would hide it)
+
+# Documentation and test files are tracked. The three blanket rules above are inherited
+# from the upstream template and would hide both without a warning; check any other new
+# file with `git check-ignore -v <path>`.
 !docs/*.md
 !docs/**/*.md
+!**/*.test.ts
+!**/*.spec.ts

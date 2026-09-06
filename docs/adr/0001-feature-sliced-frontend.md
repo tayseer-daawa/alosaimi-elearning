@@ -28,8 +28,11 @@ src/features/<name>/
 Anything genuinely shared is hoisted to `src/shared/`. Route files under `src/routes/`
 stay thin — they import a screen and mount it, nothing more.
 
-`src/features/example/` is kept as a deliberate, non-shipping reference implementation of
-the layering.
+`src/features/example/` was added as a reference implementation of the layering. **Only its
+directory shape holds up** — its contents predate the constitution and contradict it, and it
+is mounted at `/example`, so it ships. Take the shape from the tree above, never the code:
+[feature-status.md](../../frontend/student/docs/feature-status.md#reference-code-that-is-wrong)
+lists what is wrong with it.
 
 ## Alternatives considered
 
@@ -46,3 +49,6 @@ the layering.
 - The layering rule inside `api/` — repository does REST only, hooks do React Query,
   components render — is a convention, not something the compiler enforces. It has to be
   held up in review.
+- The one worked example of the layering is `src/features/example/`, whose code is wrong.
+  Until a real slice replaces it, the structure has to be learned from this ADR and from
+  [data-fetching.md](../../frontend/student/docs/data-fetching.md).

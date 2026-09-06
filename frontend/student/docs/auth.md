@@ -104,14 +104,18 @@ navigates away. No API call — there is no revocation endpoint.
 
 ## Error messages
 
-Every hook catches, distinguishes `ApiError` from a network failure, and sets Arabic copy.
-Login deliberately does not reveal which field was wrong:
+Every hook catches and distinguishes `ApiError` from a network failure. Login sets Arabic
+copy, and deliberately does not reveal which field was wrong:
 
 ```ts
 setError({ email: "البريد الإلكتروني أو كلمة السر غير صحيحة", password: null })
 ```
 
-Full pattern in [data-fetching.md](./data-fetching.md#error-handling).
+**Signup does not.** `useSignupWizard` passes the API's `detail` through unchanged, so a
+rejected password shows an English pydantic message. That breaks
+[C-01](../../../docs/constitution.md#c-01--arabic-right-to-left-no-i18n-layer) and is debt
+for that slice — the pattern to use instead is in
+[data-fetching.md](./data-fetching.md#error-handling).
 
 ---
 
@@ -125,6 +129,6 @@ Live today, and worth knowing before you build on this:
 | No global 401 handler | The user sits on a broken page instead of being sent to `/login` |
 | No refresh flow, no revocation on logout | Backend issue #68 |
 | Auth state is not reactive | Signing out in one tab does not update another |
-| Password minimum is 6 in the UI, 8 in the API | Avoidable server-side error on signup |
+| Password minimum is 6 in the UI, 8 in the API | Avoidable server-side error on signup — and the rejection is shown **in English** |
 
 The missing piece is a response interceptor that clears storage and redirects on 401.

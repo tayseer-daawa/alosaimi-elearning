@@ -22,7 +22,7 @@ src/routes/
     ├── signup.tsx                      /signup
     ├── forget-password.tsx             /forget-password
     ├── reset-password.tsx              /reset-password
-    ├── example.tsx                     /example  (reference feature)
+    ├── example.tsx                     /example  (template debt — do not copy)
     └── programs/
         ├── index.tsx                   /programs
         └── $programId/phases/
@@ -41,6 +41,10 @@ The learning path mirrors the domain hierarchy exactly:
 
 `_layout` is a **pathless** route — it adds no URL segment. Its only job is to put every
 page behind one `beforeLoad` guard. Anything placed outside `_layout/` is unprotected.
+
+`/example` is a live route, not a scratch file: it mounts `src/features/example/`, whose
+code contradicts the constitution. See
+[feature-status.md](./feature-status.md#reference-code-that-is-wrong).
 
 ---
 
