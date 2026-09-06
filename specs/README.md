@@ -45,7 +45,20 @@ One issue, one branch, one spec folder, one pull request.
 Steps 1–4 are cheap to review and cheap to throw away. Step 5 is not. Reviewing a spec is
 the point of the process — do not skip ahead to code because the change "looks small".
 
-Slash commands for each step live in `.claude/commands/`.
+Each step has a slash command in `.claude/commands/`. They are a convenience, not the
+process — the loop above is the process, and it holds whether you use them, another tool,
+or none.
+
+| Command | Does |
+| --- | --- |
+| `/specify` | Create `specs/<issue>-<slug>/spec.md` from the issue |
+| `/clarify` | Resolve every `[NEEDS CLARIFICATION]` marker by asking |
+| `/plan` | Write `plan.md` — only when zero markers remain |
+| `/tasks` | Write `tasks.md` from the plan |
+| `/implement` | Work the checklist in order |
+
+**Exempt from the loop**, per [C-08](../docs/constitution.md#c-08--specification-before-implementation):
+dependency bumps, CI configuration, formatting, and documentation-only changes.
 
 ---
 

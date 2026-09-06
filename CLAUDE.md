@@ -1,12 +1,8 @@
 # Claude Code
 
 Working instructions for this repository live in **[AGENTS.md](./AGENTS.md)** — read it
-first, in full.
+first, in full. It is a short router and tells you what to read next, in order.
 
 They are kept in a tool-neutral file on purpose, so any assistant and any teammate reads
-the same thing. Do not duplicate them here.
-
-Two pages AGENTS.md will send you to immediately:
-
-- [`docs/constitution.md`](./docs/constitution.md) — the non-negotiable rules.
-- [`specs/README.md`](./specs/README.md) — the specification-first workflow.
+the same thing. This file is a pointer and nothing else — do not add rules, commands or
+facts about the code here.

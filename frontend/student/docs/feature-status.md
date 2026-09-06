@@ -65,8 +65,31 @@ Two things will bite:
    passes `"1"`. Real ids are UUID strings. Every params object in the learning flow
    changes.
 2. **React Query is provided but unused.** `QueryProvider` wraps the app in `main.tsx`, and
-   the only `useQuery` in the codebase is in `src/features/example/`. The first wired
-   screen sets the pattern everyone else copies — get it right.
+   the only `useQuery` in the codebase is in `src/features/example/` — which you should not
+   copy, see below. The first wired screen sets the pattern everyone else copies — get it
+   right.
+
+---
+
+## Reference code that is wrong
+
+`src/features/example/` is presented as the reference implementation of a feature slice. Its
+*structure* is correct; its *contents* are not. It predates the constitution and violates
+four articles:
+
+| What it does | Article |
+| --- | --- |
+| `exampleRepo.ts` imports the legacy `fetcher` instead of the generated client | [C-04](../../../docs/constitution.md#c-04--the-generated-client-is-the-only-transport) |
+| Imports by relative path (`../../../shared/api/fetcher`) instead of `@/` | [conventions](../../../docs/conventions.md#typescript) |
+| Types payloads as `any` in `exampleRepo.ts` and `useCreateExample.ts` | `strict` TypeScript |
+| Calls `/api/examples`, an endpoint that does not exist | — |
+
+Copy the layering (`api/` → `hooks/` → `components/`) from
+[ADR 0001](../../../docs/adr/0001-feature-sliced-frontend.md) and take the calling pattern
+from [data-fetching.md](./data-fetching.md) or a real slice under `src/features/`. Treat
+this slice as debt under
+[C-11](../../../docs/constitution.md#c-11--debt-in-a-slice-is-paid-before-that-slice-gains-behaviour),
+not as a precedent.
 
 ---
 
