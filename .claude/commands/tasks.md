@@ -6,7 +6,7 @@ argument-hint: <issue number>
 Write `specs/$ARGUMENTS-*/tasks.md` from the spec and plan in the same folder.
 
 Follow `specs/templates/tasks.md`. Phases in order: debt, contracts and types,
-implementation, verification, documentation.
+implementation, verification, documentation, self-review.
 
 Rules:
 
@@ -16,6 +16,8 @@ Rules:
 - Mark `[P]` only where tasks share no file.
 - Phase 4 has one task per acceptance scenario in the spec, naming the scenario it proves.
 - Phase 5 names the exact documents to update (C-12) and sets the spec status.
+- Phase 6 is the fixed self-review list from the template. Copy it unchanged; it is not
+  tailored per feature and it gates the pull request.
 - Fill the Coverage table last and check it: every requirement in the spec appears in at
   least one task. A gap there is a gap in the plan — report it instead of papering over it.
 

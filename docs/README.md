@@ -70,6 +70,7 @@ Some root-level files still come from it:
 Docs are part of the change, not a follow-up task. If a pull request changes behaviour,
 routing, data flow or a convention, it updates the matching document in the same PR.
 
-No document here is generated yet. [api-map.md](./api-map.md) is derived from the
-generated client but is maintained by hand — it carries a banner saying so. When a
-generator lands, that banner changes and the file stops being editable by hand.
+[api-map.md](./api-map.md) is the one generated document: the backend produces it from
+the OpenAPI schema, and it is never edited by hand. It has not landed yet. Until it does,
+the specification commands that read it stop instead of working from a hand-written
+substitute — see [specs/README.md](../specs/README.md#the-loop).

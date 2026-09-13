@@ -49,6 +49,14 @@ Named after the issue they close:
 50-frontend-implement-the-content-navigation-learning-ui
 ```
 
+An issue that goes through the [specification loop](../specs/README.md#branches-and-pull-requests)
+has **two** branches, created at different moments:
+
+```
+52-specs-learning-api-integration       spec, plan, tasks — created by /specify
+52-frontend-learning-api-integration    the implementation — created by /implement, after the specs PR merged
+```
+
 Work with no issue drops the number (`ci-frontend-lint`, `cleanup`). All pull requests
 target `main`.
 
@@ -137,7 +145,9 @@ breadcrumb shown on mobile instead.
 
 ## Pull requests
 
-- One issue per branch, one branch per pull request.
+- One branch per pull request. A specified issue has two: the specs PR, opened once the
+  spec is clarified, and the implementation PR, opened only after the self-review phase
+  in `tasks.md` is ticked.
 - **A PR that changes behaviour updates the matching document in the same PR.** Docs are
   part of the change, not a follow-up.
 - CI runs: commit-message compliance, frontend lint, backend lint and tests, Playwright,

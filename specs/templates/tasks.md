@@ -38,6 +38,17 @@
 - [ ] T-040 — Update `<document>` for <what changed>
 - [ ] T-041 — Set spec status to Implemented
 
+## Phase 6 — Self-review
+
+<Fixed list. The pull request is opened only when every item is ticked.>
+
+- [ ] T-050 — The diff contains nothing outside this checklist
+- [ ] T-051 — Every `FR-` has a passing check, and the command that ran it is recorded (C-09)
+- [ ] T-052 — Constitution Check re-run against the diff, not the plan
+- [ ] T-053 — Every document named in Phase 5 is updated, and no two pages now contradict each other (C-12)
+- [ ] T-054 — Nothing copied from the reference code flagged in `frontend/student/docs/feature-status.md`
+- [ ] T-055 — One commit per phase; debt commits change no behaviour (C-11)
+
 ---
 
 ## Coverage
