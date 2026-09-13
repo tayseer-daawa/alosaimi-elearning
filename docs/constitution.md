@@ -79,8 +79,8 @@ for this migration. Changes there need their own issue and an explicit decision.
 
 ### C-08 — Specification before implementation
 
-Any change to behaviour starts as `specs/<issue>/spec.md`, then `plan.md`, then `tasks.md`,
-then code. See [../specs/README.md](../specs/README.md).
+Any change to behaviour starts as `specs/<issue>-<title>/spec.md`, then `plan.md`, then
+`tasks.md`, then code. See [../specs/README.md](../specs/README.md).
 
 Exempt: dependency bumps, CI configuration, formatting, and documentation-only changes.
 

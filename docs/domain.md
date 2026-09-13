@@ -71,7 +71,8 @@ Running alongside the content chain:
 
 - **`ProgramSession`** — a cohort actually running a program. Holds students and teachers
   through two association tables, plus session events, lessons and breaks.
-- **`Exam` / `ExamAttempt`** — exams hang off a session; a student accumulates attempts.
+- **`Exam` / `ExamAttempt`** — an exam belongs to one session **and** one book; a student
+  accumulates attempts.
 - **`User`** — see below.
 
 ---

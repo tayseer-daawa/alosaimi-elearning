@@ -28,7 +28,10 @@ feat(frontend): wire programs list to ProgramsService
 fix(frontend/student): clear stale token on 401
 chore(tools/docker): pin the nginx image
 docs(common): document the phase-book many-to-many
+docs(frontend): specify the learning API integration (#52)
 ```
+
+A spec, plan or tasks commit is `docs(<area of the feature>)`, as in the last example.
 
 Enable the hook once per clone:
 
@@ -40,10 +43,11 @@ git config core.hooksPath .githooks
 
 ## Branches
 
-Named after the issue they close:
+Named after the issue they close, using the name GitHub generates from the issue title
+("Create a branch" on the issue page):
 
 ```
-<issue-number>-<area>-<kebab-case-title>
+<issue-number>-<area>-<issue-title-in-kebab-case>
 
 51-frontend-implement-the-auth-api-ingration
 50-frontend-implement-the-content-navigation-learning-ui
@@ -53,8 +57,8 @@ An issue that goes through the [specification loop](../specs/README.md#branches-
 has **two** branches, created at different moments:
 
 ```
-52-specs-learning-api-integration       spec, plan, tasks — created by /specify
-52-frontend-learning-api-integration    the implementation — created by /implement, after the specs PR merged
+52-specs-implement-the-content-navigation-learning-api-integration       spec.md only — created by /specify
+52-frontend-implement-the-content-navigation-learning-api-integration    plan, tasks, code — created by /plan, after the specs PR merged
 ```
 
 Work with no issue drops the number (`ci-frontend-lint`, `cleanup`). All pull requests

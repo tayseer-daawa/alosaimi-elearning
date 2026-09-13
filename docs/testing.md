@@ -44,10 +44,15 @@ So a type error does fail CI, but through the Docker job, not the lint job.
 | `generate-client.yml` | Generated client is not stale |
 | `smokeshow.yml` | Publishes the backend coverage report; proves nothing on its own |
 | `detect-conflicts.yml` | Flags merge conflicts against `main` |
+| `deploy-staging.yml` | Deploys to staging — on push to `master` only, so it **never runs** (see below) |
+| `deploy-production.yml` | Deploys to production on a release |
 
-`playwright.yml` and `test-docker-compose.yml` still trigger on pushes to `master`, a branch
-that does not exist here. They run on pull requests, which is what matters, but the push
-trigger is dead.
+Five workflows still trigger on pushes to `master`, a branch that does not exist here:
+`playwright.yml`, `test-docker-compose.yml`, `lint-backend.yml`, `test-backend.yml` and
+`deploy-staging.yml`. The first four also run on pull requests, which is what matters, so
+only their push trigger is dead. `deploy-staging.yml` has no other trigger: nothing has
+deployed to staging since the default branch became `main`, which is the likely reason the
+staging API does not answer ([local-setup.md](./local-setup.md#staging)).
 
 ---
 
@@ -81,10 +86,10 @@ Both frontends carry blanket rules inherited from the template:
 *.spec.ts
 ```
 
-Negations below them re-include `docs/**/*.md` and `**/*.{test,spec}.ts`, so documentation
-and a new test suite are tracked. Everything else those rules cover is still hidden — a
-`NOTES.md` at the root of either frontend is invisible to git with no warning, and nothing
-tells you.
+Any Markdown file or test file you add under `frontend/admin` or `frontend/student` is
+invisible to git, with no warning. The existing `README.md` in each was committed before
+the rule. Narrowing these rules so that `docs/` and test suites are tracked is part of the
+frontend documentation work, not of a feature.
 
 Check before you assume a file was committed:
 

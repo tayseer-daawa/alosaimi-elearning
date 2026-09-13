@@ -5,8 +5,10 @@ argument-hint: <issue number>
 
 Write `specs/$ARGUMENTS-*/tasks.md` from the spec and plan in the same folder.
 
-Follow `specs/templates/tasks.md`. Phases in order: debt, contracts and types,
-implementation, verification, documentation, self-review.
+Work on the implementation branch `/plan` created; if `plan.md` is missing, stop and say
+to run `/plan` first. Copy `specs/templates/tasks.md` into the folder and follow it. Phases
+in order: debt, contracts and types, implementation, verification, documentation,
+self-review.
 
 Rules:
 

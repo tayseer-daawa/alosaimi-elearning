@@ -1,11 +1,15 @@
 # Plan — <feature name>
 
 **Spec:** [spec.md](./spec.md)
+**Branch:** `NNN-<area>-<kebab-case-title>`
 **Status:** Draft | Approved
 **Created:** YYYY-MM-DD
 
-> Written only after `spec.md` has zero `[NEEDS CLARIFICATION]` markers (C-10).
-> This document is **how**. Every choice here traces back to a requirement id.
+> Written on the implementation branch, only after `spec.md` is on `main` with zero
+> `[NEEDS CLARIFICATION]` markers (C-10). This document is **how**. Every choice here
+> traces back to a requirement id.
+> The author sets Approved once the Constitution Check below passes. There is no separate
+> plan review — the plan is reviewed with the code, in the implementation pull request.
 
 ---
 

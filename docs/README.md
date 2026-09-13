@@ -62,6 +62,11 @@ Some root-level files still come from it:
 - `README.md` — everything below its banner is the **template's** readme, not ours.
 - [`development.md`](../development.md) — genuinely useful: Docker Compose, ports, pre-commit.
 - [`deployment.md`](../deployment.md) — Traefik and production deployment.
+- [`backend/README.md`](../backend/README.md), [`frontend/admin/README.md`](../frontend/admin/README.md),
+  [`frontend/student/README.md`](../frontend/student/README.md) — the template's per-app
+  readmes. The tooling they describe (uv, Vite, Biome, the generated client) is still
+  accurate; nothing in them is specific to this product. The per-application documents
+  above are where project-specific facts go.
 
 ---
 

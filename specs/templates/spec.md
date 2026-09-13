@@ -1,9 +1,13 @@
 # Specification — <feature name>
 
 **Issue:** #NNN
-**Branch:** `NNN-<area>-<kebab-case-title>`
+**Specs branch:** `NNN-specs-<kebab-case-title>` — this file only
+**Implementation branch:** `NNN-<area>-<kebab-case-title>` — created later by `/plan`
 **Status:** Draft | Clarified | Planned | Implemented
 **Created:** YYYY-MM-DD
+
+> Status is set by the command that earns it: `/clarify` → Clarified, `/plan` → Planned,
+> `/implement` → Implemented. The last two are set on the implementation branch.
 
 > Delete every instruction line in angle brackets before committing.
 > This document describes **what** and **why**. Naming a file, a library or a component

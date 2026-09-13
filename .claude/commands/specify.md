@@ -15,9 +15,12 @@ Steps:
 3. Gather context from the repository: `docs/domain.md` for vocabulary, `docs/api-map.md`
    for what the backend already exposes, and the feature slices this touches.
    If the issue text was not pasted, fetch it with `gh issue view <number>`.
-4. Create the branch `<issue>-specs-<kebab-case-title>` from `main` if it does not exist.
-   This branch carries the spec, plan and tasks only — never implementation.
-5. Create the folder, named with the issue number and a kebab-case title.
+4. Create the branch `<issue>-specs-<kebab-case-title>` if it does not exist: `git fetch`
+   first, then branch from `origin/main` — a local `main` may be stale. This branch carries
+   `spec.md` and nothing else; the plan and tasks are written later, on the implementation
+   branch.
+5. Create the folder, named with the issue number and a kebab-case title. Copy
+   `specs/templates/spec.md` into it — only that file.
 6. Fill the template.
 
 Rules:

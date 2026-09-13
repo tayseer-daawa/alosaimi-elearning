@@ -43,7 +43,7 @@
 <Fixed list. The pull request is opened only when every item is ticked.>
 
 - [ ] T-050 — The diff contains nothing outside this checklist
-- [ ] T-051 — Every `FR-` has a passing check, and the command that ran it is recorded (C-09)
+- [ ] T-051 — Every `FR-` has a passing check — automated, or the manual check the plan names — and the command run, or the manual steps and their result, is recorded (C-09)
 - [ ] T-052 — Constitution Check re-run against the diff, not the plan
 - [ ] T-053 — Every document named in Phase 5 is updated, and no two pages now contradict each other (C-12)
 - [ ] T-054 — Nothing copied from the reference code flagged in `frontend/student/docs/feature-status.md`
