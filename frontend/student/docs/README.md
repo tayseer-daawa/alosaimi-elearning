@@ -24,7 +24,8 @@ Cross-cutting documents live at the project root:
 [domain](../../../docs/domain.md) ·
 [setup](../../../docs/local-setup.md) ·
 [conventions](../../../docs/conventions.md) ·
-[API map](../../../docs/api-map.md)
+[API map](../../../docs/api-map.md) — generated from the OpenAPI schema, has not landed
+yet
 
 ---
 

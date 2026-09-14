@@ -26,7 +26,8 @@ What that means in practice:
   deliberately.
 - The generated API client (`src/client/`) **is** current — `scripts/generate-client.sh`
   regenerates both frontends together, so the admin app already has typed access to every
-  endpoint listed in the [API map](../../../docs/api-map.md).
+  endpoint the backend exposes. The [API map](../../../docs/api-map.md) will list them by
+  name once it is generated from the OpenAPI schema; it has not landed yet.
 
 ---
 
@@ -65,7 +66,7 @@ Biome, Node 24. It also ships the template's Playwright suite under `tests/`.
 | Commit format, branches, lint, TypeScript rules | [conventions.md](../../../docs/conventions.md) |
 | Running locally, ports, env files | [local-setup.md](../../../docs/local-setup.md) |
 | Domain vocabulary | [domain.md](../../../docs/domain.md) |
-| Endpoints | [api-map.md](../../../docs/api-map.md) |
+| Endpoints | [api-map.md](../../../docs/api-map.md) *(generated, has not landed yet)* |
 
 ---
 

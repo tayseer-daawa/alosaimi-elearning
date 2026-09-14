@@ -37,7 +37,8 @@ import { ProgramsService } from "@/client"
 ProgramsService.readPrograms({ skip: 0, limit: 100 })
 ```
 
-Find the method you need in [the API map](../../../docs/api-map.md).
+Find the method you need in [the API map](../../../docs/api-map.md) — generated from
+the OpenAPI schema, it has not landed yet, so grep `src/client/sdk.gen.ts` meanwhile.
 Argument and response types are in `src/client/types.gen.ts`, named after the operation:
 `ProgramsReadProgramsData`, `ProgramsReadProgramsResponse`.
 
