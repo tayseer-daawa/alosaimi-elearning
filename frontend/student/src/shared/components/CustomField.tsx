@@ -33,6 +33,7 @@ const CustomField = ({
         placeholder=""
         borderBottomWidth={{ base: "2px", md: "3px", lg: "4px" }}
         _focus={{ borderColor: "brand.primary", borderBottomWidth: "3px" }}
+        _invalid={{ borderColor: "red.500" }}
         height={{ base: "2rem", md: 16, lg: 12 }}
         {...props}
       />
