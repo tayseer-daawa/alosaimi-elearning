@@ -66,14 +66,14 @@ export default function SignupScreen() {
               stateSetter={setFirstName}
               autoComplete="given-name"
               handleKeyDownEnter={handleKeyDownEnter}
-              error={!firstName.trim().length ? error : null}
+              error={error.firstName}
             />
             <CustomField
               label="اسم الأب"
               state={fatherName}
               stateSetter={setFatherName}
               handleKeyDownEnter={handleKeyDownEnter}
-              error={!fatherName.trim().length ? error : null}
+              error={error.fatherName}
             />
             <CustomField
               label="الاسم العائلي"
@@ -81,7 +81,7 @@ export default function SignupScreen() {
               stateSetter={setFamilyName}
               autoComplete="family-name"
               handleKeyDownEnter={handleKeyDownEnter}
-              error={!familyName.trim().length ? error : null}
+              error={error.familyName}
             />
           </VStack>
         )}
@@ -94,12 +94,16 @@ export default function SignupScreen() {
             autoComplete="email"
             type="email"
             handleKeyDownEnter={handleKeyDownEnter}
-            error={error}
+            error={error.email}
           />
         )}
 
         {step === "gender" && (
-          <Field.Root invalid={!!error} required gap={{ base: 3, md: 4 }}>
+          <Field.Root
+            invalid={!!error.gender}
+            required
+            gap={{ base: 3, md: 4 }}
+          >
             <Field.Label
               fontSize={{ base: "md", md: "xl", lg: "xl" }}
               color="text.default"
@@ -109,12 +113,12 @@ export default function SignupScreen() {
             </Field.Label>
             <GenderToggle value={isMale} onChange={setIsMale} />
 
-            <ErrorText error={error} />
+            <ErrorText error={error.gender} />
           </Field.Root>
         )}
 
         {step === "goal" && (
-          <Field.Root invalid={!!error} required gap={{ base: 3, md: 4 }}>
+          <Field.Root invalid={!!error.goal} required gap={{ base: 3, md: 4 }}>
             <Field.Label
               fontSize={{ base: "md", md: "xl", lg: "xl" }}
               color="text.default"
@@ -127,7 +131,7 @@ export default function SignupScreen() {
               onChange={setWantsNotifications}
             />
 
-            <ErrorText error={error} />
+            <ErrorText error={error.goal} />
           </Field.Root>
         )}
 
@@ -140,6 +144,7 @@ export default function SignupScreen() {
               type="password"
               autoComplete="new-password"
               handleKeyDownEnter={handleKeyDownEnter}
+              error={error.password}
             />
             <CustomField
               label="تأكيد كلمة السر"
@@ -148,7 +153,7 @@ export default function SignupScreen() {
               type="password"
               autoComplete="new-password"
               handleKeyDownEnter={handleKeyDownEnter}
-              error={error}
+              error={error.confirmPassword ?? error.form}
             />
           </VStack>
         )}

@@ -6,6 +6,32 @@ type Step = "name" | "email" | "gender" | "goal" | "password"
 
 const steps: Step[] = ["name", "email", "gender", "goal", "password"]
 
+type SignupErrors = {
+  firstName: string | null
+  fatherName: string | null
+  familyName: string | null
+  email: string | null
+  gender: string | null
+  goal: string | null
+  password: string | null
+  confirmPassword: string | null
+  form: string | null
+}
+
+const emptyErrors = (): SignupErrors => ({
+  firstName: null,
+  fatherName: null,
+  familyName: null,
+  email: null,
+  gender: null,
+  goal: null,
+  password: null,
+  confirmPassword: null,
+  form: null,
+})
+
+const isFilledName = (value: string) => value.trim().length > 1
+
 export function useSignupWizard() {
   const navigate = useNavigate()
 
@@ -22,7 +48,7 @@ export function useSignupWizard() {
   )
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<SignupErrors>(emptyErrors)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const title = "أدخل بعض المعلومات"
@@ -31,9 +57,9 @@ export function useSignupWizard() {
     switch (step) {
       case "name":
         return (
-          firstName.trim().length > 1 &&
-          fatherName.trim().length > 1 &&
-          familyName.trim().length > 1
+          isFilledName(firstName) &&
+          isFilledName(fatherName) &&
+          isFilledName(familyName)
         )
       case "email":
         return /\S+@\S+\.\S+/.test(email.trim())
@@ -61,29 +87,49 @@ export function useSignupWizard() {
   const validateCurrentStep = () => {
     if (canContinue) return true
 
+    const nextErrors = emptyErrors()
+
     switch (step) {
       case "name":
-        setError("الرجاء إدخال الاسم الشخصي، اسم الأب، والاسم العائلي")
-        return false
+        if (!isFilledName(firstName)) {
+          nextErrors.firstName = "الرجاء إدخال الاسم الشخصي"
+        }
+        if (!isFilledName(fatherName)) {
+          nextErrors.fatherName = "الرجاء إدخال اسم الأب"
+        }
+        if (!isFilledName(familyName)) {
+          nextErrors.familyName = "الرجاء إدخال الاسم العائلي"
+        }
+        break
       case "email":
-        setError("الرجاء إدخال بريد إلكتروني صحيح")
-        return false
+        nextErrors.email = "الرجاء إدخال بريد إلكتروني صحيح"
+        break
       case "gender":
-        setError("الرجاء تحديد الجنس")
-        return false
+        nextErrors.gender = "الرجاء تحديد الجنس"
+        break
       case "goal":
-        setError("الرجاء اختيار نعم أو لا")
-        return false
+        nextErrors.goal = "الرجاء اختيار نعم أو لا"
+        break
       case "password":
-        setError("كلمة السر يجب أن تكون 6 أحرف على الأقل وأن تتطابق مع التأكيد")
-        return false
+        if (password.length < 6) {
+          nextErrors.password = "كلمة السر يجب أن تكون 6 أحرف على الأقل"
+        }
+        if (!confirmPassword.trim().length) {
+          nextErrors.confirmPassword = "الرجاء تأكيد كلمة السر"
+        } else if (password !== confirmPassword) {
+          nextErrors.confirmPassword = "كلمة السر غير متطابقة مع التأكيد"
+        }
+        break
       default:
-        return false
+        break
     }
+
+    setError(nextErrors)
+    return false
   }
 
   const next = async () => {
-    setError(null)
+    setError(emptyErrors())
 
     if (!validateCurrentStep()) return
 
@@ -101,18 +147,28 @@ export function useSignupWizard() {
           },
         })
         await navigate({ to: "/login" })
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (err instanceof ApiError) {
-          const detail = (err.body as any)?.detail
+          const detail = (err.body as { detail?: unknown } | undefined)?.detail
           if (typeof detail === "string") {
-            setError(detail)
+            setError({ ...emptyErrors(), form: detail })
           } else if (Array.isArray(detail) && detail.length > 0) {
-            setError(detail[0].msg)
+            const first = detail[0] as { msg?: string }
+            setError({
+              ...emptyErrors(),
+              form: first.msg ?? "حدث خطأ أثناء الاتصال بالخادم",
+            })
           } else {
-            setError("حدث خطأ أثناء الاتصال بالخادم")
+            setError({
+              ...emptyErrors(),
+              form: "حدث خطأ أثناء الاتصال بالخادم",
+            })
           }
         } else {
-          setError("تعذر إنشاء الحساب، يرجى المحاولة لاحقاً")
+          setError({
+            ...emptyErrors(),
+            form: "تعذر إنشاء الحساب، يرجى المحاولة لاحقاً",
+          })
         }
       } finally {
         setIsSubmitting(false)
