@@ -537,6 +537,14 @@ export type PhasesDeletePhaseData = {
 
 export type PhasesDeletePhaseResponse = (Message);
 
+export type PhasesReadBooksByPhaseData = {
+    limit?: number;
+    phaseId: string;
+    skip?: number;
+};
+
+export type PhasesReadBooksByPhaseResponse = (BooksPublic);
+
 export type PhasesAddBookToPhaseData = {
     bookId: string;
     order?: (number | null);
