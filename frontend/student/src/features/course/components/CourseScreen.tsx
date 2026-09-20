@@ -1,7 +1,7 @@
 import { Box, Button, Container, Flex, Heading, Text } from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { MoveLeft, MoveRight } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 
 import { useBook } from "@/features/books/api/useBook"
 import { useLesson } from "@/features/books/api/useLesson"
@@ -10,7 +10,8 @@ import { usePhase } from "@/features/phases/api/usePhase"
 import { useProgram } from "@/features/programs/api/useProgram"
 import { AppMenu } from "@/shared/components/AppMenu"
 import { Breadcrumbs } from "@/shared/components/BreadcrumbsNavigation"
-import AudioPlayer from "./AudioPlayer"
+import { CourseSkeleton } from "@/shared/components/PageSkeletons"
+import AudioPlayer, { type AudioPlaybackApi } from "./AudioPlayer"
 import LessonListDrawer from "./LessonListDrawer"
 import { LessonNotes } from "./LessonNotes"
 import { PdfReader } from "./PdfReader"
@@ -20,6 +21,8 @@ type TabId = "book" | "notes"
 export default function CourseScreen() {
   const [activeTab, setActiveTab] = useState<TabId>("book")
   const [lessonListOpen, setLessonListOpen] = useState(false)
+  const [pdfIframeFocused, setPdfIframeFocused] = useState(false)
+  const playbackApiRef = useRef<AudioPlaybackApi | null>(null)
   const navigate = useNavigate()
   const { programId, phaseId, bookId, courseId } = useParams({
     strict: false,
@@ -78,11 +81,7 @@ export default function CourseScreen() {
   }
 
   if (lessonQuery.isLoading) {
-    return (
-      <Text dir="rtl" p={8} color="brand.secondary">
-        جاري التحميل...
-      </Text>
-    )
+    return <CourseSkeleton />
   }
 
   if (lessonQuery.isError || !lesson) {
@@ -233,14 +232,17 @@ export default function CourseScreen() {
       <Container
         bg="white"
         w={{ base: "92%", lg: "100%" }}
+        maxW={{ lg: "container.xl" }}
         mx="auto"
         mt={{ lg: "8" }}
         px={{ base: 4, md: 6 }}
         py={6}
         boxShadow="lg"
         borderRadius={4}
+        data-testid="course-content"
       >
-        <Flex mb={6} gap={2}>
+        {/* Tabs — mobile / tablet only */}
+        <Flex mb={6} gap={2} display={{ base: "flex", lg: "none" }}>
           <Button
             size="sm"
             flex={1}
@@ -265,21 +267,108 @@ export default function CourseScreen() {
           </Button>
         </Flex>
 
-        {activeTab === "book" ? (
-          <Box data-testid="tab-panel-book">
-            <PdfReader url={pdfUrl} title={bookTitle} />
-          </Box>
-        ) : null}
-        <Box
-          display={activeTab === "notes" ? "block" : "none"}
-          data-testid="tab-panel-notes"
+        {/*
+          Desktop (lg+): PDF | notes side-by-side (RTL → PDF on the right).
+          Mobile: one panel at a time via tabs.
+        */}
+        <Flex
+          direction={{ base: "column", lg: "row" }}
+          align="stretch"
+          gap={{ base: 0, lg: 8 }}
+          data-testid="course-split"
         >
-          <LessonNotes
-            lessonId={lesson.id}
-            explanationNotes={lesson.explanation_notes}
-          />
-        </Box>
+          <Box
+            flex={{ lg: "1.55" }}
+            minW={0}
+            display={{
+              base: activeTab === "book" ? "block" : "none",
+              lg: "block",
+            }}
+            data-testid="tab-panel-book"
+          >
+            <Text
+              display={{ base: "none", lg: "block" }}
+              fontSize="sm"
+              fontWeight="semibold"
+              color="brand.primary"
+              mb={3}
+              textAlign="right"
+            >
+              الكتاب
+            </Text>
+            <PdfReader
+              url={pdfUrl}
+              title={bookTitle}
+              onIframeFocusChange={setPdfIframeFocused}
+            />
+          </Box>
+
+          <Box
+            flex={{ lg: "1" }}
+            minW={{ lg: "280px" }}
+            maxW={{ lg: "420px" }}
+            w={{ lg: "38%" }}
+            display={{
+              base: activeTab === "notes" ? "block" : "none",
+              lg: "block",
+            }}
+            borderStartWidth={{ lg: "1px" }}
+            borderColor={{ lg: "gray.100" }}
+            ps={{ lg: 6 }}
+            data-testid="tab-panel-notes"
+          >
+            <Box
+              position={{ lg: "sticky" }}
+              top={{ lg: 4 }}
+              maxH={{ lg: "calc(100vh - 12rem)" }}
+              overflowY={{ lg: "auto" }}
+            >
+              <Text
+                display={{ base: "none", lg: "block" }}
+                fontSize="sm"
+                fontWeight="semibold"
+                color="brand.primary"
+                mb={3}
+                textAlign="right"
+              >
+                الملاحظات
+              </Text>
+              <LessonNotes
+                lessonId={lesson.id}
+                explanationNotes={lesson.explanation_notes}
+                getCurrentTime={() =>
+                  playbackApiRef.current?.getCurrentTime() ?? 0
+                }
+                onSeekTo={(seconds) => playbackApiRef.current?.seekTo(seconds)}
+              />
+            </Box>
+          </Box>
+        </Flex>
       </Container>
+
+      {pdfIframeFocused ? (
+        <Box
+          position="fixed"
+          bottom={{ base: "7.5rem", md: "6.5rem" }}
+          left="50%"
+          transform="translateX(-50%)"
+          zIndex={20}
+          maxW="90vw"
+          px={4}
+          py={2}
+          borderRadius="full"
+          bg="brand.primary"
+          color="white"
+          boxShadow="lg"
+          textAlign="center"
+          pointerEvents="none"
+          data-testid="pdf-shortcuts-hint"
+        >
+          <Text fontSize="sm" fontWeight="medium">
+            اضغط على المشغّل لاستخدام الاختصارات
+          </Text>
+        </Box>
+      ) : null}
 
       <Box
         position="fixed"
@@ -300,6 +389,7 @@ export default function CourseScreen() {
           hasPrevLesson={currentIndex > 0}
           hasNextLesson={currentIndex >= 0 && currentIndex < lessons.length - 1}
           onOpenLessonList={() => setLessonListOpen(true)}
+          playbackApiRef={playbackApiRef}
         />
       </Box>
 

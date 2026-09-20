@@ -1,10 +1,12 @@
 import { Box, Button, Flex, Link, Text } from "@chakra-ui/react"
 import { ExternalLink, RefreshCw } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 type PdfReaderProps = {
   url?: string | null
   title: string
+  /** Called when focus enters/leaves the PDF iframe (for shortcut hints). */
+  onIframeFocusChange?: (focused: boolean) => void
 }
 
 type FrameStatus = "loading" | "ready" | "timeout"
@@ -20,10 +22,16 @@ function pdfLoadTimeoutMs(): number {
     : LOAD_TIMEOUT_MS
 }
 
-export function PdfReader({ url, title }: PdfReaderProps) {
+export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
   const href = url?.trim()
   const [reloadKey, setReloadKey] = useState(0)
   const [status, setStatus] = useState<FrameStatus>("loading")
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const onFocusChangeRef = useRef(onIframeFocusChange)
+
+  useEffect(() => {
+    onFocusChangeRef.current = onIframeFocusChange
+  }, [onIframeFocusChange])
 
   useEffect(() => {
     if (!href) return
@@ -32,6 +40,42 @@ export function PdfReader({ url, title }: PdfReaderProps) {
       setStatus((s) => (s === "loading" ? "timeout" : s))
     }, pdfLoadTimeoutMs())
     return () => window.clearTimeout(timer)
+  }, [href])
+
+  // Detect when the PDF iframe holds focus (cross-origin: window blur + activeElement).
+  useEffect(() => {
+    if (!href) {
+      onFocusChangeRef.current?.(false)
+      return
+    }
+    const report = () => {
+      const focused = document.activeElement === iframeRef.current
+      onFocusChangeRef.current?.(focused)
+    }
+    const onWindowBlur = () => {
+      window.setTimeout(report, 0)
+    }
+    const onFocusIn = () => report()
+    const onPointerDown = (event: PointerEvent) => {
+      if (
+        iframeRef.current &&
+        event.target instanceof Node &&
+        !iframeRef.current.contains(event.target) &&
+        event.target !== iframeRef.current
+      ) {
+        onFocusChangeRef.current?.(false)
+      }
+    }
+
+    window.addEventListener("blur", onWindowBlur)
+    document.addEventListener("focusin", onFocusIn)
+    document.addEventListener("pointerdown", onPointerDown)
+    return () => {
+      window.removeEventListener("blur", onWindowBlur)
+      document.removeEventListener("focusin", onFocusIn)
+      document.removeEventListener("pointerdown", onPointerDown)
+      onFocusChangeRef.current?.(false)
+    }
   }, [href])
 
   if (!href) {
@@ -63,6 +107,7 @@ export function PdfReader({ url, title }: PdfReaderProps) {
           document.activeElement instanceof HTMLIFrameElement
         ) {
           document.activeElement.blur()
+          onFocusChangeRef.current?.(false)
         }
       }}
     >
@@ -162,12 +207,14 @@ export function PdfReader({ url, title }: PdfReaderProps) {
           </Flex>
         ) : null}
         <iframe
+          ref={iframeRef}
           key={reloadKey}
           src={href}
           title={`قراءة ${title}`}
           style={{ width: "100%", height: "560px", border: 0 }}
           data-testid="pdf-reader-frame"
           onLoad={() => setStatus("ready")}
+          onFocus={() => onFocusChangeRef.current?.(true)}
         />
       </Box>
     </Box>
