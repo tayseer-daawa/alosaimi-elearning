@@ -1,5 +1,6 @@
 import { Button, Flex, Grid, Text, VStack } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
+import { ProgramsListSkeleton } from "@/shared/components/PageSkeletons"
 import { formatStudyDays } from "@/shared/lib/studyDays"
 import { usePrograms } from "../api/usePrograms"
 import { ProgramCard } from "./ProgramCard"
@@ -10,11 +11,7 @@ export const ProgramsList = () => {
   const programs = data?.data ?? []
 
   if (isLoading) {
-    return (
-      <Text color="brand.secondary" textAlign="center" py={10}>
-        جاري التحميل...
-      </Text>
-    )
+    return <ProgramsListSkeleton />
   }
 
   if (isError) {

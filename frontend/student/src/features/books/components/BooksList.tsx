@@ -1,5 +1,6 @@
 import { Button, Flex, Text, VStack } from "@chakra-ui/react"
 import { useParams } from "@tanstack/react-router"
+import { BooksListSkeleton } from "@/shared/components/PageSkeletons"
 import { useBook } from "../api/useBook"
 import { useLessonsByBook } from "../api/useLessonsByBook"
 import { BooksItem } from "./BooksItem"
@@ -10,11 +11,7 @@ export const BooksList = () => {
   const lessonsQuery = useLessonsByBook(bookId)
 
   if (bookQuery.isLoading || lessonsQuery.isLoading) {
-    return (
-      <Text color="brand.secondary" textAlign="center" py={10}>
-        جاري التحميل...
-      </Text>
-    )
+    return <BooksListSkeleton />
   }
 
   if (bookQuery.isError || !bookQuery.data) {
