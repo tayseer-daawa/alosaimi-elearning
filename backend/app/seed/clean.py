@@ -9,7 +9,7 @@ from sqlmodel import Session
 from app import crud
 from app.core.config import settings
 from app.models import Book, Program
-from app.seed.content import get_seed_books, get_seed_program
+from app.seed.content import get_seed_books, get_seed_programs
 from app.seed.data import DEMO_USER_EMAILS
 
 logger = logging.getLogger(__name__)
@@ -17,8 +17,7 @@ logger = logging.getLogger(__name__)
 
 def clean_seed_data(*, session: Session, verbose: bool = False) -> None:
     """Remove demo users and the seed program graph. Never deletes FIRST_SUPERUSER."""
-    program = get_seed_program(session=session)
-    if program:
+    for program in get_seed_programs(session=session):
         _clean_program_graph(session=session, program=program, verbose=verbose)
 
     for book in get_seed_books(session=session):
