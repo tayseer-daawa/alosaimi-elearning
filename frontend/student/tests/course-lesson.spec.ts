@@ -72,6 +72,9 @@ async function openFirstLesson(page: Page) {
   await expect(page.locator("audio")).toHaveCount(1)
   return {
     url,
+    programId: program.id as string,
+    phaseId: phase.id as string,
+    bookId: book.id as string,
     lessonId: lesson.id,
     bookTitle: book.title as string,
     hasNext: sorted.length > 1,
@@ -402,5 +405,240 @@ test.describe("course lesson player", () => {
     await expect(page).not.toHaveURL(url)
     await expect(page.getByTestId("course-screen")).toBeVisible()
     await expect(page.getByTestId("audio-player")).toBeVisible()
+  })
+
+  test("resumes playback position and rate after reload", async ({ page }) => {
+    const { lessonId } = await openFirstLesson(page)
+    await waitForAudioReady(page)
+
+    await page.evaluate((id) => {
+      localStorage.setItem(
+        `lesson_playback:${id}`,
+        JSON.stringify({ position: 45, rate: 1.5, updatedAt: Date.now() }),
+      )
+    }, lessonId)
+
+    await page.reload()
+    await expect(page.getByTestId("course-screen")).toBeVisible()
+    await waitForAudioReady(page)
+
+    await expect
+      .poll(async () => (await audioState(page))?.playbackRate)
+      .toBe(1.5)
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 0)
+      .toBeGreaterThanOrEqual(40)
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 999)
+      .toBeLessThan(55)
+  })
+
+  test("persists volume and mute globally across reload", async ({ page }) => {
+    await openFirstLesson(page)
+    await waitForAudioReady(page)
+
+    await page.evaluate(() => {
+      localStorage.setItem(
+        "audio_player_volume",
+        JSON.stringify({ volume: 0.4, muted: true }),
+      )
+    })
+
+    await page.reload()
+    await expect(page.getByTestId("course-screen")).toBeVisible()
+    await waitForAudioReady(page)
+
+    await expect.poll(async () => (await audioState(page))?.volume).toBe(0)
+    await expect
+      .poll(async () =>
+        page.evaluate(() => {
+          const raw = localStorage.getItem("audio_player_volume")
+          return raw
+            ? (JSON.parse(raw) as { volume: number; muted: boolean })
+            : null
+        }),
+      )
+      .toMatchObject({ volume: 0.4, muted: true })
+
+    await page.getByTestId("audio-mute").click()
+    await expect
+      .poll(async () => (await audioState(page))?.volume ?? 0)
+      .toBeCloseTo(0.4, 1)
+    await expect
+      .poll(async () =>
+        page.evaluate(() => {
+          const raw = localStorage.getItem("audio_player_volume")
+          return raw ? (JSON.parse(raw) as { muted: boolean }).muted : null
+        }),
+      )
+      .toBe(false)
+  })
+
+  test("lesson drawer shows resume and completion toggles", async ({
+    page,
+  }) => {
+    const { lessonId } = await openFirstLesson(page)
+    await waitForAudioReady(page)
+
+    await page.evaluate((id) => {
+      localStorage.setItem(
+        `lesson_playback:${id}`,
+        JSON.stringify({ position: 90, rate: 1, updatedAt: Date.now() }),
+      )
+      localStorage.removeItem(`lesson_completed:${id}`)
+    }, lessonId)
+
+    await page.getByTestId("lesson-list-open").click()
+    const drawer = page.getByTestId("lesson-list-drawer")
+    await expect(drawer).toBeVisible()
+    await expect(drawer).toContainText("دروس الكتاب")
+    await expect(drawer.getByTestId("lesson-list-item-0")).toBeVisible()
+    await expect(drawer).toContainText("استئناف من")
+
+    await page.getByTestId("lesson-complete-toggle-0").click()
+    await expect(drawer).toContainText("مكتمل")
+    await expect
+      .poll(async () =>
+        page.evaluate(
+          (id) => localStorage.getItem(`lesson_completed:${id}`) != null,
+          lessonId,
+        ),
+      )
+      .toBe(true)
+
+    await page.getByTestId("lesson-complete-toggle-0").click()
+    await expect(drawer).not.toContainText("مكتمل")
+  })
+
+  test("PDF open-in-new-tab link is available and timeout offers retry", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      ;(
+        window as Window & { __COURSE_PDF_TIMEOUT_MS__?: number }
+      ).__COURSE_PDF_TIMEOUT_MS__ = 800
+    })
+
+    await page.route("**/*", async (route) => {
+      const url = route.request().url().toLowerCase()
+      if (url.includes(".pdf")) {
+        // Never complete — forces the reader timeout fallback.
+        await new Promise(() => {})
+        return
+      }
+      await route.continue()
+    })
+
+    await openFirstLesson(page)
+    await expect(page.getByTestId("pdf-reader-open-tab")).toBeVisible()
+    await expect(page.getByTestId("pdf-reader-timeout")).toBeVisible({
+      timeout: 5_000,
+    })
+    await expect(page.getByTestId("pdf-reader-retry-panel")).toBeVisible()
+    await expect(page.getByTestId("pdf-reader-timeout")).toContainText(
+      "تعذر عرض الملف داخل الصفحة",
+    )
+  })
+
+  test("audio load failure shows retry and open-in-new-tab", async ({
+    page,
+  }) => {
+    await page.route("**/*", async (route) => {
+      const url = route.request().url().toLowerCase()
+      if (url.includes("/api/")) {
+        await route.continue()
+        return
+      }
+      if (
+        url.includes(".mp3") ||
+        url.includes(".m4a") ||
+        url.includes(".ogg") ||
+        url.includes(".wav") ||
+        url.includes(".aac")
+      ) {
+        await route.abort()
+        return
+      }
+      await route.continue()
+    })
+
+    await openFirstLesson(page)
+    await expect(page.getByTestId("audio-player-error")).toBeVisible({
+      timeout: 10_000,
+    })
+    await expect(page.getByTestId("audio-player-retry")).toBeVisible()
+    await expect(page.getByTestId("audio-player-open-tab")).toBeVisible()
+    await expect(page.getByTestId("audio-player-error")).toContainText(
+      "تعذر تشغيل الملف الصوتي",
+    )
+  })
+
+  test("scrub previews time; audio seeks only on release", async ({ page }) => {
+    await openFirstLesson(page)
+    await waitForAudioReady(page)
+
+    await page.evaluate(() => {
+      const audio = document.querySelector("audio")
+      if (audio) audio.currentTime = 8
+    })
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 0)
+      .toBeGreaterThanOrEqual(7)
+
+    const seek = page.getByTestId("audio-seek")
+    const box = await seek.boundingBox()
+    expect(box).toBeTruthy()
+    if (!box) return
+
+    const y = box.y + box.height / 2
+    await page.mouse.move(box.x + 12, y)
+    await page.mouse.down()
+    await page.mouse.move(box.x + box.width * 0.65, y, { steps: 8 })
+
+    // Thumb preview moved far ahead, but media time should still be near the start.
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 999)
+      .toBeLessThan(40)
+
+    const previewText = await page.getByTestId("audio-current-time").innerText()
+    expect(previewText).not.toMatch(/^0:0[0-8]$/)
+
+    await page.mouse.up()
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 0)
+      .toBeGreaterThan(60)
+  })
+
+  test("shows buffering message while media is waiting", async ({ page }) => {
+    await openFirstLesson(page)
+    await waitForAudioReady(page)
+
+    await page.evaluate(() => {
+      document.querySelector("audio")?.dispatchEvent(new Event("waiting"))
+    })
+    // Indicator is delayed to avoid flash on fast seeks.
+    await expect(page.getByTestId("audio-player-buffering")).toBeVisible({
+      timeout: 2000,
+    })
+    await expect(page.getByTestId("audio-player-buffering")).toContainText(
+      "جاري تحميل الموضع",
+    )
+
+    await page.evaluate(() => {
+      document.querySelector("audio")?.dispatchEvent(new Event("playing"))
+    })
+    await expect(page.getByTestId("audio-player-buffering")).toBeHidden({
+      timeout: 2000,
+    })
+  })
+
+  test("back to book returns to the book lessons page", async ({ page }) => {
+    const { programId, phaseId, bookId } = await openFirstLesson(page)
+    await expect(page.getByTestId("course-screen")).toBeVisible()
+
+    await page.getByTestId("back-to-book").click()
+    await expect(page).toHaveURL(
+      new RegExp(`/programs/${programId}/phases/${phaseId}/books/${bookId}/?$`),
+    )
   })
 })
