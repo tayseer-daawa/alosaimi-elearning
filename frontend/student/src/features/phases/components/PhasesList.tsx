@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Grid, Image, Text } from "@chakra-ui/react"
+import { Box, Button, Flex, Grid, Image, Text, VStack } from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import headphones from "/assets/headphones.svg"
@@ -6,17 +6,26 @@ import { usePhasesWithBooks } from "../api/usePhasesWithBooks"
 
 export const PhasesList = () => {
   const { programId } = useParams({ strict: false })
-  const { data: stages, isLoading, isError } = usePhasesWithBooks(programId)
+  const {
+    data: stages,
+    isLoading,
+    isError,
+    phasesQuery,
+  } = usePhasesWithBooks(programId)
   const [expandedStage, setExpandedStage] = useState<string | null>(null)
   const [didInitExpand, setDidInitExpand] = useState(false)
   const navigate = useNavigate()
 
+  const orderedStages = stages
+    ? [...stages].sort((a, b) => a.order - b.order)
+    : undefined
+
   useEffect(() => {
-    if (stages?.length && !didInitExpand) {
-      setExpandedStage(stages[0].id)
+    if (orderedStages?.length && !didInitExpand) {
+      setExpandedStage(orderedStages[0].id)
       setDidInitExpand(true)
     }
-  }, [stages, didInitExpand])
+  }, [orderedStages, didInitExpand])
 
   const toggleStage = (stageId: string) => {
     setExpandedStage(expandedStage === stageId ? null : stageId)
@@ -32,13 +41,21 @@ export const PhasesList = () => {
 
   if (isError) {
     return (
-      <Text color="red.500" textAlign="center" py={10}>
-        تعذر تحميل المراحل.
-      </Text>
+      <VStack gap={4} py={10}>
+        <Text color="red.500" textAlign="center">
+          تعذر تحميل المراحل.
+        </Text>
+        <Button
+          loading={phasesQuery.isFetching}
+          onClick={() => void phasesQuery.refetch()}
+        >
+          إعادة المحاولة
+        </Button>
+      </VStack>
     )
   }
 
-  if (!stages?.length) {
+  if (!orderedStages?.length) {
     return (
       <Text color="brand.secondary" textAlign="center" py={10}>
         لا توجد مراحل لهذا البرنامج.
@@ -48,8 +65,9 @@ export const PhasesList = () => {
 
   return (
     <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={6}>
-      {stages.map((stage) => {
+      {orderedStages.map((stage) => {
         const isExpanded = expandedStage === stage.id
+        // PhasePublic has no title — label from API order only.
         const title = `مرحلة ${stage.order + 1}`
         const description =
           stage.books.length > 0
@@ -106,7 +124,7 @@ export const PhasesList = () => {
 
                 {isExpanded && stage.books.length > 0 && (
                   <Grid templateColumns="repeat(2, 1fr)" gap={2} mt={4}>
-                    {stage.books.map((book, index) => (
+                    {stage.books.map((book) => (
                       <Button
                         key={book.id}
                         bg="brand.accent"
@@ -127,7 +145,7 @@ export const PhasesList = () => {
                           })
                         }}
                       >
-                        {book.title || `الكتاب ${index + 1}`}
+                        {book.title}
                       </Button>
                     ))}
                   </Grid>
