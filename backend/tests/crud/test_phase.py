@@ -73,6 +73,22 @@ def test_add_book_to_phase(db: Session) -> None:
     assert book in phase.books
 
 
+def test_get_books_by_phase(db: Session) -> None:
+    program = create_random_program(db)
+    phase_in = PhaseCreate(order=1, program_id=program.id)
+    phase = crud.create_phase(session=db, phase_in=phase_in)
+
+    book1 = create_random_book(db)
+    book2 = create_random_book(db)
+    crud.add_book_to_phase(session=db, phase_id=phase.id, book_id=book1.id, order=1)
+    crud.add_book_to_phase(session=db, phase_id=phase.id, book_id=book2.id, order=0)
+
+    books = crud.get_books_by_phase(session=db, phase_id=phase.id)
+    assert len(books) == 2
+    assert books[0].id == book2.id
+    assert books[1].id == book1.id
+
+
 def test_remove_book_from_phase(db: Session) -> None:
     program = create_random_program(db)
     phase_in = PhaseCreate(order=1, program_id=program.id)
