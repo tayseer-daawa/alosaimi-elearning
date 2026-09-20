@@ -63,6 +63,50 @@ def test_recovery_password(
         }
 
 
+def test_recovery_password_link_targets_requested_frontend(
+    client: TestClient, db: Session
+) -> None:
+    email = random_email()
+    password = random_lower_string()
+    create_user(
+        session=db,
+        user_create=UserCreate(
+            email=email,
+            first_name="Test",
+            father_name="",
+            family_name="User",
+            password=password,
+            is_active=True,
+            is_superuser=False,
+            is_male=True,
+        ),
+    )
+
+    with (
+        patch("app.api.routes.login.send_email") as mock_send,
+        patch(
+            "app.core.config.settings.FRONTEND_STUDENT_HOST",
+            "http://student.test",
+        ),
+        patch(
+            "app.core.config.settings.FRONTEND_ADMIN_HOST",
+            "http://admin.test",
+        ),
+    ):
+        r = client.post(f"{settings.API_V1_STR}/password-recovery/{email}")
+        assert r.status_code == 200
+        student_html = mock_send.call_args.kwargs["html_content"]
+        assert "http://student.test/reset-password?token=" in student_html
+
+        r = client.post(
+            f"{settings.API_V1_STR}/password-recovery/{email}",
+            params={"app": "admin"},
+        )
+        assert r.status_code == 200
+        admin_html = mock_send.call_args.kwargs["html_content"]
+        assert "http://admin.test/reset-password?token=" in admin_html
+
+
 def test_recovery_password_user_not_exits(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
