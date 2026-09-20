@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 import { useCallback, useEffect, useId, useRef, useState } from "react"
 import { PlayerActionHud, type PlayerHudPayload } from "./PlayerActionHud"
+import PlayerShortcutsHelp from "./PlayerShortcutsHelp"
 
 /** YouTube-like seek amounts (seconds). */
 const ARROW_SEEK = 5
@@ -18,9 +19,14 @@ const RATES = [0.75, 1, 1.25, 1.5, 1.75] as const
 function formatTime(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00"
   const total = Math.floor(seconds)
-  const m = Math.floor(total / 60)
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
   const s = total % 60
-  return `${m}:${s.toString().padStart(2, "0")}`
+  const mm = h > 0 ? m.toString().padStart(2, "0") : String(m)
+  const ss = s.toString().padStart(2, "0")
+  // Long lectures (often 1–3h): show H:MM:SS so 153:36 is not mistaken for minutes.
+  if (h > 0) return `${h}:${mm}:${ss}`
+  return `${mm}:${ss}`
 }
 
 function seekHudDetail(seconds: number): string {
@@ -76,6 +82,7 @@ export default function AudioPlayer({
   const [showVolume, setShowVolume] = useState(false)
   const [hudPayload, setHudPayload] = useState<PlayerHudPayload | null>(null)
   const [hudFlashId, setHudFlashId] = useState(0)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
 
   const audioUrl = isPlayableSrc(src) ? src : undefined
 
@@ -86,6 +93,7 @@ export default function AudioPlayer({
   const onNextRef = useRef(onNextLesson)
   const hasPrevRef = useRef(hasPrevLesson)
   const hasNextRef = useRef(hasNextLesson)
+  const shortcutsOpenRef = useRef(shortcutsOpen)
 
   const flashHud = useCallback((payload: PlayerHudPayload) => {
     setHudPayload(payload)
@@ -101,6 +109,9 @@ export default function AudioPlayer({
   useEffect(() => {
     volumeRef.current = volume
   }, [volume])
+  useEffect(() => {
+    shortcutsOpenRef.current = shortcutsOpen
+  }, [shortcutsOpen])
   useEffect(() => {
     onPrevRef.current = onPrevLesson
     onNextRef.current = onNextLesson
@@ -221,6 +232,18 @@ export default function AudioPlayer({
       const key = event.key
       const lower = key.toLowerCase()
 
+      if (key === "Escape" && shortcutsOpenRef.current) {
+        event.preventDefault()
+        setShortcutsOpen(false)
+        return
+      }
+      if (key === "?" || (key === "/" && event.shiftKey)) {
+        event.preventDefault()
+        setShortcutsOpen((open) => !open)
+        return
+      }
+      if (shortcutsOpenRef.current) return
+
       if (key === " " || lower === "k") {
         event.preventDefault()
         flashHud({ kind: playingRef.current ? "pause" : "play" })
@@ -318,7 +341,7 @@ export default function AudioPlayer({
       tabIndex={0}
       outline="none"
       _focusVisible={{ boxShadow: "outline" }}
-      aria-keyshortcuts="Space, ArrowLeft, ArrowRight, KeyJ, KeyL, KeyK, KeyM"
+      aria-keyshortcuts="Space, ArrowLeft, ArrowRight, KeyJ, KeyL, KeyK, KeyM, Shift+KeyN, Shift+KeyP, Shift+Slash"
     >
       <PlayerActionHud payload={hudPayload} flashId={hudFlashId} />
       {audioUrl ? (
@@ -407,14 +430,15 @@ export default function AudioPlayer({
         <Text
           fontSize="xs"
           color="brand.secondary"
-          minW="10"
+          minW={{ base: "12", md: "14" }}
           textAlign="end"
+          fontVariantNumeric="tabular-nums"
           data-testid="audio-current-time"
         >
           {formatTime(currentTime)}
         </Text>
 
-        <Box flex="1" minW={0}>
+        <Box flex="1" minW={0} py={2}>
           <Slider.Root
             min={0}
             max={duration > 0 ? duration : 1}
@@ -424,15 +448,23 @@ export default function AudioPlayer({
             onValueChange={({ value }) => seekTo(value[0] ?? 0)}
             data-testid="audio-seek"
           >
-            <Slider.Control>
-              <Slider.Track h="1.5" borderRadius="full" bg="gray.200">
+            <Slider.Control
+              h="5"
+              display="flex"
+              alignItems="center"
+              cursor="pointer"
+            >
+              <Slider.Track h="2.5" borderRadius="full" bg="gray.200">
                 <Slider.Range bg="brand.secondary" />
               </Slider.Track>
               <Slider.Thumbs
-                boxSize={3}
+                boxSize={4}
                 bg="white"
                 borderWidth="2px"
                 borderColor="brand.secondary"
+                shadow="sm"
+                _hover={{ boxSize: 5 }}
+                _active={{ boxSize: 5 }}
               />
             </Slider.Control>
           </Slider.Root>
@@ -441,8 +473,9 @@ export default function AudioPlayer({
         <Text
           fontSize="xs"
           color="brand.secondary"
-          minW="10"
+          minW={{ base: "12", md: "14" }}
           textAlign="start"
+          fontVariantNumeric="tabular-nums"
           data-testid="audio-duration"
         >
           {formatTime(duration)}
@@ -536,17 +569,12 @@ export default function AudioPlayer({
             </Box>
           )}
         </Box>
-      </Flex>
 
-      <Text
-        mt={2}
-        fontSize="2xs"
-        color="gray.500"
-        textAlign="center"
-        display={{ base: "none", md: "block" }}
-      >
-        ← → للترجيع/التقديم · مسافة أو K للتشغيل · J / L عشر ثوانٍ · M كتم
-      </Text>
+        <PlayerShortcutsHelp
+          open={shortcutsOpen}
+          onOpenChange={setShortcutsOpen}
+        />
+      </Flex>
     </Box>
   )
 }
