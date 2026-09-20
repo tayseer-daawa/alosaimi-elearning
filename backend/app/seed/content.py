@@ -29,17 +29,19 @@ from app.models import (
 from app.seed.data import (
     ACTIVE_STUDENT_EMAILS,
     ALL_SEED_BOOK_TITLES,
+    ALL_SEED_PROGRAM_TITLES,
     ORPHAN_BOOK_TITLE,
-    PHASE_BOOKS,
     PLACEHOLDER_AUDIO,
     PLACEHOLDER_LESSON_AUDIO,
     PLACEHOLDER_LESSON_PDF,
     PLACEHOLDER_PDF,
+    PRIMARY_PROGRAM_TITLE,
     PRIMARY_STUDENT_EMAIL,
-    PROGRAM_DAYS,
     PROGRAM_TITLE,
+    SEED_PROGRAMS,
     TEACHER_EMAIL,
     SeedBookSpec,
+    SeedProgramSpec,
 )
 
 logger = logging.getLogger(__name__)
@@ -51,18 +53,31 @@ def seed_content(
     users_by_email: dict[str, User],
     verbose: bool = False,
 ) -> None:
-    program = _ensure_program(session=session, verbose=verbose)
-    books_by_title = _ensure_phase_books(
-        session=session, program=program, verbose=verbose
-    )
+    primary: Program | None = None
+    primary_first_book: Book | None = None
+
+    for spec in SEED_PROGRAMS:
+        program = _ensure_program(session=session, spec=spec, verbose=verbose)
+        books_by_title = _ensure_phase_books(
+            session=session, program=program, phases=spec.phases, verbose=verbose
+        )
+        if spec.with_session and spec.title == PRIMARY_PROGRAM_TITLE:
+            primary = program
+            first_phase = spec.phases[min(spec.phases)]
+            primary_first_book = books_by_title[first_phase[0].title]
+
     _ensure_orphan_book(session=session, verbose=verbose)
 
-    first_book = books_by_title[PHASE_BOOKS[0][0].title]
-    first_lessons = crud.get_lessons_by_book(session=session, book_id=first_book.id)
+    if primary is None or primary_first_book is None:
+        logger.warning("skip session/exam — primary program %r missing", PRIMARY_PROGRAM_TITLE)
+        return
 
+    first_lessons = crud.get_lessons_by_book(
+        session=session, book_id=primary_first_book.id
+    )
     prog_session = _ensure_session(
         session=session,
-        program=program,
+        program=primary,
         users_by_email=users_by_email,
         verbose=verbose,
     )
@@ -74,7 +89,7 @@ def seed_content(
     )
     exam = _ensure_exam(
         session=session,
-        book=first_book,
+        book=primary_first_book,
         prog_session=prog_session,
         verbose=verbose,
     )
@@ -86,20 +101,24 @@ def seed_content(
     )
 
 
-def _ensure_program(*, session: Session, verbose: bool) -> Program:
+def _ensure_program(
+    *, session: Session, spec: SeedProgramSpec, verbose: bool
+) -> Program:
     existing = session.exec(
-        select(Program).where(Program.title == PROGRAM_TITLE)
+        select(Program).where(Program.title == spec.title)
     ).first()
     if existing:
         if verbose:
-            logger.info("skip program %r", PROGRAM_TITLE)
+            logger.info("skip program %r", spec.title)
         return existing
     program = crud.create_program(
         session=session,
-        program_in=ProgramCreate(title=PROGRAM_TITLE, days_of_study=PROGRAM_DAYS),
+        program_in=ProgramCreate(
+            title=spec.title, days_of_study=spec.days_of_study
+        ),
     )
     if verbose:
-        logger.info("created program %r", PROGRAM_TITLE)
+        logger.info("created program %r", spec.title)
     return program
 
 
@@ -139,10 +158,14 @@ def _ensure_book(*, session: Session, title: str, verbose: bool) -> Book:
 
 
 def _ensure_phase_books(
-    *, session: Session, program: Program, verbose: bool
+    *,
+    session: Session,
+    program: Program,
+    phases: dict[int, list[SeedBookSpec]],
+    verbose: bool,
 ) -> dict[str, Book]:
     books_by_title: dict[str, Book] = {}
-    for phase_order, specs in PHASE_BOOKS.items():
+    for phase_order, specs in phases.items():
         phase = _ensure_phase(
             session=session, program=program, order=phase_order, verbose=verbose
         )
@@ -205,7 +228,10 @@ def _ensure_lessons_and_questions(
                     book_part_pdf=PLACEHOLDER_LESSON_PDF,
                     book_part_audio=PLACEHOLDER_LESSON_AUDIO,
                     lesson_audio=PLACEHOLDER_LESSON_AUDIO,
-                    explanation_notes=f"ملاحظات الدرس {order + 1} — {book.title}",
+                    explanation_notes=(
+                        f"شرح الدرس {order + 1} من متن «{book.title}» "
+                        f"— برنامج مهمات العلم (بذرة تطويرية)."
+                    ),
                     order=order,
                     book_id=book.id,
                 ),
@@ -264,7 +290,7 @@ def _ensure_session(
     if existing_list:
         prog_session = existing_list[0]
         if verbose:
-            logger.info("skip session for program %r", PROGRAM_TITLE)
+            logger.info("skip session for program %r", program.title)
     else:
         start = date.today() - timedelta(days=7)
         prog_session = crud.create_session(
@@ -408,8 +434,24 @@ def _ensure_exam_attempt(
         logger.info("created exam attempt for %s", PRIMARY_STUDENT_EMAIL)
 
 
+def get_seed_programs(*, session: Session) -> list[Program]:
+    """Current + legacy seed program titles (for --clean)."""
+    return list(
+        session.exec(
+            select(Program).where(col(Program.title).in_(ALL_SEED_PROGRAM_TITLES))
+        ).all()
+    )
+
+
 def get_seed_program(*, session: Session) -> Program | None:
-    return session.exec(select(Program).where(Program.title == PROGRAM_TITLE)).first()
+    """Prefer the current title; fall back to any legacy seed program."""
+    current = session.exec(
+        select(Program).where(Program.title == PROGRAM_TITLE)
+    ).first()
+    if current:
+        return current
+    programs = get_seed_programs(session=session)
+    return programs[0] if programs else None
 
 
 def get_seed_books(*, session: Session) -> list[Book]:

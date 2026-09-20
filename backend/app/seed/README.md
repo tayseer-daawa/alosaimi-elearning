@@ -2,6 +2,8 @@
 
 Idempotent local fixtures for student + admin UI work. **Not** part of `prestart` / production.
 
+Curriculum mirrors Sheikh **صالح بن عبدالله العصيمي**’s public programs (مكتبة الشيخ + Wikipedia program list). Domain notes: `.claude/skills/muhimmat-al-ilm/SKILL.md`.
+
 ## Safety
 
 Refuses to run unless:
@@ -9,24 +11,18 @@ Refuses to run unless:
 - `ENVIRONMENT=local`
 - Postgres host is `localhost`, `127.0.0.1`, or compose service `db`
 
-`--clean` only deletes seed-owned rows (demo emails + known program/book titles). Never deletes `FIRST_SUPERUSER`.
+`--clean` only deletes seed-owned rows (demo emails + known program/book titles, including legacy titles). Never deletes `FIRST_SUPERUSER`.
 
 ## Run
 
 ```bash
-# from repo, with stack up and a reachable DB
-cd backend && uv run python -m app.seed
 cd backend && uv run python -m app.seed --verbose
 cd backend && uv run python -m app.seed --clean          # wipe seed rows, then reseed
-cd backend && uv run python -m app.seed --users-only
-cd backend && uv run python -m app.seed --content-only   # needs demo users already present
-
-# wrapper
 bash backend/scripts/seed-dev.sh --verbose
-
-# inside the backend container (after image includes this package)
-docker compose exec backend python -m app.seed --verbose
+docker compose exec backend python -m app.seed --clean --verbose
 ```
+
+After changing program/book titles, always prefer `--clean`.
 
 ## Demo credentials
 
@@ -38,25 +34,32 @@ docker compose exec backend python -m app.seed --verbose
 | `khalid.student@example.com` | `Student123!` | student |
 | `inactive.student@example.com` | `Student123!` | inactive (login fails) |
 
-Superuser remains whatever `FIRST_SUPERUSER` / `FIRST_SUPERUSER_PASSWORD` are in the root `.env` (created by `initial_data.py` on prestart).
-
 Student app: http://localhost:5174/login  
 Admin app: http://localhost:5173/login  
 
-## Content graph
+## Seeded programs
 
-Stable titles (used for idempotency and `--clean`):
+| Program | Role in seed | Structure |
+| --- | --- | --- |
+| **مهمات العلم** | Primary — has cohort session, events, exam + attempt | 3 phases, 15 متون |
+| **أصول العلم** | Weekly Riyadh year track | 4 levels (official library) |
+| **تمكين مهمات العلم** | Follow-up / Telegram enablement | 3 phases of صلة المهمات |
+| **أساس العلم** | Regional touring foundations | 2 phases |
+| **جمل العلم** | GCC / abroad intensive (~12 matn) | 2 phases |
+| **أحكام الصيام** | Seasonal | 1 phase |
+| **أحكام الحج** | Seasonal | 1 phase (his shuruh titles) |
 
-- Program: `برنامج القراءة والتجويد`
-- Books in phases + orphan `كتاب مستقل (بدون مرحلة)`
-- One `ProgramSession` with teacher + active students enrolled
-- Session events, one open exam, one unfinished attempt for `student@example.com`
+Shared matn titles (e.g. `كتاب التوحيد`) are **one Book row** linked into multiple programs via `PhaseBook`. Media URLs are placeholders — do not vendor copyrighted PDF/audio.
+
+Orphan (unphased) book: `البيّنة في اقتباس العلم والحذق فيه`.
+
+Only **مهمات العلم** gets a `ProgramSession` + exam demo so the seed stays light.
 
 ## Layout
 
 | File | Role |
 | --- | --- |
-| `data.py` | Fixtures (emails, titles) |
+| `data.py` | Fixtures — `SEED_PROGRAMS`, emails, titles |
 | `users.py` / `content.py` | Skip-if-exists seeders via `app.crud` |
 | `clean.py` | Opt-in wipe of seed-owned rows |
 | `safety.py` | Local-only guards |
