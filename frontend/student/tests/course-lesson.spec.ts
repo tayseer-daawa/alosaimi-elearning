@@ -1,10 +1,10 @@
-import { expect, test } from "@playwright/test"
+import { expect, type Page, test } from "@playwright/test"
 
 const API = process.env.VITE_API_URL ?? "http://localhost:8000"
 const STUDENT_EMAIL = "student@example.com"
 const STUDENT_PASSWORD = "Student123!"
 
-async function loginAsStudent(page: import("@playwright/test").Page) {
+async function loginAsStudent(page: Page) {
   const body = new URLSearchParams({
     username: STUDENT_EMAIL,
     password: STUDENT_PASSWORD,
@@ -28,7 +28,7 @@ async function loginAsStudent(page: import("@playwright/test").Page) {
   )
 }
 
-async function openFirstLesson(page: import("@playwright/test").Page) {
+async function openFirstLesson(page: Page) {
   const programs = await page.request.get(`${API}/api/v1/programs/?limit=50`)
   expect(programs.ok()).toBeTruthy()
   const progJson = await programs.json()
@@ -62,13 +62,44 @@ async function openFirstLesson(page: import("@playwright/test").Page) {
     id: string
     order: number
   }[]
-  const lesson = [...lessonList].sort((a, b) => a.order - b.order)[0]
+  const sorted = [...lessonList].sort((a, b) => a.order - b.order)
+  const lesson = sorted[0]
   expect(lesson).toBeTruthy()
 
   const url = `/programs/${program.id}/phases/${phase.id}/books/${book.id}/courses/${lesson.id}`
   await page.goto(url)
   await expect(page.getByTestId("course-screen")).toBeVisible()
-  return { url, lessonId: lesson.id, bookTitle: book.title as string }
+  await expect(page.locator("audio")).toHaveCount(1)
+  return {
+    url,
+    lessonId: lesson.id,
+    bookTitle: book.title as string,
+    hasNext: sorted.length > 1,
+    hasPrev: false,
+  }
+}
+
+async function audioState(page: Page) {
+  return page.evaluate(() => {
+    const audio = document.querySelector("audio")
+    if (!audio) return null
+    return {
+      currentTime: audio.currentTime,
+      duration: audio.duration,
+      paused: audio.paused,
+      volume: audio.volume,
+      playbackRate: audio.playbackRate,
+    }
+  })
+}
+
+async function waitForAudioReady(page: Page) {
+  await page.waitForFunction(() => {
+    const audio = document.querySelector("audio")
+    return Boolean(
+      audio && Number.isFinite(audio.duration) && audio.duration > 20,
+    )
+  })
 }
 
 test.describe("course lesson player", () => {
@@ -104,57 +135,175 @@ test.describe("course lesson player", () => {
     await expect(page.getByTestId("audio-play-pause")).toBeVisible()
     await expect(page.getByTestId("audio-current-time")).toBeVisible()
     await expect(page.getByTestId("audio-duration")).toBeVisible()
+    await expect(page.getByTestId("audio-shortcuts")).toBeVisible()
+
+    await waitForAudioReady(page)
+    const durationText = await page.getByTestId("audio-duration").innerText()
+    const parts = durationText.split(":")
+    // ≥1h lectures: H:MM:SS; shorter ones stay M:SS
+    expect(parts.length === 2 || parts.length === 3).toBeTruthy()
+    if (parts.length === 3) {
+      expect(Number(parts[0])).toBeGreaterThan(0)
+      expect(Number(parts[1])).toBeLessThan(60)
+    } else {
+      expect(Number(parts[0])).toBeLessThan(60)
+    }
   })
 
-  test("play / pause and keyboard seek update playback position", async ({
-    page,
-  }) => {
+  test("UI controls: play, mute, rate, and seek", async ({ page }) => {
     await openFirstLesson(page)
+    await waitForAudioReady(page)
 
     const play = page.getByTestId("audio-play-pause")
     await play.click()
     await expect(play).toHaveAttribute("aria-label", "إيقاف مؤقت")
-
-    await page.waitForTimeout(1500)
-    const timeAfterPlay = await page
-      .getByTestId("audio-current-time")
-      .innerText()
-    expect(timeAfterPlay).not.toBe("0:00")
+    await expect.poll(async () => (await audioState(page))?.paused).toBe(false)
 
     await play.click()
     await expect(play).toHaveAttribute("aria-label", "تشغيل")
+    await expect.poll(async () => (await audioState(page))?.paused).toBe(true)
 
-    const before = await page.evaluate(() => {
+    await page.getByTestId("audio-mute").click()
+    await expect.poll(async () => (await audioState(page))?.volume).toBe(0)
+    await expect(page.getByTestId("player-action-hud")).toContainText("صامت")
+
+    await page.getByTestId("audio-mute").click()
+    await expect
+      .poll(async () => (await audioState(page))?.volume)
+      .toBeGreaterThan(0)
+
+    await page.getByTestId("audio-rate").click()
+    await page.getByRole("menuitem", { name: "1.25×" }).click()
+    await expect
+      .poll(async () => (await audioState(page))?.playbackRate)
+      .toBe(1.25)
+    await expect(page.getByTestId("player-action-hud")).toContainText("1.25×")
+
+    const before = (await audioState(page))!.currentTime
+    await page.evaluate(() => {
       const audio = document.querySelector("audio")
-      return audio?.currentTime ?? 0
+      if (audio) audio.currentTime = 12
     })
-    await page.keyboard.press("ArrowRight")
-    await page.keyboard.press("ArrowRight")
-    const after = await page.evaluate(() => {
-      const audio = document.querySelector("audio")
-      return audio?.currentTime ?? 0
-    })
-    expect(after).toBeGreaterThanOrEqual(before + 5)
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 0)
+      .toBeGreaterThanOrEqual(11)
+    expect((await audioState(page))!.currentTime).not.toBe(before)
   })
 
-  test("keyboard shortcuts show center action HUD", async ({ page }) => {
-    await openFirstLesson(page)
+  test("all keyboard shortcuts control playback", async ({ page }) => {
+    const { url, hasNext, lessonId } = await openFirstLesson(page)
+    await waitForAudioReady(page)
 
-    await page.keyboard.press("m")
     const hud = page.getByTestId("player-action-hud")
-    await expect(hud).toBeVisible()
-    await expect(hud).toContainText(/صامت|الصوت مفعّل/)
 
-    await page.keyboard.press("ArrowRight")
-    await expect(hud).toBeVisible()
-    await expect(hud).toContainText("تقديم")
+    // Space / K — play & pause
+    await page.keyboard.press("Space")
+    await expect(hud).toContainText("تشغيل")
+    await expect.poll(async () => (await audioState(page))?.paused).toBe(false)
 
     await page.keyboard.press("k")
-    await expect(hud).toBeVisible()
-    await expect(hud).toContainText(/تشغيل|إيقاف/)
+    await expect(hud).toContainText("إيقاف")
+    await expect.poll(async () => (await audioState(page))?.paused).toBe(true)
+
+    // Seed position for seek tests
+    await page.evaluate(() => {
+      const audio = document.querySelector("audio")
+      if (audio) audio.currentTime = 30
+    })
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 0)
+      .toBeGreaterThanOrEqual(29)
+
+    // ArrowLeft / ArrowRight — ±5s
+    await page.keyboard.press("ArrowRight")
+    await expect(hud).toContainText("تقديم")
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 0)
+      .toBeGreaterThanOrEqual(34.5)
+
+    await page.keyboard.press("ArrowLeft")
+    await expect(hud).toContainText("ترجيع")
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 0)
+      .toBeLessThanOrEqual(31)
+
+    // J / L — ±10s
+    const mid = (await audioState(page))!.currentTime
+    await page.keyboard.press("l")
+    await expect(hud).toContainText("تقديم")
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 0)
+      .toBeGreaterThanOrEqual(mid + 9.5)
+
+    const afterL = (await audioState(page))!.currentTime
+    await page.keyboard.press("j")
+    await expect(hud).toContainText("ترجيع")
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 0)
+      .toBeLessThanOrEqual(afterL - 9.5)
+
+    // M — mute / unmute
+    await page.keyboard.press("m")
+    await expect(hud).toContainText("صامت")
+    await expect.poll(async () => (await audioState(page))?.volume).toBe(0)
+
+    await page.keyboard.press("m")
+    await expect(hud).toContainText("الصوت مفعّل")
+    await expect
+      .poll(async () => (await audioState(page))?.volume ?? 0)
+      .toBeGreaterThan(0)
+
+    // ArrowUp / ArrowDown — volume
+    await page.keyboard.press("ArrowDown")
+    await page.keyboard.press("ArrowDown")
+    await expect(hud).toContainText("مستوى الصوت")
+    await expect
+      .poll(async () => (await audioState(page))?.volume ?? 1)
+      .toBeLessThan(1)
+
+    const lowered = (await audioState(page))!.volume
+    await page.keyboard.press("ArrowUp")
+    await expect
+      .poll(async () => (await audioState(page))?.volume ?? 0)
+      .toBeGreaterThan(lowered)
+
+    // Shift+N / Shift+P — lesson navigation (player remount clears HUD)
+    if (hasNext) {
+      await page.keyboard.press("Shift+N")
+      await expect(page).not.toHaveURL(url)
+      await expect(page.getByTestId("course-screen")).toBeVisible()
+      await expect(page.getByTestId("audio-player")).toBeVisible()
+      expect(page.url()).not.toContain(lessonId)
+
+      await waitForAudioReady(page)
+      await page.keyboard.press("Shift+P")
+      await expect(page).toHaveURL(new RegExp(`/courses/${lessonId}`))
+    }
   })
 
-  test("next lesson navigation from player", async ({ page }) => {
+  test("shortcuts help opens as dialog from button and ?", async ({ page }) => {
+    await openFirstLesson(page)
+
+    await page.getByTestId("audio-shortcuts").click()
+    const panel = page.getByTestId("audio-shortcuts-panel")
+    await expect(panel).toBeVisible()
+    await expect(panel).toContainText("اختصارات المشغّل")
+    await expect(panel).toContainText("تشغيل أو إيقاف")
+    await expect(panel).toContainText("كتم الصوت أو إلغاؤه")
+    await expect(panel).toContainText("الدرس التالي")
+    // Dimmed overlay behind the dialog
+    await expect(page.locator("[data-part='backdrop']").first()).toBeVisible()
+
+    await page.getByTestId("audio-shortcuts-close").click()
+    await expect(panel).toBeHidden()
+
+    await page.keyboard.press("Shift+/")
+    await expect(panel).toBeVisible()
+    await page.keyboard.press("Escape")
+    await expect(panel).toBeHidden()
+  })
+
+  test("next lesson navigation from player button", async ({ page }) => {
     const { url } = await openFirstLesson(page)
     const nextBtn = page.getByTestId("audio-next-lesson")
     if (await nextBtn.isDisabled()) {
