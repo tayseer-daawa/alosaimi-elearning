@@ -1,11 +1,13 @@
 import { Box, Flex, Heading } from "@chakra-ui/react"
 import { useParams } from "@tanstack/react-router"
+import { useProgram } from "@/features/programs/api/useProgram"
 import { AppMenu } from "@/shared/components/AppMenu"
 import { Breadcrumbs } from "@/shared/components/BreadcrumbsNavigation"
 import { PhasesList } from "./PhasesList"
 
 export default function PhasesScreen() {
   const { programId } = useParams({ strict: false })
+  const programQuery = useProgram(programId)
 
   return (
     <Box
@@ -28,7 +30,7 @@ export default function PhasesScreen() {
           <AppMenu />
 
           <Heading size={{ base: "xl", lg: "5xl" }} color="brand.primary">
-            المراحل
+            {programQuery.data?.title ?? "المراحل"}
           </Heading>
         </Flex>
       </Box>
@@ -36,8 +38,8 @@ export default function PhasesScreen() {
       <Breadcrumbs
         breadcrumbs={[
           {
-            label: `البرنامج ${programId}`,
-            url: `/programs`,
+            label: programQuery.data?.title ?? "البرنامج",
+            url: "/programs",
           },
           {
             label: "المراحل",
@@ -46,8 +48,14 @@ export default function PhasesScreen() {
         ]}
       />
 
-      <Box mt={10} px={{ lg: "16" }}>
-        <PhasesList />
+      <Box mt={10} px={{ lg: "16" }} flex="1 1 auto" minH={0}>
+        {programQuery.isError ? (
+          <Heading size="md" color="red.500" textAlign="center">
+            تعذر تحميل البرنامج.
+          </Heading>
+        ) : (
+          <PhasesList />
+        )}
       </Box>
     </Box>
   )
