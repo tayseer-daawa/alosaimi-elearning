@@ -1,11 +1,15 @@
 import { Box, Flex, Text } from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
-import type { books } from "@/shared/api/mockData"
 
-type Book = (typeof books)[number]
+export type BookView = {
+  id: string
+  title: string
+  description: string
+  courses: { id: string; title: string }[]
+}
 
 interface BooksItemProps {
-  book: Book
+  book: BookView
 }
 
 export const BooksItem = ({ book }: BooksItemProps) => {
@@ -44,7 +48,6 @@ export const BooksItem = ({ book }: BooksItemProps) => {
             {book.description}
           </Text>
 
-          {/* Courses list */}
           <Box
             as="ul"
             listStyleType="square"
@@ -65,10 +68,10 @@ export const BooksItem = ({ book }: BooksItemProps) => {
                     navigate({
                       to: "/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId",
                       params: {
-                        programId: programId?.toString() || "",
-                        phaseId: phaseId?.toString() || "",
-                        bookId: bookId?.toString() || "",
-                        courseId: course.id.toString(),
+                        programId: programId ?? "",
+                        phaseId: phaseId ?? "",
+                        bookId: bookId ?? book.id,
+                        courseId: course.id,
                       },
                     })
                   }
