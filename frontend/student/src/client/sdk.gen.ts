@@ -505,6 +505,7 @@ export class LoginService {
      * Password Recovery
      * @param data The data for the request.
      * @param data.email
+     * @param data.app Which frontend the reset link should open (admin or student).
      * @returns Message Successful Response
      * @throws ApiError
      */
@@ -514,6 +515,9 @@ export class LoginService {
             url: '/api/v1/password-recovery/{email}',
             path: {
                 email: data.email
+            },
+            query: {
+                app: data.app
             },
             errors: {
                 422: 'Validation Error'
@@ -546,6 +550,7 @@ export class LoginService {
      * HTML Content for Password Recovery
      * @param data The data for the request.
      * @param data.email
+     * @param data.app Which frontend the reset link should open (admin or student).
      * @returns string Successful Response
      * @throws ApiError
      */
@@ -555,6 +560,9 @@ export class LoginService {
             url: '/api/v1/password-recovery-html-content/{email}',
             path: {
                 email: data.email
+            },
+            query: {
+                app: data.app
             },
             errors: {
                 422: 'Validation Error'
