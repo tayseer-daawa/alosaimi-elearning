@@ -1,6 +1,7 @@
 import { Text } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
 import { usePrograms } from "@/features/programs/api/usePrograms"
+import { HomeSkeleton } from "@/shared/components/PageSkeletons"
 import { formatStudyDays } from "@/shared/lib/studyDays"
 import { resolveContinueLearning } from "../api/continueLearning"
 import { useCurrentUser } from "../api/useCurrentUser"
@@ -43,11 +44,7 @@ export default function HomeScreen() {
   }
 
   if (programsQuery.isLoading) {
-    return (
-      <Text dir="rtl" p={8} color="brand.secondary">
-        جاري التحميل...
-      </Text>
-    )
+    return <HomeSkeleton />
   }
 
   if (programsQuery.isError) {

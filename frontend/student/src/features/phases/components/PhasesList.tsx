@@ -1,6 +1,7 @@
 import { Box, Button, Flex, Grid, Image, Text, VStack } from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
+import { PhasesListSkeleton } from "@/shared/components/PageSkeletons"
 import headphones from "/assets/headphones.svg"
 import { usePhasesWithBooks } from "../api/usePhasesWithBooks"
 
@@ -32,11 +33,7 @@ export const PhasesList = () => {
   }
 
   if (isLoading) {
-    return (
-      <Text color="brand.secondary" textAlign="center" py={10}>
-        جاري التحميل...
-      </Text>
-    )
+    return <PhasesListSkeleton />
   }
 
   if (isError) {
