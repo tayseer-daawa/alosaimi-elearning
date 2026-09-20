@@ -5,14 +5,21 @@ import { ProgramsList } from "./ProgramsList"
 export default function ProgramsScreen() {
   return (
     <Box
-      minH="100vh"
+      minH="100dvh"
       display="flex"
       flexDirection="column"
       py={4}
       px={6}
       dir="rtl"
     >
-      <Box position="relative" h={{ lg: "100px" }} w="full" mt={5} mb={10}>
+      <Box
+        position="relative"
+        flexShrink={0}
+        h={{ lg: "100px" }}
+        w="full"
+        mt={5}
+        mb={{ base: 6, lg: 8 }}
+      >
         <Flex align="center" justify="center" h="100%">
           <AppMenu />
 
@@ -22,7 +29,9 @@ export default function ProgramsScreen() {
         </Flex>
       </Box>
 
-      <ProgramsList />
+      <Box flex="1 1 auto" w="full" minH={0} overflowY="auto">
+        <ProgramsList />
+      </Box>
     </Box>
   )
 }
