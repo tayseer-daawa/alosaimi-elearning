@@ -14,12 +14,12 @@ export function useResetPassword() {
 
   const title = "تحديث كلمة السر"
 
-  const canContinue = password.length >= 6 && password === confirmPassword
+  const canContinue = password.length >= 8 && password === confirmPassword
 
   const validateCurrentStep = () => {
     if (canContinue) return true
 
-    setError("كلمة السر يجب أن تكون 6 أحرف على الأقل وأن تتطابق مع التأكيد")
+    setError("كلمة السر يجب أن تكون 8 أحرف على الأقل وأن تتطابق مع التأكيد")
     return false
   }
 
