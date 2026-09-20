@@ -22,7 +22,19 @@ export function PdfReader({ url, title }: PdfReaderProps) {
   }
 
   return (
-    <Box data-testid="pdf-reader">
+    <Box
+      data-testid="pdf-reader"
+      onMouseDown={(event) => {
+        // Clicks on the chrome around the iframe (not inside it) restore page-level shortcuts.
+        if (
+          event.target instanceof HTMLElement &&
+          event.target.tagName !== "IFRAME" &&
+          document.activeElement instanceof HTMLIFrameElement
+        ) {
+          document.activeElement.blur()
+        }
+      }}
+    >
       <Flex justify="flex-end" mb={3}>
         <Link
           href={href}
