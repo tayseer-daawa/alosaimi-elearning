@@ -23,7 +23,7 @@ export function useForgetPassword() {
     if (!validateCurrentStep()) return
     setIsSubmitting(true)
     try {
-      await LoginService.recoverPassword({ email })
+      await LoginService.recoverPassword({ email, app: "student" })
       setSuccess(true)
     } catch (err: any) {
       if (err instanceof ApiError) {

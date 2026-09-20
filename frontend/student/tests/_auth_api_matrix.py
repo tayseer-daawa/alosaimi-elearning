@@ -355,7 +355,7 @@ def main() -> int:
             )
             links = re.findall(r'href="([^"]*reset-password[^"]*)"', html)
             if links:
-                reset_link = links[0]
+                reset_link = links[0].replace("&amp;", "&")
             break
     cases.append(
         Case(
@@ -392,11 +392,38 @@ def main() -> int:
                 "api-recover-link-targets-student",
                 "recover",
                 uses_student and not uses_admin,
-                "Link should point at student FRONTEND_STUDENT_HOST (:5174)",
+                "Default link should point at student FRONTEND_STUDENT_HOST (:5174)",
                 f"admin={uses_admin} student={uses_student} link={reset_link}",
-                notes="generate_reset_password_email uses FRONTEND_ADMIN_HOST",
             )
         )
+
+    # --- RECOVERY: app=admin targets admin host ---
+    code, raw, _ = req(
+        "POST",
+        f"{API}/password-recovery/{urllib.parse.quote(email)}?app=admin",
+    )
+    time.sleep(1.0)
+    messages = json.loads(urllib.request.urlopen(f"{MAIL}/messages").read())
+    admin_link = None
+    for m in reversed(messages):
+        recipients = " ".join(m.get("recipients") or [])
+        if email in recipients:
+            html = urllib.request.urlopen(f"{MAIL}/messages/{m['id']}.html").read().decode(
+                errors="replace"
+            )
+            links = re.findall(r'href="([^"]*reset-password[^"]*)"', html)
+            if links:
+                admin_link = links[0].replace("&amp;", "&")
+            break
+    cases.append(
+        Case(
+            "api-recover-link-targets-admin-when-requested",
+            "recover",
+            bool(admin_link) and "5173" in (admin_link or ""),
+            "app=admin → FRONTEND_ADMIN_HOST (:5173)",
+            f"link={admin_link}",
+        )
+    )
 
     # --- RESET: invalid token ---
     code, raw, _ = req(
