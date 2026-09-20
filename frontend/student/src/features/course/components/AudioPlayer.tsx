@@ -19,6 +19,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react"
+import type { MutableRefObject } from "react"
 import { useCallback, useEffect, useId, useRef, useState } from "react"
 import {
   COMPLETE_RATIO,
@@ -36,11 +37,12 @@ import PlayerShortcutsHelp from "./PlayerShortcutsHelp"
 const chromeIconProps = {
   variant: "ghost" as const,
   size: "sm" as const,
-  h: "8",
-  minW: "8",
-  p: "0",
-  borderRadius: "full",
-  color: "brand.secondary",
+  h: { base: "11", md: "8" } as const,
+  minW: { base: "11", md: "8" } as const,
+  minH: { base: "11", md: "8" } as const,
+  p: "0" as const,
+  borderRadius: "full" as const,
+  color: "brand.secondary" as const,
 }
 
 /** YouTube-like seek amounts (seconds). */
@@ -123,6 +125,11 @@ function blurIframes() {
   }
 }
 
+export type AudioPlaybackApi = {
+  getCurrentTime: () => number
+  seekTo: (seconds: number) => void
+}
+
 export type AudioPlayerProps = {
   src?: string
   title?: string
@@ -134,6 +141,8 @@ export type AudioPlayerProps = {
   hasNextLesson?: boolean
   /** Opens the lesson playlist (now-playing title, like a media app). */
   onOpenLessonList?: () => void
+  /** Imperative bridge for notes timestamps (insert / jump). */
+  playbackApiRef?: MutableRefObject<AudioPlaybackApi | null>
 }
 
 export default function AudioPlayer({
@@ -145,6 +154,7 @@ export default function AudioPlayer({
   hasPrevLesson = false,
   hasNextLesson = false,
   onOpenLessonList,
+  playbackApiRef,
 }: AudioPlayerProps) {
   const labelId = useId()
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -600,6 +610,21 @@ export default function AudioPlayer({
     [audioUrl, markBufferingSoon, persistPlayback],
   )
 
+  // Expose seek/time for lesson notes timestamps.
+  useEffect(() => {
+    if (!playbackApiRef) return
+    playbackApiRef.current = {
+      getCurrentTime: () => audioRef.current?.currentTime ?? 0,
+      seekTo: (seconds: number) => {
+        commitSeek(seconds)
+        focusPlayerChrome()
+      },
+    }
+    return () => {
+      playbackApiRef.current = null
+    }
+  }, [playbackApiRef, commitSeek, focusPlayerChrome])
+
   const beginPointerScrub = useCallback(() => {
     const audio = audioRef.current
     if (!audio || !audioUrl) return
@@ -838,7 +863,11 @@ export default function AudioPlayer({
       borderTopWidth="1px"
       borderColor="brand.secondary"
       px={{ base: 3, md: 6 }}
-      py={3}
+      pt={3}
+      pb={{
+        base: "calc(0.75rem + env(safe-area-inset-bottom, 0px))",
+        md: "calc(0.75rem + env(safe-area-inset-bottom, 0px))",
+      }}
       dir="rtl"
       data-testid="audio-player"
       tabIndex={0}
@@ -997,7 +1026,8 @@ export default function AudioPlayer({
           bg="brand.secondary"
           color="white"
           borderRadius="full"
-          boxSize={10}
+          boxSize={{ base: 11, md: 10 }}
+          minW={{ base: 11, md: 10 }}
           disabled={!audioUrl}
           onClick={() => void togglePlay()}
           _hover={{ opacity: 0.9 }}
@@ -1034,7 +1064,7 @@ export default function AudioPlayer({
           {formatTime(displayTime)}
         </Text>
 
-        <Box flex="1" minW={0} py={2}>
+        <Box flex="1" minW={0} py={{ base: 3, md: 2 }}>
           <Slider.Root
             min={0}
             max={duration > 0 ? duration : 1}
@@ -1052,7 +1082,7 @@ export default function AudioPlayer({
             data-testid="audio-seek"
           >
             <Slider.Control
-              h="5"
+              h={{ base: "8", md: "5" }}
               display="flex"
               alignItems="center"
               cursor="pointer"
@@ -1062,7 +1092,7 @@ export default function AudioPlayer({
               }}
             >
               <Slider.Track
-                h="2.5"
+                h={{ base: "3", md: "2.5" }}
                 borderRadius="full"
                 bg="gray.200"
                 position="relative"
@@ -1091,14 +1121,14 @@ export default function AudioPlayer({
                 />
               </Slider.Track>
               <Slider.Thumbs
-                boxSize={4}
+                boxSize={{ base: 5, md: 4 }}
                 bg="white"
                 borderWidth="2px"
                 borderColor="brand.secondary"
                 shadow="sm"
                 zIndex={2}
-                _hover={{ boxSize: 5 }}
-                _active={{ boxSize: 5 }}
+                _hover={{ boxSize: { base: 6, md: 5 } }}
+                _active={{ boxSize: { base: 6, md: 5 } }}
               />
             </Slider.Control>
           </Slider.Root>
@@ -1119,7 +1149,7 @@ export default function AudioPlayer({
           <Menu.Trigger asChild>
             <IconButton
               {...chromeIconProps}
-              minW="10"
+              minW={{ base: "11", md: "10" }}
               px={2}
               aria-label="سرعة التشغيل"
               disabled={!audioUrl}

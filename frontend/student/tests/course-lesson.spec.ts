@@ -115,11 +115,13 @@ test.describe("course lesson player", () => {
   }) => {
     await openFirstLesson(page)
 
-    await expect(page.getByTestId("tab-book")).toBeVisible()
+    // Desktop Chrome: PDF + notes side-by-side (no tabs).
+    await expect(page.getByTestId("tab-book")).toBeHidden()
+    await expect(page.getByTestId("tab-notes")).toBeHidden()
+    await expect(page.getByTestId("tab-panel-book")).toBeVisible()
+    await expect(page.getByTestId("tab-panel-notes")).toBeVisible()
     await expect(page.getByTestId("pdf-reader")).toBeVisible()
     await expect(page.getByTestId("pdf-reader-frame")).toBeVisible()
-
-    await page.getByTestId("tab-notes").click()
     await expect(page.getByTestId("lesson-notes")).toBeVisible()
     await expect(page.getByTestId("lesson-notes-input")).toBeVisible()
 
@@ -128,9 +130,6 @@ test.describe("course lesson player", () => {
     await expect(page.getByTestId("lesson-notes-saved")).toHaveText(
       "تم الحفظ محلياً",
     )
-
-    await page.getByTestId("tab-book").click()
-    await page.getByTestId("tab-notes").click()
     await expect(page.getByTestId("lesson-notes-input")).toHaveValue(note)
 
     const player = page.getByTestId("audio-player")
@@ -151,6 +150,20 @@ test.describe("course lesson player", () => {
     } else {
       expect(Number(parts[0])).toBeLessThan(60)
     }
+  })
+
+  test("uses tabs for PDF and notes on mobile", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await openFirstLesson(page)
+
+    await expect(page.getByTestId("tab-book")).toBeVisible()
+    await expect(page.getByTestId("tab-notes")).toBeVisible()
+    await expect(page.getByTestId("tab-panel-book")).toBeVisible()
+    await expect(page.getByTestId("lesson-notes-input")).toBeHidden()
+
+    await page.getByTestId("tab-notes").click()
+    await expect(page.getByTestId("lesson-notes-input")).toBeVisible()
+    await expect(page.getByTestId("pdf-reader")).toBeHidden()
   })
 
   test("UI controls: play, mute, rate, and seek", async ({ page }) => {
