@@ -1,22 +1,17 @@
-import { Badge, Box, Flex, Heading, Image, Text } from "@chakra-ui/react"
+import { Box, Flex, Heading, Image, Text } from "@chakra-ui/react"
 import BooksIcon from "/assets/icomoon-free_books.svg"
 
-type LessonCardProps = {
+type ProgramCardProps = {
   title: string
   subtitle?: string
-  showComingSoon?: boolean
   onClick?: () => void
 }
 
-export const ProgramCard = ({
-  title,
-  subtitle,
-  showComingSoon = false,
-  onClick,
-}: LessonCardProps) => {
+/** Catalog card — only fields the programs API exposes (title + study days). */
+export const ProgramCard = ({ title, subtitle, onClick }: ProgramCardProps) => {
   return (
     <Box
-      bg={"white"}
+      bg="white"
       position="relative"
       borderRadius="8px"
       p={{
@@ -25,21 +20,16 @@ export const ProgramCard = ({
       }}
       boxShadow="lg"
       cursor="pointer"
-      mt={{
-        base: 5,
-        lg: 0,
-      }}
-      h={{
-        lg: "200px",
-      }}
+      minH={{ base: "auto", lg: "168px" }}
+      h="auto"
+      flexShrink={0}
       w={{
         base: "70%",
         lg: "90%",
       }}
       onClick={onClick}
     >
-      <Flex w={"100%"} align="center" h={"100%"} justifyContent="space-between">
-        {/* Content */}
+      <Flex w="100%" align="center" h="100%" justifyContent="space-between">
         <Box>
           <Heading
             size={{
@@ -51,18 +41,19 @@ export const ProgramCard = ({
           >
             {title}
           </Heading>
-          <Text
-            fontSize={{
-              base: "sm",
-              lg: "xl",
-            }}
-            color="gray.400"
-          >
-            {subtitle}
-          </Text>
+          {subtitle ? (
+            <Text
+              fontSize={{
+                base: "sm",
+                lg: "xl",
+              }}
+              color="gray.400"
+            >
+              {subtitle}
+            </Text>
+          ) : null}
         </Box>
 
-        {/* Icon */}
         <Flex
           w={{
             base: 12,
@@ -85,31 +76,6 @@ export const ProgramCard = ({
           />
         </Flex>
       </Flex>
-
-      {showComingSoon && (
-        <Box>
-          <Badge
-            position="absolute"
-            top={{
-              base: "-12px",
-              lg: "-20px",
-            }}
-            left="50%"
-            transform="translateX(-50%)"
-            bg="brand.lightTeal"
-            px={{ base: 10, lg: 16 }}
-            py={{
-              base: 1.5,
-              lg: 4,
-            }}
-            borderRadius="full"
-            fontSize={{ base: "sm", lg: "2xl" }}
-            fontWeight="semibold"
-          >
-            قريبًا
-          </Badge>
-        </Box>
-      )}
     </Box>
   )
 }
