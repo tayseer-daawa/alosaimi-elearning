@@ -11,11 +11,13 @@ from app import crud
 from app.models import (
     Book,
     BookCreate,
+    BookUpdate,
     Exam,
     ExamAttemptCreate,
     ExamCreate,
     Lesson,
     LessonCreate,
+    LessonUpdate,
     Phase,
     PhaseCreate,
     Program,
@@ -31,20 +33,33 @@ from app.seed.data import (
     ALL_SEED_BOOK_TITLES,
     ALL_SEED_PROGRAM_TITLES,
     ORPHAN_BOOK_TITLE,
-    PLACEHOLDER_AUDIO,
-    PLACEHOLDER_LESSON_AUDIO,
-    PLACEHOLDER_LESSON_PDF,
-    PLACEHOLDER_PDF,
     PRIMARY_PROGRAM_TITLE,
     PRIMARY_STUDENT_EMAIL,
     PROGRAM_TITLE,
     SEED_PROGRAMS,
+    STALE_MEDIA_MARKERS,
     TEACHER_EMAIL,
     SeedBookSpec,
     SeedProgramSpec,
 )
+from app.seed.media import lesson_audio_for, media_for
 
 logger = logging.getLogger(__name__)
+
+
+def _is_stale_media(url: str | None) -> bool:
+    if not url:
+        return True
+    return any(marker in url for marker in STALE_MEDIA_MARKERS)
+
+
+def _lesson_notes(*, book_title: str, order: int, source_note: str | None) -> str:
+    lines = [f"الدرس {order + 1} من متن «{book_title}»."]
+    if source_note:
+        lines.append(source_note)
+    else:
+        lines.append("لا يتوفر تسجيل مرتبط بهذا الدرس في البذرة بعد.")
+    return "\n".join(lines)
 
 
 def seed_content(
@@ -139,17 +154,35 @@ def _ensure_phase(*, session: Session, program: Program, order: int, verbose: bo
 
 
 def _ensure_book(*, session: Session, title: str, verbose: bool) -> Book:
+    media = media_for(title)
+    want_pdf = media.pdf if media else None
+    want_audio = media.audio if media else None
+
     existing = session.exec(select(Book).where(Book.title == title)).first()
     if existing:
-        if verbose:
+        needs_refresh = (
+            _is_stale_media(existing.pdf)
+            or _is_stale_media(existing.audio)
+            or (want_pdf is not None and existing.pdf != want_pdf)
+            or (want_audio is not None and existing.audio != want_audio)
+        )
+        if needs_refresh:
+            existing = crud.update_book(
+                session=session,
+                db_book=existing,
+                book_in=BookUpdate(pdf=want_pdf, audio=want_audio),
+            )
+            if verbose:
+                logger.info("refreshed media for book %r", title)
+        elif verbose:
             logger.info("skip book %r", title)
         return existing
     book = crud.create_book(
         session=session,
         book_in=BookCreate(
             title=title,
-            pdf=PLACEHOLDER_PDF,
-            audio=PLACEHOLDER_AUDIO,
+            pdf=want_pdf,
+            audio=want_audio,
         ),
     )
     if verbose:
@@ -215,23 +248,57 @@ def _ensure_lessons_and_questions(
 ) -> list[Lesson]:
     existing = crud.get_lessons_by_book(session=session, book_id=book.id)
     by_order = {lesson.order: lesson for lesson in existing}
+    media = media_for(book.title)
+    source_note = media.source_note if media else None
     lessons: list[Lesson] = []
     for order in range(spec.lesson_count):
+        notes = _lesson_notes(
+            book_title=book.title, order=order, source_note=source_note
+        )
+        lesson_audio = lesson_audio_for(media, order) if media else ""
+        lesson_pdf = (media.lesson_pdf or media.pdf or "") if media else ""
         if order in by_order:
             lesson = by_order[order]
-            if verbose:
+            needs_refresh = (
+                _is_stale_media(lesson.book_part_pdf)
+                or _is_stale_media(lesson.book_part_audio)
+                or _is_stale_media(lesson.lesson_audio)
+                or "بذرة تطويرية" in (lesson.explanation_notes or "")
+                or "soundhelix" in (lesson.lesson_audio or "")
+                or (
+                    media is not None
+                    and (
+                        lesson.lesson_audio != lesson_audio
+                        or lesson.book_part_audio != lesson_audio
+                        or (lesson_pdf and lesson.book_part_pdf != lesson_pdf)
+                    )
+                )
+            )
+            if needs_refresh:
+                lesson = crud.update_lesson(
+                    session=session,
+                    db_lesson=lesson,
+                    lesson_in=LessonUpdate(
+                        book_part_pdf=lesson_pdf,
+                        book_part_audio=lesson_audio,
+                        lesson_audio=lesson_audio,
+                        explanation_notes=notes,
+                    ),
+                )
+                if verbose:
+                    logger.info(
+                        "refreshed lesson order=%s on %r", order, book.title
+                    )
+            elif verbose:
                 logger.info("skip lesson order=%s on %r", order, book.title)
         else:
             lesson = crud.create_lesson(
                 session=session,
                 lesson_in=LessonCreate(
-                    book_part_pdf=PLACEHOLDER_LESSON_PDF,
-                    book_part_audio=PLACEHOLDER_LESSON_AUDIO,
-                    lesson_audio=PLACEHOLDER_LESSON_AUDIO,
-                    explanation_notes=(
-                        f"شرح الدرس {order + 1} من متن «{book.title}» "
-                        f"— برنامج مهمات العلم (بذرة تطويرية)."
-                    ),
+                    book_part_pdf=lesson_pdf,
+                    book_part_audio=lesson_audio,
+                    lesson_audio=lesson_audio,
+                    explanation_notes=notes,
                     order=order,
                     book_id=book.id,
                 ),

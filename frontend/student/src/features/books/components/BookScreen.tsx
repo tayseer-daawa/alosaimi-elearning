@@ -1,5 +1,6 @@
 import { Box, Flex, Heading, Text } from "@chakra-ui/react"
 import { useParams } from "@tanstack/react-router"
+import { usePhase } from "@/features/phases/api/usePhase"
 import { useProgram } from "@/features/programs/api/useProgram"
 import { AppMenu } from "@/shared/components/AppMenu"
 import { Breadcrumbs } from "@/shared/components/BreadcrumbsNavigation"
@@ -7,9 +8,13 @@ import { useBook } from "../api/useBook"
 import { BooksList } from "./BooksList"
 
 export default function BookScreen() {
-  const { programId, bookId } = useParams({ strict: false })
+  const { programId, phaseId, bookId } = useParams({ strict: false })
   const programQuery = useProgram(programId)
+  const phaseQuery = usePhase(phaseId)
   const bookQuery = useBook(bookId)
+
+  const phaseLabel =
+    phaseQuery.data != null ? `المرحلة ${phaseQuery.data.order + 1}` : "المرحلة"
 
   return (
     <Box
@@ -32,7 +37,7 @@ export default function BookScreen() {
           <AppMenu />
 
           <Heading size={{ base: "xl", lg: "5xl" }} color="brand.primary">
-            الكتب
+            {bookQuery.data?.title ?? "الكتب"}
           </Heading>
         </Flex>
       </Box>
@@ -44,7 +49,7 @@ export default function BookScreen() {
             url: "/programs",
           },
           {
-            label: "المراحل",
+            label: phaseLabel,
             url: `/programs/${programId}/phases`,
           },
           {

@@ -1,11 +1,18 @@
-import { Box, Flex, Text } from "@chakra-ui/react"
+import { Box, Flex, Link, Text } from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
+
+export type BookLessonView = {
+  id: string
+  order: number
+  explanation_notes: string
+}
 
 export type BookView = {
   id: string
   title: string
-  description: string
-  courses: { id: string; title: string }[]
+  pdf?: string | null
+  audio?: string | null
+  lessons: BookLessonView[]
 }
 
 interface BooksItemProps {
@@ -15,6 +22,9 @@ interface BooksItemProps {
 export const BooksItem = ({ book }: BooksItemProps) => {
   const navigate = useNavigate()
   const { programId, phaseId, bookId } = useParams({ strict: false })
+
+  const hasPdf = Boolean(book.pdf?.trim())
+  const hasAudio = Boolean(book.audio?.trim())
 
   return (
     <Box key={book.id}>
@@ -26,61 +36,100 @@ export const BooksItem = ({ book }: BooksItemProps) => {
         transition="all 0.3s"
       >
         <Box p={8}>
-          <Flex mb={4} align="center" justify="space-between">
-            <Text
-              fontSize={{ base: "xl", lg: "3xl" }}
-              fontWeight="semibold"
-              color="brand.primary"
-              textAlign="right"
-            >
-              {book.title}
-            </Text>
-          </Flex>
-
           <Text
-            fontSize={{ base: "md", lg: "xl" }}
-            color="brand.secondary"
-            lineHeight="tall"
-            textAlign="justify"
-            w="full"
-            mb={6}
+            fontSize={{ base: "xl", lg: "3xl" }}
+            fontWeight="semibold"
+            color="brand.primary"
+            textAlign="right"
+            mb={4}
           >
-            {book.description}
+            {book.title}
           </Text>
 
-          <Box
-            as="ul"
-            listStyleType="square"
-            listStylePosition="inside"
-            m={0}
-            p={0}
-          >
-            {book.courses.map((course, index) => (
-              <Box as="li" key={course.id} mb={2}>
-                <Text
-                  as="span"
-                  fontSize={{ base: "sm", lg: "md" }}
+          {(hasPdf || hasAudio) && (
+            <Flex gap={4} mb={6} flexWrap="wrap">
+              {hasPdf && (
+                <Link
+                  href={book.pdf!}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   color="brand.primary"
+                  fontSize={{ base: "sm", lg: "md" }}
                   textDecoration="underline"
-                  cursor="pointer"
                   _hover={{ opacity: 0.8 }}
-                  onClick={() =>
-                    navigate({
-                      to: "/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId",
-                      params: {
-                        programId: programId ?? "",
-                        phaseId: phaseId ?? "",
-                        bookId: bookId ?? book.id,
-                        courseId: course.id,
-                      },
-                    })
-                  }
                 >
-                  {`المقرر ${index + 1} : ${course.title}`}
-                </Text>
-              </Box>
-            ))}
-          </Box>
+                  ملف PDF
+                </Link>
+              )}
+              {hasAudio && (
+                <Link
+                  href={book.audio!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="brand.primary"
+                  fontSize={{ base: "sm", lg: "md" }}
+                  textDecoration="underline"
+                  _hover={{ opacity: 0.8 }}
+                >
+                  ملف صوتي
+                </Link>
+              )}
+            </Flex>
+          )}
+
+          {book.lessons.length === 0 ? (
+            <Text color="brand.secondary" fontSize="md">
+              لا توجد دروس لهذا الكتاب بعد.
+            </Text>
+          ) : (
+            <Box
+              as="ul"
+              listStyleType="square"
+              listStylePosition="inside"
+              m={0}
+              p={0}
+            >
+              {book.lessons.map((lesson) => {
+                const notes = lesson.explanation_notes?.trim()
+                return (
+                  <Box as="li" key={lesson.id} mb={3}>
+                    <Text
+                      as="span"
+                      fontSize={{ base: "sm", lg: "md" }}
+                      color="brand.primary"
+                      textDecoration="underline"
+                      cursor="pointer"
+                      _hover={{ opacity: 0.8 }}
+                      onClick={() =>
+                        navigate({
+                          to: "/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId",
+                          params: {
+                            programId: programId ?? "",
+                            phaseId: phaseId ?? "",
+                            bookId: bookId ?? book.id,
+                            courseId: lesson.id,
+                          },
+                        })
+                      }
+                    >
+                      {`الدرس ${lesson.order + 1}`}
+                    </Text>
+                    {notes ? (
+                      <Text
+                        mt={1}
+                        fontSize={{ base: "sm", lg: "md" }}
+                        color="brand.secondary"
+                        lineHeight="tall"
+                        whiteSpace="pre-wrap"
+                      >
+                        {notes}
+                      </Text>
+                    ) : null}
+                  </Box>
+                )
+              })}
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>
