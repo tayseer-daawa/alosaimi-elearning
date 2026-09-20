@@ -6,19 +6,15 @@ import {
   Heading,
   HStack,
   Icon,
-  Image,
-  Menu,
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { useNavigate } from "@tanstack/react-router"
 
-import { BookOpen, GraduationCap, LogOut, MoveLeft } from "lucide-react"
-import { clearAuthSession } from "@/shared/lib/authSession"
-import MenuIcon from "/assets/menu.svg"
+import { BookOpen, GraduationCap, MoveLeft } from "lucide-react"
+import { AppMenu } from "@/shared/components/AppMenu"
 
 interface Lesson {
-  id: number
+  id: string
   title: string
   subtitle: string
   status?: string
@@ -42,8 +38,6 @@ export default function HomeScreenComponents({
   onContinueLearning,
   onViewAllPrograms,
 }: HomeScreenProps) {
-  const navigate = useNavigate()
-
   // Get active lesson or first lesson with progress
   const activeLesson =
     currentLesson || allLessons.find((l) => l.isActive) || allLessons[0]
@@ -76,57 +70,7 @@ export default function HomeScreenComponents({
           w="full"
           position="relative"
         >
-          <Box position="absolute" right={{ base: 0, lg: 14 }} zIndex="10">
-            <Menu.Root
-              positioning={{
-                placement: "bottom-start",
-                offset: { mainAxis: 8 },
-              }}
-            >
-              <Menu.Trigger asChild>
-                <Button
-                  variant="ghost"
-                  p={2}
-                  _hover={{ bg: "transparent" }}
-                  aria-label="القائمة الرئيسية"
-                >
-                  <Image
-                    src={MenuIcon}
-                    alt="أيقونة القائمة"
-                    boxSize={{ base: 6, lg: 12 }}
-                    objectFit="contain"
-                  />
-                </Button>
-              </Menu.Trigger>
-              <Menu.Content
-                minW="200px"
-                p={2}
-                borderRadius="xl"
-                boxShadow="lg"
-                bg="white"
-                zIndex="popover"
-              >
-                <Menu.Item
-                  value="logout"
-                  color="red.500"
-                  cursor="pointer"
-                  onClick={() => {
-                    clearAuthSession()
-                    navigate({ to: "/welcome" })
-                  }}
-                  _hover={{ bg: "red.50" }}
-                  borderRadius="md"
-                >
-                  <HStack gap={3} w="100%">
-                    <Icon as={LogOut} boxSize={5} />
-                    <Text fontWeight="600" fontSize="md">
-                      تسجيل الخروج
-                    </Text>
-                  </HStack>
-                </Menu.Item>
-              </Menu.Content>
-            </Menu.Root>
-          </Box>
+          <AppMenu />
 
           <VStack gap={{ base: 1, lg: 2 }}>
             <Heading size={{ base: "xl", lg: "5xl" }} color="brand.primary">

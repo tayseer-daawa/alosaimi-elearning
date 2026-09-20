@@ -21,11 +21,20 @@ import {
 import { useEffect, useRef, useState } from "react"
 import audioFile from "/assets/audio/020.mp3"
 import AudioIcon from "/assets/audio-icon.svg"
-export default function AudioPlayer() {
+
+type AudioPlayerProps = {
+  /** Remote lesson audio URL from the API; falls back to local sample. */
+  src?: string
+}
+
+export default function AudioPlayer({ src }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
-  const [audioUrl] = useState(audioFile)
+  const audioUrl =
+    src && /^https?:\/\//.test(src) && !src.includes("example.com")
+      ? src
+      : audioFile
   const [volume, setVolume] = useState(1) // 1 = 100% volume
   const [showVolumeSlider, setShowVolumeSlider] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
