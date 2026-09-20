@@ -90,10 +90,13 @@ PRIMARY_STUDENT_EMAIL = "student@example.com"
 # Cohort with session + exam demo (مهمات العلم only — keeps seed light)
 PRIMARY_PROGRAM_TITLE = "مهمات العلم"
 
-PLACEHOLDER_PDF = "https://example.com/seed/book.pdf"
-PLACEHOLDER_AUDIO = "https://example.com/seed/audio.mp3"
-PLACEHOLDER_LESSON_PDF = "https://example.com/seed/lesson.pdf"
-PLACEHOLDER_LESSON_AUDIO = "https://example.com/seed/lesson.mp3"
+# Fake / demo media hosts — refresh seed rows that still point here
+STALE_MEDIA_MARKERS = (
+    "example.com",
+    "soundhelix.com",
+    "pdfobject.com",
+    "w3.org/WAI",
+)
 
 WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
 WEEKEND_INTENSIVE = ["Friday", "Saturday", "Sunday"]

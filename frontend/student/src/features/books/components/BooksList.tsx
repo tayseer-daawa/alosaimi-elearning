@@ -1,4 +1,4 @@
-import { Flex, Text } from "@chakra-ui/react"
+import { Button, Flex, Text, VStack } from "@chakra-ui/react"
 import { useParams } from "@tanstack/react-router"
 import { useBook } from "../api/useBook"
 import { useLessonsByBook } from "../api/useLessonsByBook"
@@ -19,22 +19,49 @@ export const BooksList = () => {
 
   if (bookQuery.isError || !bookQuery.data) {
     return (
-      <Text color="red.500" textAlign="center" py={10}>
-        تعذر تحميل الكتاب.
-      </Text>
+      <VStack gap={4} py={10}>
+        <Text color="red.500" textAlign="center">
+          تعذر تحميل الكتاب.
+        </Text>
+        <Button
+          loading={bookQuery.isFetching}
+          onClick={() => void bookQuery.refetch()}
+        >
+          إعادة المحاولة
+        </Button>
+      </VStack>
     )
   }
 
-  const lessons = lessonsQuery.data?.data ?? []
+  if (lessonsQuery.isError) {
+    return (
+      <VStack gap={4} py={10}>
+        <Text color="red.500" textAlign="center">
+          تعذر تحميل دروس الكتاب.
+        </Text>
+        <Button
+          loading={lessonsQuery.isFetching}
+          onClick={() => void lessonsQuery.refetch()}
+        >
+          إعادة المحاولة
+        </Button>
+      </VStack>
+    )
+  }
+
+  const lessons = [...(lessonsQuery.data?.data ?? [])].sort(
+    (a, b) => a.order - b.order,
+  )
+
   const book = {
     id: bookQuery.data.id,
     title: bookQuery.data.title,
-    description: bookQuery.data.pdf
-      ? "يتوفر لهذا الكتاب ملف PDF للقراءة."
-      : "دروس هذا الكتاب مرتبة حسب التسلسل المعتمد في البرنامج.",
-    courses: lessons.map((lesson) => ({
+    pdf: bookQuery.data.pdf,
+    audio: bookQuery.data.audio,
+    lessons: lessons.map((lesson) => ({
       id: lesson.id,
-      title: lesson.explanation_notes?.trim() || `المقرر ${lesson.order + 1}`,
+      order: lesson.order,
+      explanation_notes: lesson.explanation_notes,
     })),
   }
 
