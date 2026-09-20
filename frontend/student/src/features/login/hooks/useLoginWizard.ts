@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 import { ApiError, LoginService, UsersService } from "@/client"
-import { clearAuthSession } from "@/shared/lib/authSession"
+import { clearAuthSession, setStudentProfile } from "@/shared/lib/authSession"
 
 export function useLoginWizard() {
   const navigate = useNavigate()
@@ -48,10 +48,10 @@ export function useLoginWizard() {
 
       try {
         const profile = await UsersService.readUserMe()
-        localStorage.setItem(
-          "student_profile",
-          JSON.stringify({ email: profile.email }),
-        )
+        setStudentProfile({
+          email: profile.email,
+          first_name: profile.first_name,
+        })
       } catch {
         clearAuthSession()
         setError({
