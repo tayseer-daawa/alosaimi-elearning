@@ -11,10 +11,29 @@ import { useCallback, useEffect, useId, useRef, useState } from "react"
 import { PlayerActionHud, type PlayerHudPayload } from "./PlayerActionHud"
 import PlayerShortcutsHelp from "./PlayerShortcutsHelp"
 
+/** Compact chrome controls — avoid the tall default button recipe. */
+const chromeIconProps = {
+  variant: "ghost" as const,
+  size: "sm" as const,
+  h: "8",
+  minW: "8",
+  p: "0",
+  borderRadius: "full",
+  color: "brand.secondary",
+}
+
 /** YouTube-like seek amounts (seconds). */
 const ARROW_SEEK = 5
 const JL_SEEK = 10
-const RATES = [0.75, 1, 1.25, 1.5, 1.75] as const
+const RATES = [0.75, 1, 1.25, 1.5, 1.75, 2] as const
+type Rate = (typeof RATES)[number]
+
+function nextRate(current: number, direction: 1 | -1): Rate {
+  const idx = RATES.indexOf(current as Rate)
+  const from = idx >= 0 ? idx : 1
+  const clamped = Math.min(RATES.length - 1, Math.max(0, from + direction))
+  return RATES[clamped]!
+}
 
 function formatTime(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00"
@@ -53,6 +72,22 @@ function isTypingTarget(target: EventTarget | null): boolean {
   return target.isContentEditable
 }
 
+/** Menu open / item focused — let arrows & Enter work; Space is stolen by player. */
+function isMenuNavigationTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  return Boolean(
+    target.closest('[role="menu"], [role="menuitem"], [data-scope="menu"]'),
+  )
+}
+
+function blurIframes() {
+  for (const frame of document.querySelectorAll("iframe")) {
+    if (document.activeElement === frame) {
+      frame.blur()
+    }
+  }
+}
+
 export type AudioPlayerProps = {
   src?: string
   title?: string
@@ -72,6 +107,7 @@ export default function AudioPlayer({
 }: AudioPlayerProps) {
   const labelId = useId()
   const audioRef = useRef<HTMLAudioElement>(null)
+  const playerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -89,6 +125,7 @@ export default function AudioPlayer({
   const playingRef = useRef(isPlaying)
   const mutedRef = useRef(muted)
   const volumeRef = useRef(volume)
+  const rateRef = useRef(rate)
   const onPrevRef = useRef(onPrevLesson)
   const onNextRef = useRef(onNextLesson)
   const hasPrevRef = useRef(hasPrevLesson)
@@ -100,6 +137,21 @@ export default function AudioPlayer({
     setHudFlashId((id) => id + 1)
   }, [])
 
+  /** Keep shortcuts alive: blur iframe/menu/slider focus back onto the player chrome. */
+  const focusPlayerChrome = useCallback(() => {
+    blurIframes()
+    const active = document.activeElement
+    if (
+      active instanceof HTMLElement &&
+      playerRef.current &&
+      playerRef.current.contains(active) &&
+      active !== playerRef.current
+    ) {
+      active.blur()
+    }
+    playerRef.current?.focus({ preventScroll: true })
+  }, [])
+
   useEffect(() => {
     playingRef.current = isPlaying
   }, [isPlaying])
@@ -109,6 +161,9 @@ export default function AudioPlayer({
   useEffect(() => {
     volumeRef.current = volume
   }, [volume])
+  useEffect(() => {
+    rateRef.current = rate
+  }, [rate])
   useEffect(() => {
     shortcutsOpenRef.current = shortcutsOpen
   }, [shortcutsOpen])
@@ -231,27 +286,47 @@ export default function AudioPlayer({
 
       const key = event.key
       const lower = key.toLowerCase()
+      const inMenu = isMenuNavigationTarget(event.target)
+
+      // While the rate menu is open, keep arrow/Enter for a11y menu nav.
+      if (
+        inMenu &&
+        (key === "ArrowDown" ||
+          key === "ArrowUp" ||
+          key === "Home" ||
+          key === "End" ||
+          key === "Enter")
+      ) {
+        return
+      }
+
+      const claim = () => {
+        event.preventDefault()
+        event.stopPropagation()
+      }
 
       if (key === "Escape" && shortcutsOpenRef.current) {
-        event.preventDefault()
+        claim()
         setShortcutsOpen(false)
+        focusPlayerChrome()
         return
       }
       if (key === "?" || (key === "/" && event.shiftKey)) {
-        event.preventDefault()
+        claim()
         setShortcutsOpen((open) => !open)
         return
       }
       if (shortcutsOpenRef.current) return
 
       if (key === " " || lower === "k") {
-        event.preventDefault()
+        claim()
         flashHud({ kind: playingRef.current ? "pause" : "play" })
         void togglePlay()
+        focusPlayerChrome()
         return
       }
       if (key === "ArrowLeft") {
-        event.preventDefault()
+        claim()
         seekBy(-ARROW_SEEK)
         flashHud({
           kind: "seek-back",
@@ -260,7 +335,7 @@ export default function AudioPlayer({
         return
       }
       if (key === "ArrowRight") {
-        event.preventDefault()
+        claim()
         seekBy(ARROW_SEEK)
         flashHud({
           kind: "seek-forward",
@@ -269,7 +344,7 @@ export default function AudioPlayer({
         return
       }
       if (lower === "j") {
-        event.preventDefault()
+        claim()
         seekBy(-JL_SEEK)
         flashHud({
           kind: "seek-back",
@@ -278,7 +353,7 @@ export default function AudioPlayer({
         return
       }
       if (lower === "l") {
-        event.preventDefault()
+        claim()
         seekBy(JL_SEEK)
         flashHud({
           kind: "seek-forward",
@@ -287,12 +362,28 @@ export default function AudioPlayer({
         return
       }
       if (lower === "m") {
-        event.preventDefault()
+        claim()
         toggleMute(true)
         return
       }
+      if (key === "<" || (key === "," && event.shiftKey)) {
+        claim()
+        const next = nextRate(rateRef.current, -1)
+        setRate(next)
+        rateRef.current = next
+        flashHud({ kind: "rate", detail: `${next}×` })
+        return
+      }
+      if (key === ">" || (key === "." && event.shiftKey)) {
+        claim()
+        const next = nextRate(rateRef.current, 1)
+        setRate(next)
+        rateRef.current = next
+        flashHud({ kind: "rate", detail: `${next}×` })
+        return
+      }
       if (key === "ArrowUp") {
-        event.preventDefault()
+        claim()
         const next = Math.min(
           1,
           Math.round((volumeRef.current + 0.05) * 100) / 100,
@@ -303,7 +394,7 @@ export default function AudioPlayer({
         return
       }
       if (key === "ArrowDown") {
-        event.preventDefault()
+        claim()
         const next = Math.max(
           0,
           Math.round((volumeRef.current - 0.05) * 100) / 100,
@@ -314,24 +405,26 @@ export default function AudioPlayer({
         return
       }
       if (key === "N" && event.shiftKey && hasNextRef.current) {
-        event.preventDefault()
+        claim()
         flashHud({ kind: "next-lesson" })
         onNextRef.current?.()
         return
       }
       if (key === "P" && event.shiftKey && hasPrevRef.current) {
-        event.preventDefault()
+        claim()
         flashHud({ kind: "prev-lesson" })
         onPrevRef.current?.()
       }
     }
 
-    window.addEventListener("keydown", onKeyDown)
-    return () => window.removeEventListener("keydown", onKeyDown)
-  }, [togglePlay, seekBy, flashHud, toggleMute])
+    // Capture phase so slider/menu/button focus cannot eat shortcuts first.
+    window.addEventListener("keydown", onKeyDown, true)
+    return () => window.removeEventListener("keydown", onKeyDown, true)
+  }, [togglePlay, seekBy, flashHud, toggleMute, focusPlayerChrome])
 
   return (
     <Box
+      ref={playerRef}
       borderTopWidth="1px"
       borderColor="brand.secondary"
       px={{ base: 3, md: 6 }}
@@ -341,7 +434,13 @@ export default function AudioPlayer({
       tabIndex={0}
       outline="none"
       _focusVisible={{ boxShadow: "outline" }}
-      aria-keyshortcuts="Space, ArrowLeft, ArrowRight, KeyJ, KeyL, KeyK, KeyM, Shift+KeyN, Shift+KeyP, Shift+Slash"
+      onMouseEnter={() => {
+        // PDF iframe steals keys; reclaim when the pointer returns to the player.
+        if (document.activeElement instanceof HTMLIFrameElement) {
+          focusPlayerChrome()
+        }
+      }}
+      aria-keyshortcuts="Space, ArrowLeft, ArrowRight, KeyJ, KeyL, KeyK, KeyM, Shift+Comma, Shift+Period, Shift+KeyN, Shift+KeyP, Shift+Slash"
     >
       <PlayerActionHud payload={hudPayload} flashId={hudFlashId} />
       {audioUrl ? (
@@ -354,11 +453,10 @@ export default function AudioPlayer({
         />
       ) : null}
 
-      <Flex align="center" justify="center" gap={2} mb={2}>
+      <Flex align="center" justify="center" gap={1} mb={2}>
         <IconButton
-          variant="ghost"
+          {...chromeIconProps}
           color="brand.primary"
-          size="sm"
           aria-label="الدرس السابق"
           disabled={!hasPrevLesson}
           onClick={onPrevLesson}
@@ -378,9 +476,8 @@ export default function AudioPlayer({
           {title}
         </Text>
         <IconButton
-          variant="ghost"
+          {...chromeIconProps}
           color="brand.primary"
-          size="sm"
           aria-label="الدرس التالي"
           disabled={!hasNextLesson}
           onClick={onNextLesson}
@@ -446,6 +543,7 @@ export default function AudioPlayer({
             value={[Math.min(currentTime, duration || 0)]}
             disabled={!audioUrl || duration <= 0}
             onValueChange={({ value }) => seekTo(value[0] ?? 0)}
+            onValueChangeEnd={() => focusPlayerChrome()}
             data-testid="audio-seek"
           >
             <Slider.Control
@@ -484,26 +582,30 @@ export default function AudioPlayer({
         <Menu.Root>
           <Menu.Trigger asChild>
             <IconButton
-              variant="ghost"
-              color="brand.secondary"
+              {...chromeIconProps}
+              minW="10"
+              px={2}
               aria-label="سرعة التشغيل"
               disabled={!audioUrl}
               data-testid="audio-rate"
             >
-              <Text fontSize="xs" fontWeight="bold">
+              <Text fontSize="xs" fontWeight="bold" lineHeight="1">
                 {rate}×
               </Text>
             </IconButton>
           </Menu.Trigger>
           <Menu.Positioner>
-            <Menu.Content minW="24">
+            <Menu.Content minW="24" borderRadius="lg" py={1}>
               {RATES.map((r) => (
                 <Menu.Item
                   key={r}
                   value={String(r)}
+                  borderRadius="md"
                   onClick={() => {
                     setRate(r)
                     flashHud({ kind: "rate", detail: `${r}×` })
+                    // Defer so the menu can close, then drop focus off the trigger/items.
+                    window.setTimeout(() => focusPlayerChrome(), 0)
                   }}
                 >
                   {r}×
@@ -517,13 +619,16 @@ export default function AudioPlayer({
           position="relative"
           onMouseEnter={() => setShowVolume(true)}
           onMouseLeave={() => setShowVolume(false)}
+          data-testid="audio-volume-wrap"
         >
           <IconButton
-            variant="ghost"
-            color="brand.secondary"
+            {...chromeIconProps}
             aria-label={muted || volume === 0 ? "إلغاء كتم الصوت" : "كتم الصوت"}
             disabled={!audioUrl}
-            onClick={() => toggleMute(true)}
+            onClick={() => {
+              toggleMute(true)
+              focusPlayerChrome()
+            }}
             data-testid="audio-mute"
           >
             {muted || volume === 0 ? (
@@ -538,34 +643,42 @@ export default function AudioPlayer({
               bottom="100%"
               left="50%"
               transform="translateX(-50%)"
-              mb={2}
-              bg="white"
-              boxShadow="lg"
-              borderRadius="md"
-              px={3}
-              py={3}
+              // Padding bridges the gap so the cursor never "leaves" the hover zone.
+              pb={3}
+              pt={1}
+              px={1}
               zIndex={2}
-              data-testid="audio-volume-panel"
+              data-testid="audio-volume-bridge"
             >
-              <Slider.Root
-                height="28"
-                orientation="vertical"
-                min={0}
-                max={100}
-                value={[Math.round((muted ? 0 : volume) * 100)]}
-                onValueChange={({ value }) => {
-                  const next = (value[0] ?? 0) / 100
-                  setVolume(next)
-                  setMuted(next === 0)
-                }}
+              <Box
+                bg="white"
+                boxShadow="lg"
+                borderRadius="lg"
+                px={3}
+                py={3}
+                data-testid="audio-volume-panel"
               >
-                <Slider.Control>
-                  <Slider.Track>
-                    <Slider.Range bg="brand.primary" />
-                  </Slider.Track>
-                  <Slider.Thumbs borderColor="brand.primary" />
-                </Slider.Control>
-              </Slider.Root>
+                <Slider.Root
+                  height="28"
+                  orientation="vertical"
+                  min={0}
+                  max={100}
+                  value={[Math.round((muted ? 0 : volume) * 100)]}
+                  onValueChange={({ value }) => {
+                    const next = (value[0] ?? 0) / 100
+                    setVolume(next)
+                    setMuted(next === 0)
+                  }}
+                  onValueChangeEnd={() => focusPlayerChrome()}
+                >
+                  <Slider.Control>
+                    <Slider.Track>
+                      <Slider.Range bg="brand.primary" />
+                    </Slider.Track>
+                    <Slider.Thumbs borderColor="brand.primary" />
+                  </Slider.Control>
+                </Slider.Root>
+              </Box>
             </Box>
           )}
         </Box>
