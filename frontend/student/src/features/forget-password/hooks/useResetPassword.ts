@@ -1,6 +1,7 @@
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import { useState } from "react"
 import { ApiError, LoginService } from "@/client"
+import { apiErrorMessage } from "@/shared/lib/apiErrorMessage"
 
 export function useResetPassword() {
   const navigate = useNavigate()
@@ -42,16 +43,11 @@ export function useResetPassword() {
         },
       })
       await navigate({ to: "/login" })
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ApiError) {
-        const detail = (err.body as any)?.detail
-        if (typeof detail === "string") {
-          setError(detail)
-        } else if (Array.isArray(detail) && detail.length > 0) {
-          setError(detail[0].msg)
-        } else {
-          setError("الرابط غير صالح أو منتهي الصلاحية.")
-        }
+        setError(
+          apiErrorMessage(err.body, "الرابط غير صالح أو منتهي الصلاحية."),
+        )
       } else {
         setError("تعذر الاتصال بالخادم")
       }

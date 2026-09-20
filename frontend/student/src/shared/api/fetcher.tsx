@@ -1,4 +1,9 @@
-const baseURL = import.meta.env.VITE_API_BASE || "http://localhost:8000"
+// Prefer VITE_API_URL (same as the generated OpenAPI client). VITE_API_BASE is
+// accepted as a legacy alias so older local .env files keep working.
+const baseURL =
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE ||
+  "http://localhost:8000"
 
 export async function fetcher(path: string, options?: RequestInit) {
   const res = await fetch(baseURL + path, options)

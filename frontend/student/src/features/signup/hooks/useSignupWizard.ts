@@ -1,10 +1,11 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { ApiError, UsersService } from "@/client"
+import { apiErrorMessage } from "@/shared/lib/apiErrorMessage"
 
-type Step = "name" | "email" | "gender" | "goal" | "password"
+type Step = "name" | "email" | "gender" | "password"
 
-const steps: Step[] = ["name", "email", "gender", "goal", "password"]
+const steps: Step[] = ["name", "email", "gender", "password"]
 
 type SignupErrors = {
   firstName: string | null
@@ -12,7 +13,6 @@ type SignupErrors = {
   familyName: string | null
   email: string | null
   gender: string | null
-  goal: string | null
   password: string | null
   confirmPassword: string | null
   form: string | null
@@ -24,13 +24,14 @@ const emptyErrors = (): SignupErrors => ({
   familyName: null,
   email: null,
   gender: null,
-  goal: null,
   password: null,
   confirmPassword: null,
   form: null,
 })
 
 const isFilledName = (value: string) => value.trim().length > 1
+const NAME_MAX = 30
+const PASSWORD_MAX = 128
 
 export function useSignupWizard() {
   const navigate = useNavigate()
@@ -43,9 +44,6 @@ export function useSignupWizard() {
   const [familyName, setFamilyName] = useState("")
   const [email, setEmail] = useState("")
   const [isMale, setIsMale] = useState<boolean | null>(null)
-  const [wantsNotifications, setWantsNotifications] = useState<boolean | null>(
-    null,
-  )
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState<SignupErrors>(emptyErrors)
@@ -59,16 +57,21 @@ export function useSignupWizard() {
         return (
           isFilledName(firstName) &&
           isFilledName(fatherName) &&
-          isFilledName(familyName)
+          isFilledName(familyName) &&
+          firstName.trim().length <= NAME_MAX &&
+          fatherName.trim().length <= NAME_MAX &&
+          familyName.trim().length <= NAME_MAX
         )
       case "email":
         return /\S+@\S+\.\S+/.test(email.trim())
       case "gender":
         return isMale !== null
-      case "goal":
-        return wantsNotifications !== null
       case "password":
-        return password.length >= 8 && password === confirmPassword
+        return (
+          password.length >= 8 &&
+          password.length <= PASSWORD_MAX &&
+          password === confirmPassword
+        )
       default:
         return false
     }
@@ -79,7 +82,6 @@ export function useSignupWizard() {
     familyName,
     email,
     isMale,
-    wantsNotifications,
     password,
     confirmPassword,
   ])
@@ -93,12 +95,18 @@ export function useSignupWizard() {
       case "name":
         if (!isFilledName(firstName)) {
           nextErrors.firstName = "الرجاء إدخال الاسم الشخصي"
+        } else if (firstName.trim().length > NAME_MAX) {
+          nextErrors.firstName = `الاسم الشخصي يجب ألا يتجاوز ${NAME_MAX} حرفاً`
         }
         if (!isFilledName(fatherName)) {
           nextErrors.fatherName = "الرجاء إدخال اسم الأب"
+        } else if (fatherName.trim().length > NAME_MAX) {
+          nextErrors.fatherName = `اسم الأب يجب ألا يتجاوز ${NAME_MAX} حرفاً`
         }
         if (!isFilledName(familyName)) {
           nextErrors.familyName = "الرجاء إدخال الاسم العائلي"
+        } else if (familyName.trim().length > NAME_MAX) {
+          nextErrors.familyName = `الاسم العائلي يجب ألا يتجاوز ${NAME_MAX} حرفاً`
         }
         break
       case "email":
@@ -107,12 +115,11 @@ export function useSignupWizard() {
       case "gender":
         nextErrors.gender = "الرجاء تحديد الجنس"
         break
-      case "goal":
-        nextErrors.goal = "الرجاء اختيار نعم أو لا"
-        break
       case "password":
         if (password.length < 8) {
           nextErrors.password = "كلمة السر يجب أن تكون 8 أحرف على الأقل"
+        } else if (password.length > PASSWORD_MAX) {
+          nextErrors.password = `كلمة السر يجب ألا تتجاوز ${PASSWORD_MAX} حرفاً`
         }
         if (!confirmPassword.trim().length) {
           nextErrors.confirmPassword = "الرجاء تأكيد كلمة السر"
@@ -138,10 +145,10 @@ export function useSignupWizard() {
       try {
         await UsersService.registerUser({
           requestBody: {
-            first_name: firstName,
-            father_name: fatherName,
-            family_name: familyName,
-            email: email,
+            first_name: firstName.trim(),
+            father_name: fatherName.trim(),
+            family_name: familyName.trim(),
+            email: email.trim(),
             is_male: isMale as boolean,
             password: password,
           },
@@ -149,21 +156,10 @@ export function useSignupWizard() {
         await navigate({ to: "/login" })
       } catch (err: unknown) {
         if (err instanceof ApiError) {
-          const detail = (err.body as { detail?: unknown } | undefined)?.detail
-          if (typeof detail === "string") {
-            setError({ ...emptyErrors(), form: detail })
-          } else if (Array.isArray(detail) && detail.length > 0) {
-            const first = detail[0] as { msg?: string }
-            setError({
-              ...emptyErrors(),
-              form: first.msg ?? "حدث خطأ أثناء الاتصال بالخادم",
-            })
-          } else {
-            setError({
-              ...emptyErrors(),
-              form: "حدث خطأ أثناء الاتصال بالخادم",
-            })
-          }
+          setError({
+            ...emptyErrors(),
+            form: apiErrorMessage(err.body),
+          })
         } else {
           setError({
             ...emptyErrors(),
@@ -194,8 +190,6 @@ export function useSignupWizard() {
     setEmail,
     isMale,
     setIsMale,
-    wantsNotifications,
-    setWantsNotifications,
     password,
     setPassword,
     confirmPassword,

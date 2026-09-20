@@ -7,8 +7,18 @@ import { ThemeProvider } from "./providers/theme"
 import { router } from "./routes/router"
 import { clearAuthSession } from "./shared/lib/authSession"
 
-// Point the API client to the VITE_API_URL
-OpenAPI.BASE = import.meta.env.VITE_API_URL || ""
+const apiUrl = import.meta.env.VITE_API_URL
+if (!apiUrl) {
+  if (import.meta.env.PROD) {
+    throw new Error(
+      "VITE_API_URL is required in production builds. Set it in the environment before building.",
+    )
+  }
+  console.warn(
+    "[student] VITE_API_URL is unset; API calls will use relative URLs. Copy frontend/student/.env.example to .env.",
+  )
+}
+OpenAPI.BASE = apiUrl || ""
 
 const publicAuthPaths = [
   "/login",
