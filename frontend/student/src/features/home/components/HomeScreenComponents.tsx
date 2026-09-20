@@ -14,6 +14,7 @@ import {
 import { useNavigate } from "@tanstack/react-router"
 
 import { BookOpen, GraduationCap, LogOut, MoveLeft } from "lucide-react"
+import { clearAuthSession } from "@/shared/lib/authSession"
 import MenuIcon from "/assets/menu.svg"
 
 interface Lesson {
@@ -110,8 +111,7 @@ export default function HomeScreenComponents({
                   color="red.500"
                   cursor="pointer"
                   onClick={() => {
-                    localStorage.removeItem("access_token")
-                    localStorage.removeItem("student_profile")
+                    clearAuthSession()
                     navigate({ to: "/welcome" })
                   }}
                   _hover={{ bg: "red.50" }}
