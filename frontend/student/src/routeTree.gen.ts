@@ -11,12 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
-import { Route as LayoutWelcomeRouteImport } from './routes/_layout/welcome'
-import { Route as LayoutSignupRouteImport } from './routes/_layout/signup'
-import { Route as LayoutResetPasswordRouteImport } from './routes/_layout/reset-password'
-import { Route as LayoutLoginRouteImport } from './routes/_layout/login'
-import { Route as LayoutForgetPasswordRouteImport } from './routes/_layout/forget-password'
 import { Route as LayoutExampleRouteImport } from './routes/_layout/example'
+import { Route as LayoutForgetPasswordRouteImport } from './routes/_layout/forget-password'
+import { Route as LayoutLoginRouteImport } from './routes/_layout/login'
+import { Route as LayoutResetPasswordRouteImport } from './routes/_layout/reset-password'
+import { Route as LayoutSignupRouteImport } from './routes/_layout/signup'
+import { Route as LayoutWelcomeRouteImport } from './routes/_layout/welcome'
 import { Route as LayoutProgramsIndexRouteImport } from './routes/_layout/programs/index'
 import { Route as LayoutProgramsProgramIdPhasesIndexRouteImport } from './routes/_layout/programs/$programId/phases/index'
 import { Route as LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRouteImport } from './routes/_layout/programs/$programId/phases/$phaseId/books/$bookId/index'
@@ -31,24 +31,9 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutWelcomeRoute = LayoutWelcomeRouteImport.update({
-  id: '/welcome',
-  path: '/welcome',
-  getParentRoute: () => LayoutRoute,
-} as any)
-const LayoutSignupRoute = LayoutSignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => LayoutRoute,
-} as any)
-const LayoutResetPasswordRoute = LayoutResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => LayoutRoute,
-} as any)
-const LayoutLoginRoute = LayoutLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const LayoutExampleRoute = LayoutExampleRouteImport.update({
+  id: '/example',
+  path: '/example',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutForgetPasswordRoute = LayoutForgetPasswordRouteImport.update({
@@ -56,9 +41,24 @@ const LayoutForgetPasswordRoute = LayoutForgetPasswordRouteImport.update({
   path: '/forget-password',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutExampleRoute = LayoutExampleRouteImport.update({
-  id: '/example',
-  path: '/example',
+const LayoutLoginRoute = LayoutLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutResetPasswordRoute = LayoutResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutSignupRoute = LayoutSignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutWelcomeRoute = LayoutWelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutProgramsIndexRoute = LayoutProgramsIndexRouteImport.update({
@@ -88,17 +88,17 @@ const LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute =
   )
 
 export interface FileRoutesByFullPath {
+  '/': typeof LayoutIndexRoute
   '/example': typeof LayoutExampleRoute
   '/forget-password': typeof LayoutForgetPasswordRoute
   '/login': typeof LayoutLoginRoute
   '/reset-password': typeof LayoutResetPasswordRoute
   '/signup': typeof LayoutSignupRoute
   '/welcome': typeof LayoutWelcomeRoute
-  '/': typeof LayoutIndexRoute
-  '/programs': typeof LayoutProgramsIndexRoute
-  '/programs/$programId/phases': typeof LayoutProgramsProgramIdPhasesIndexRoute
-  '/programs/$programId/phases/$phaseId/books/$bookId': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRoute
-  '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute
+  '/programs/': typeof LayoutProgramsIndexRoute
+  '/programs/$programId/phases/': typeof LayoutProgramsProgramIdPhasesIndexRoute
+  '/programs/$programId/phases/$phaseId/books/$bookId/': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRoute
+  '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/example': typeof LayoutExampleRoute
@@ -131,17 +131,17 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/example'
     | '/forget-password'
     | '/login'
     | '/reset-password'
     | '/signup'
     | '/welcome'
-    | '/'
-    | '/programs'
-    | '/programs/$programId/phases'
-    | '/programs/$programId/phases/$phaseId/books/$bookId'
-    | '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId'
+    | '/programs/'
+    | '/programs/$programId/phases/'
+    | '/programs/$programId/phases/$phaseId/books/$bookId/'
+    | '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/example'
@@ -180,7 +180,7 @@ declare module '@tanstack/react-router' {
     '/_layout': {
       id: '/_layout'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -191,32 +191,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/welcome': {
-      id: '/_layout/welcome'
-      path: '/welcome'
-      fullPath: '/welcome'
-      preLoaderRoute: typeof LayoutWelcomeRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/signup': {
-      id: '/_layout/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof LayoutSignupRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/reset-password': {
-      id: '/_layout/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof LayoutResetPasswordRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/login': {
-      id: '/_layout/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LayoutLoginRouteImport
+    '/_layout/example': {
+      id: '/_layout/example'
+      path: '/example'
+      fullPath: '/example'
+      preLoaderRoute: typeof LayoutExampleRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/forget-password': {
@@ -226,38 +205,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutForgetPasswordRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/example': {
-      id: '/_layout/example'
-      path: '/example'
-      fullPath: '/example'
-      preLoaderRoute: typeof LayoutExampleRouteImport
+    '/_layout/login': {
+      id: '/_layout/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LayoutLoginRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/reset-password': {
+      id: '/_layout/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof LayoutResetPasswordRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/signup': {
+      id: '/_layout/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof LayoutSignupRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/welcome': {
+      id: '/_layout/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof LayoutWelcomeRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/programs/': {
       id: '/_layout/programs/'
       path: '/programs'
-      fullPath: '/programs'
+      fullPath: '/programs/'
       preLoaderRoute: typeof LayoutProgramsIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/programs/$programId/phases/': {
       id: '/_layout/programs/$programId/phases/'
       path: '/programs/$programId/phases'
-      fullPath: '/programs/$programId/phases'
+      fullPath: '/programs/$programId/phases/'
       preLoaderRoute: typeof LayoutProgramsProgramIdPhasesIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/programs/$programId/phases/$phaseId/books/$bookId/': {
       id: '/_layout/programs/$programId/phases/$phaseId/books/$bookId/'
       path: '/programs/$programId/phases/$phaseId/books/$bookId'
-      fullPath: '/programs/$programId/phases/$phaseId/books/$bookId'
+      fullPath: '/programs/$programId/phases/$phaseId/books/$bookId/'
       preLoaderRoute: typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/': {
       id: '/_layout/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/'
       path: '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId'
-      fullPath: '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId'
+      fullPath: '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/'
       preLoaderRoute: typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
