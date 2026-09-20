@@ -12,14 +12,11 @@ export default function HomeScreen() {
   const userQuery = useCurrentUser()
 
   const programs = programsQuery.data?.data ?? []
-  const cards = programs.map((program, index) => ({
+  // Featured entry is the first catalog item — not enrollment/progress (API has neither).
+  const cards = programs.map((program) => ({
     id: program.id,
     title: program.title,
     subtitle: formatStudyDays(program.days_of_study),
-    description: undefined as string | undefined,
-    progress: 0,
-    isActive: index === 0,
-    status: index === 0 ? "متاح" : undefined,
   }))
 
   const handleContinueLearning = async () => {
@@ -63,7 +60,7 @@ export default function HomeScreen() {
 
   return (
     <HomeScreenComponents
-      allLessons={cards}
+      allPrograms={cards}
       userName={userQuery.data?.first_name ?? "الطالب"}
       onContinueLearning={handleContinueLearning}
       onViewAllPrograms={handleViewAllPrograms}
