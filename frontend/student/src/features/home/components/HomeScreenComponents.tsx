@@ -1,10 +1,8 @@
 import {
-  Badge,
   Box,
   Button,
   Flex,
   Heading,
-  HStack,
   Icon,
   Text,
   VStack,
@@ -13,38 +11,28 @@ import {
 import { BookOpen, GraduationCap, MoveLeft } from "lucide-react"
 import { AppMenu } from "@/shared/components/AppMenu"
 
-interface Lesson {
+/** Fields that come from GET /programs (plus formatted days). */
+interface ProgramSummary {
   id: string
   title: string
   subtitle: string
-  status?: string
-  description?: string
-  progress: number
-  isActive: boolean
 }
 
 interface HomeScreenProps {
-  currentLesson?: Lesson
-  allLessons?: Lesson[]
+  allPrograms?: ProgramSummary[]
   userName?: string
   onContinueLearning?: () => void
   onViewAllPrograms?: () => void
 }
 
 export default function HomeScreenComponents({
-  currentLesson,
-  allLessons = [],
+  allPrograms = [],
   userName = "الطالب",
   onContinueLearning,
   onViewAllPrograms,
 }: HomeScreenProps) {
-  // Get active lesson or first lesson with progress
-  const activeLesson =
-    currentLesson || allLessons.find((l) => l.isActive) || allLessons[0]
-
-  // Calculate total programs and completed
-  const totalPrograms = allLessons.length
-  const programsInProgress = allLessons.filter((l) => l.progress > 0).length
+  const featured = allPrograms[0]
+  const totalPrograms = allPrograms.length
 
   return (
     <Box
@@ -55,7 +43,6 @@ export default function HomeScreenComponents({
       px={6}
       dir="rtl"
     >
-      {/* Header */}
       <Box
         position="relative"
         h={{ base: "auto", lg: "100px" }}
@@ -87,7 +74,6 @@ export default function HomeScreenComponents({
         </Flex>
       </Box>
 
-      {/* Main Content */}
       <Flex
         direction={{ base: "column", lg: "row" }}
         gap={{ base: 6, lg: 10 }}
@@ -97,7 +83,6 @@ export default function HomeScreenComponents({
         w="full"
         pb={{ base: 6, lg: 0 }}
       >
-        {/* Current Program Card */}
         <Box
           flex={{ base: "1", lg: "1.3" }}
           bg="white"
@@ -109,37 +94,21 @@ export default function HomeScreenComponents({
             transform: "translateY(-6px)",
             boxShadow: "0 12px 32px rgba(33, 96, 93, 0.15)",
           }}
-          cursor="pointer"
-          onClick={onContinueLearning}
+          cursor={featured ? "pointer" : "default"}
+          onClick={featured ? onContinueLearning : undefined}
           p={{ base: 6, lg: 10 }}
         >
           <VStack align="stretch" gap={{ base: 6, lg: 8 }} h="full">
-            {/* Card Header */}
             <Flex justify="space-between" align="flex-start" gap={4}>
               <VStack align="start" gap={{ base: 2, lg: 3 }} flex={1}>
-                <HStack gap={2}>
-                  <Text
-                    fontSize={{ base: "sm", lg: "lg" }}
-                    color="brand.secondary"
-                    fontWeight="600"
-                    letterSpacing="0.5px"
-                  >
-                    البرنامج الحالي
-                  </Text>
-                  {activeLesson?.status && (
-                    <Badge
-                      bg="brand.accent"
-                      color="brand.primary"
-                      px={3}
-                      py={1}
-                      borderRadius="full"
-                      fontSize={{ base: "xs", lg: "sm" }}
-                      fontWeight="500"
-                    >
-                      {activeLesson.status}
-                    </Badge>
-                  )}
-                </HStack>
+                <Text
+                  fontSize={{ base: "sm", lg: "lg" }}
+                  color="brand.secondary"
+                  fontWeight="600"
+                  letterSpacing="0.5px"
+                >
+                  ابدأ من هنا
+                </Text>
 
                 <Heading
                   size={{ base: "xl", lg: "3xl" }}
@@ -147,29 +116,18 @@ export default function HomeScreenComponents({
                   lineHeight="1.2"
                   fontWeight="700"
                 >
-                  {activeLesson?.title || "لا يوجد برنامج نشط"}
+                  {featured?.title || "لا توجد برامج بعد"}
                 </Heading>
 
-                {activeLesson?.subtitle && (
+                {featured?.subtitle ? (
                   <Text
                     fontSize={{ base: "md", lg: "xl" }}
                     color="brand.secondary"
                     fontWeight="500"
                   >
-                    {activeLesson.subtitle}
+                    {featured.subtitle}
                   </Text>
-                )}
-
-                {activeLesson?.description && (
-                  <Text
-                    fontSize={{ base: "sm", lg: "lg" }}
-                    color="brand.gray"
-                    lineHeight="1.7"
-                    mt={{ base: 2, lg: 3 }}
-                  >
-                    {activeLesson.description}
-                  </Text>
-                )}
+                ) : null}
               </VStack>
 
               <Flex
@@ -188,85 +146,26 @@ export default function HomeScreenComponents({
               </Flex>
             </Flex>
 
-            {/* Progress Section */}
-            {activeLesson && (
-              <Box
-                bg="brand.lightTeal"
-                borderRadius="xl"
-                p={{ base: 5, lg: 7 }}
-                mt="auto"
-              >
-                <VStack align="stretch" gap={{ base: 3, lg: 4 }}>
-                  <Flex justify="space-between" align="center">
-                    <Text
-                      fontSize={{ base: "sm", lg: "lg" }}
-                      color="brand.primary"
-                      fontWeight="600"
-                    >
-                      نسبة الإنجاز
-                    </Text>
-                    <Text
-                      fontSize={{ base: "2xl", lg: "4xl" }}
-                      fontWeight="700"
-                      color="brand.primary"
-                    >
-                      {activeLesson.progress}%
-                    </Text>
-                  </Flex>
-
-                  <Box
-                    w="full"
-                    h={{ base: "10px", lg: "14px" }}
-                    bg="white"
-                    borderRadius="full"
-                    overflow="hidden"
-                    boxShadow="inset 0 2px 4px rgba(0,0,0,0.06)"
-                  >
-                    <Box
-                      h="full"
-                      w={`${activeLesson.progress}%`}
-                      bg="brand.secondary"
-                      transition="width 0.6s ease"
-                      borderRadius="full"
-                      position="relative"
-                      _after={{
-                        content: '""',
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background:
-                          "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
-                        animation:
-                          activeLesson.progress > 0
-                            ? "shimmer 2s infinite"
-                            : "none",
-                      }}
-                    />
-                  </Box>
-                </VStack>
-              </Box>
-            )}
-
-            {/* Action Button */}
             <Button
               size={{ base: "md", lg: "lg" }}
               w="full"
+              mt="auto"
+              disabled={!featured}
               onClick={(e) => {
                 e.stopPropagation()
                 onContinueLearning?.()
               }}
             >
               <Flex align="center" gap={3}>
-                <Text fontSize={{ base: "lg", lg: "2xl" }}>متابعة التعلم</Text>
+                <Text fontSize={{ base: "lg", lg: "2xl" }}>
+                  استعرض البرنامج
+                </Text>
                 <Icon as={MoveLeft} boxSize={{ base: 5, lg: 7 }} />
               </Flex>
             </Button>
           </VStack>
         </Box>
 
-        {/* All Programs Card */}
         <Box
           flex={{ base: "1", lg: "0.9" }}
           bg="linear-gradient(135deg, #21605D 0%, #2D836E 100%)"
@@ -301,7 +200,6 @@ export default function HomeScreenComponents({
             position="relative"
             zIndex={1}
           >
-            {/* Icon */}
             <Flex justify="center" mt={{ base: 2, lg: 6 }}>
               <Flex
                 bg="rgba(255, 255, 255, 0.12)"
@@ -321,7 +219,6 @@ export default function HomeScreenComponents({
               </Flex>
             </Flex>
 
-            {/* Content */}
             <VStack align="stretch" gap={{ base: 3, lg: 4 }} flex={1}>
               <Heading
                 size={{ base: "xl", lg: "3xl" }}
@@ -339,18 +236,11 @@ export default function HomeScreenComponents({
                 lineHeight="1.8"
                 fontWeight="400"
               >
-                اطلع على مجموعة شاملة من البرامج التعليمية المتنوعة والمصممة
-                خصيصاً لتطوير مهاراتك
+                اطلع على البرامج المتاحة في المنصة وابدأ رحلة التعلم
               </Text>
             </VStack>
 
-            {/* Stats Grid */}
-            <Flex
-              gap={{ base: 3, lg: 5 }}
-              justify="center"
-              flexWrap="wrap"
-              mt="auto"
-            >
+            <Flex justify="center" mt="auto">
               <Box
                 bg="rgba(255, 255, 255, 0.15)"
                 backdropFilter="blur(12px)"
@@ -360,11 +250,6 @@ export default function HomeScreenComponents({
                 borderRadius="xl"
                 textAlign="center"
                 minW={{ base: "120px", lg: "160px" }}
-                transition="all 0.3s"
-                _hover={{
-                  bg: "rgba(255, 255, 255, 0.22)",
-                  transform: "scale(1.05)",
-                }}
               >
                 <Text
                   fontSize={{ base: "3xl", lg: "5xl" }}
@@ -380,48 +265,14 @@ export default function HomeScreenComponents({
                   mt={2}
                   fontWeight="500"
                 >
-                  برنامج متاح
-                </Text>
-              </Box>
-
-              <Box
-                bg="rgba(228, 219, 153, 0.25)"
-                backdropFilter="blur(12px)"
-                border="1px solid rgba(228, 219, 153, 0.3)"
-                px={{ base: 5, lg: 8 }}
-                py={{ base: 3, lg: 5 }}
-                borderRadius="xl"
-                textAlign="center"
-                minW={{ base: "120px", lg: "160px" }}
-                transition="all 0.3s"
-                _hover={{
-                  bg: "rgba(228, 219, 153, 0.35)",
-                  transform: "scale(1.05)",
-                }}
-              >
-                <Text
-                  fontSize={{ base: "3xl", lg: "5xl" }}
-                  fontWeight="700"
-                  color="white"
-                  lineHeight="1"
-                >
-                  {programsInProgress}
-                </Text>
-                <Text
-                  fontSize={{ base: "xs", lg: "md" }}
-                  color="rgba(255, 255, 255, 0.95)"
-                  mt={2}
-                  fontWeight="500"
-                >
-                  قيد الدراسة
+                  برنامج
                 </Text>
               </Box>
             </Flex>
 
-            {/* Button */}
             <Button
-              bg={"brand.accent"}
-              color={"brand.primary"}
+              bg="brand.accent"
+              color="brand.primary"
               size={{ base: "md", lg: "lg" }}
               w="full"
               mt={{ base: 4, lg: 6 }}
@@ -429,17 +280,8 @@ export default function HomeScreenComponents({
                 e.stopPropagation()
                 onViewAllPrograms?.()
               }}
-              _hover={{
-                transform: "translateY(-2px)",
-                boxShadow: "0 6px 20px rgba(0, 0, 0, 0.15)",
-              }}
             >
-              <Flex align="center" gap={3}>
-                <Text fontSize={{ base: "lg", lg: "2xl" }}>
-                  عرض جميع البرامج
-                </Text>
-                <Icon as={MoveLeft} boxSize={{ base: 5, lg: 7 }} />
-              </Flex>
+              عرض جميع البرامج
             </Button>
           </VStack>
         </Box>
