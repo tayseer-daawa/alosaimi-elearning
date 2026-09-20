@@ -1,11 +1,15 @@
-import { Box, Button, Flex, Heading, Image } from "@chakra-ui/react"
+import { Box, Flex, Heading, Text } from "@chakra-ui/react"
 import { useParams } from "@tanstack/react-router"
+import { useProgram } from "@/features/programs/api/useProgram"
+import { AppMenu } from "@/shared/components/AppMenu"
 import { Breadcrumbs } from "@/shared/components/BreadcrumbsNavigation"
-import MenuIcon from "/assets/menu.svg"
+import { useBook } from "../api/useBook"
 import { BooksList } from "./BooksList"
 
 export default function BookScreen() {
-  const { programId, phaseId, bookId } = useParams({ strict: false })
+  const { programId, bookId } = useParams({ strict: false })
+  const programQuery = useProgram(programId)
+  const bookQuery = useBook(bookId)
 
   return (
     <Box
@@ -16,44 +20,18 @@ export default function BookScreen() {
       px={6}
       dir="rtl"
     >
-      {/* Breadcrumb */}
       <Box
-        display={{
-          base: "none",
-          lg: "block",
-        }}
-        position={"relative"}
-        h={{
-          lg: "100px",
-        }}
-        w={"full"}
+        display={{ base: "none", lg: "block" }}
+        position="relative"
+        h={{ lg: "100px" }}
+        w="full"
         mt={5}
         mb={10}
       >
-        <Flex align="center" justify="center" h={"100%"}>
-          <Button
-            position={"absolute"}
-            right={{
-              base: 0,
-              lg: 14,
-            }}
-            variant="ghost"
-            p={2}
-          >
-            <Image
-              src={MenuIcon}
-              boxSize={{ base: 6, lg: 12 }}
-              objectFit="contain"
-            />
-          </Button>
+        <Flex align="center" justify="center" h="100%">
+          <AppMenu />
 
-          <Heading
-            size={{
-              base: "xl",
-              lg: "5xl",
-            }}
-            color="brand.primary"
-          >
+          <Heading size={{ base: "xl", lg: "5xl" }} color="brand.primary">
             الكتب
           </Heading>
         </Flex>
@@ -62,28 +40,28 @@ export default function BookScreen() {
       <Breadcrumbs
         breadcrumbs={[
           {
-            label: `البرنامج ${programId}`,
-            url: `/programs`,
+            label: programQuery.data?.title ?? "البرنامج",
+            url: "/programs",
           },
           {
-            label: `المرحلة ${phaseId}`,
+            label: "المراحل",
             url: `/programs/${programId}/phases`,
           },
           {
-            label: `الكتاب ${bookId}`,
+            label: bookQuery.data?.title ?? "الكتاب",
             isCurrent: true,
           },
         ]}
       />
 
-      {/* Books List */}
-      <Box
-        mt={10}
-        px={{
-          lg: "16",
-        }}
-      >
-        <BooksList />
+      <Box mt={10} px={{ lg: "16" }}>
+        {bookQuery.isError ? (
+          <Text color="red.500" textAlign="center">
+            تعذر تحميل الكتاب.
+          </Text>
+        ) : (
+          <BooksList />
+        )}
       </Box>
     </Box>
   )

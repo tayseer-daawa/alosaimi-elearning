@@ -20,9 +20,7 @@ test.describe("login", () => {
     await page.goto("/login")
     await page.getByRole("button", { name: "مواصلة" }).click()
 
-    await expect(
-      page.getByText("الرجاء إدخال بريدك الإلكتروني"),
-    ).toBeVisible()
+    await expect(page.getByText("الرجاء إدخال بريدك الإلكتروني")).toBeVisible()
     await expect(page.getByText("الرجاء إدخال كلمة السر")).toBeVisible()
   })
 })

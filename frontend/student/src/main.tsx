@@ -3,6 +3,7 @@ import React from "react"
 import ReactDOM from "react-dom/client"
 import { OpenAPI } from "./client"
 import { QueryProvider } from "./providers/query"
+import { queryClient } from "./providers/queryClient"
 import { ThemeProvider } from "./providers/theme"
 import { router } from "./routes/router"
 import { clearAuthSession } from "./shared/lib/authSession"
@@ -42,6 +43,7 @@ OpenAPI.interceptors.request.use((request) => {
 OpenAPI.interceptors.response.use((response) => {
   if ([401, 403].includes(response.status)) {
     clearAuthSession()
+    queryClient.clear()
     const path = window.location.pathname
     if (!publicAuthPaths.includes(path)) {
       window.location.href = "/welcome"

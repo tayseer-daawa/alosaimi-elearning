@@ -47,7 +47,9 @@ test.describe("auth redirects", () => {
     ])
 
     await expect(page).toHaveURL("/welcome")
-    const token = await page.evaluate(() => localStorage.getItem("access_token"))
+    const token = await page.evaluate(() =>
+      localStorage.getItem("access_token"),
+    )
     const profile = await page.evaluate(() =>
       localStorage.getItem("student_profile"),
     )

@@ -8,9 +8,7 @@ test.describe("welcome", () => {
       page.getByText("مرحبا بك في موقع برامج الشيخ العصيمي"),
     ).toBeVisible()
     await expect(page.getByRole("button", { name: "حساب جديد" })).toBeVisible()
-    await expect(
-      page.getByRole("button", { name: "تسجيل دخول" }),
-    ).toBeVisible()
+    await expect(page.getByRole("button", { name: "تسجيل دخول" })).toBeVisible()
   })
 
   test("حساب جديد navigates to signup", async ({ page }) => {
