@@ -2,6 +2,7 @@ import { Box, Flex, Text } from "@chakra-ui/react"
 import {
   ChevronLeft,
   ChevronRight,
+  Gauge,
   Pause,
   Play,
   RotateCcw,
@@ -44,7 +45,7 @@ const LABELS: Record<PlayerHudKind, string> = {
 }
 
 function HudIcon({ kind }: { kind: PlayerHudKind }) {
-  const size = 36
+  const size = 40
   switch (kind) {
     case "play":
       return <Play size={size} fill="white" />
@@ -64,7 +65,7 @@ function HudIcon({ kind }: { kind: PlayerHudKind }) {
     case "prev-lesson":
       return <ChevronRight size={size} />
     case "rate":
-      return null
+      return <Gauge size={size} strokeWidth={2} />
   }
 }
 
@@ -83,11 +84,14 @@ export function PlayerActionHud({ payload, flashId }: PlayerActionHudProps) {
       return
     }
     setVisible(true)
-    const hide = window.setTimeout(() => setVisible(false), 700)
+    const hide = window.setTimeout(() => setVisible(false), 800)
     return () => window.clearTimeout(hide)
   }, [payload, flashId])
 
   if (typeof document === "undefined" || !payload || !visible) return null
+
+  const isRate = payload.kind === "rate"
+  const isVolume = payload.kind === "volume"
 
   return createPortal(
     <Flex
@@ -102,14 +106,14 @@ export function PlayerActionHud({ payload, flashId }: PlayerActionHudProps) {
     >
       <Box
         key={flashId}
-        px={8}
-        py={6}
+        px={isRate || isVolume ? 10 : 8}
+        py={isRate || isVolume ? 7 : 6}
         borderRadius="2xl"
-        bg="blackAlpha.600"
+        bg="blackAlpha.700"
         color="white"
-        backdropFilter="blur(10px)"
+        backdropFilter="blur(12px)"
         boxShadow="xl"
-        minW="140px"
+        minW={isRate ? "160px" : "140px"}
         textAlign="center"
         animation="playerHudIn 0.18s ease-out"
         css={{
@@ -119,17 +123,43 @@ export function PlayerActionHud({ payload, flashId }: PlayerActionHudProps) {
           },
         }}
       >
-        <Flex justify="center" mb={2} minH="36px" align="center">
+        <Flex justify="center" mb={isRate ? 3 : 2} minH="40px" align="center">
           <HudIcon kind={payload.kind} />
         </Flex>
-        <Text fontSize="md" fontWeight="semibold">
-          {LABELS[payload.kind]}
-        </Text>
-        {payload.detail ? (
-          <Text fontSize="sm" mt={1} opacity={0.9}>
-            {payload.detail}
-          </Text>
-        ) : null}
+        {isRate || isVolume ? (
+          <>
+            {payload.detail ? (
+              <Text
+                fontSize="2xl"
+                fontWeight="bold"
+                lineHeight="1.1"
+                fontVariantNumeric="tabular-nums"
+                data-testid="player-action-hud-detail"
+              >
+                {payload.detail}
+              </Text>
+            ) : null}
+            <Text fontSize="sm" mt={2} opacity={0.85}>
+              {LABELS[payload.kind]}
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text fontSize="md" fontWeight="semibold">
+              {LABELS[payload.kind]}
+            </Text>
+            {payload.detail ? (
+              <Text
+                fontSize="sm"
+                mt={1}
+                opacity={0.9}
+                data-testid="player-action-hud-detail"
+              >
+                {payload.detail}
+              </Text>
+            ) : null}
+          </>
+        )}
       </Box>
     </Flex>,
     document.body,

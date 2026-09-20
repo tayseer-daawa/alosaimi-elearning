@@ -91,6 +91,15 @@ export default function CourseScreen() {
       pb={{ base: "40", lg: "36" }}
       overflow="auto"
       data-testid="course-screen"
+      onMouseDown={(event) => {
+        // PDF iframe swallows keyboard events; clicking elsewhere restores shortcuts.
+        if (
+          document.activeElement instanceof HTMLIFrameElement &&
+          !(event.target instanceof HTMLIFrameElement)
+        ) {
+          document.activeElement.blur()
+        }
+      }}
     >
       <Container maxW="container.lg" px={8} py={4}>
         <Flex

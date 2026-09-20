@@ -178,6 +178,26 @@ test.describe("course lesson player", () => {
       .poll(async () => (await audioState(page))?.playbackRate)
       .toBe(1.25)
     await expect(page.getByTestId("player-action-hud")).toContainText("1.25×")
+    await expect(page.getByTestId("player-action-hud")).toBeVisible()
+
+    await page.getByTestId("audio-rate").click()
+    await expect(page.getByRole("menuitem", { name: "2×" })).toBeVisible()
+    await page.getByRole("menuitem", { name: "2×" }).click()
+    await expect
+      .poll(async () => (await audioState(page))?.playbackRate)
+      .toBe(2)
+
+    // After picking a rate with the mouse, Space must only play/pause — not re-hit the menu.
+    await page.keyboard.press("Space")
+    await expect(play).toHaveAttribute("aria-label", "إيقاف مؤقت")
+    await expect
+      .poll(async () => (await audioState(page))?.playbackRate)
+      .toBe(2)
+    await page.keyboard.press("Space")
+    await expect(play).toHaveAttribute("aria-label", "تشغيل")
+    await expect
+      .poll(async () => (await audioState(page))?.playbackRate)
+      .toBe(2)
 
     const before = (await audioState(page))!.currentTime
     await page.evaluate(() => {
@@ -267,6 +287,19 @@ test.describe("course lesson player", () => {
       .poll(async () => (await audioState(page))?.volume ?? 0)
       .toBeGreaterThan(lowered)
 
+    // < / > — playback rate (YouTube-style)
+    await page.keyboard.press(">")
+    await expect(hud).toContainText("سرعة التشغيل")
+    await expect(hud.getByTestId("player-action-hud-detail")).toBeVisible()
+    await expect
+      .poll(async () => (await audioState(page))?.playbackRate ?? 1)
+      .toBeGreaterThan(1)
+
+    await page.keyboard.press("<")
+    await expect
+      .poll(async () => (await audioState(page))?.playbackRate ?? 0)
+      .toBe(1)
+
     // Shift+N / Shift+P — lesson navigation (player remount clears HUD)
     if (hasNext) {
       await page.keyboard.press("Shift+N")
@@ -288,11 +321,30 @@ test.describe("course lesson player", () => {
     const panel = page.getByTestId("audio-shortcuts-panel")
     await expect(panel).toBeVisible()
     await expect(panel).toContainText("اختصارات المشغّل")
+    await expect(page.getByTestId("audio-shortcuts-title")).toHaveCSS(
+      "text-align",
+      "right",
+    )
+    await expect(panel).toContainText("→ / ←")
     await expect(panel).toContainText("تشغيل أو إيقاف")
-    await expect(panel).toContainText("كتم الصوت أو إلغاؤه")
+    await expect(panel).toContainText("إبطاء أو تسريع التشغيل")
     await expect(panel).toContainText("الدرس التالي")
     // Dimmed overlay behind the dialog
     await expect(page.locator("[data-part='backdrop']").first()).toBeVisible()
+
+    // RTL: close sits on the physical left; description aligns to the start (right)
+    const closeBox = await page
+      .getByTestId("audio-shortcuts-close")
+      .boundingBox()
+    const panelBox = await panel.boundingBox()
+    expect(closeBox && panelBox).toBeTruthy()
+    if (closeBox && panelBox) {
+      expect(closeBox.x).toBeLessThan(panelBox.x + panelBox.width / 2)
+    }
+    await expect(panel.locator("[data-part='description']")).toHaveCSS(
+      "text-align",
+      "right",
+    )
 
     await page.getByTestId("audio-shortcuts-close").click()
     await expect(panel).toBeHidden()
@@ -300,6 +352,42 @@ test.describe("course lesson player", () => {
     await page.keyboard.press("Shift+/")
     await expect(panel).toBeVisible()
     await page.keyboard.press("Escape")
+    await expect(panel).toBeHidden()
+  })
+
+  test("volume picker stays open while moving cursor onto the slider", async ({
+    page,
+  }) => {
+    await openFirstLesson(page)
+    await waitForAudioReady(page)
+
+    const mute = page.getByTestId("audio-mute")
+    const panel = page.getByTestId("audio-volume-panel")
+
+    await mute.hover()
+    await expect(panel).toBeVisible()
+
+    // Crossing the former gap must not dismiss the picker.
+    await page.getByTestId("audio-volume-bridge").hover({
+      position: { x: 20, y: 8 },
+    })
+    await expect(panel).toBeVisible()
+
+    await panel.hover()
+    await expect(panel).toBeVisible()
+
+    const before = (await audioState(page))!.volume
+    const slider = panel.getByRole("slider")
+    await slider.focus()
+    await page.keyboard.press("ArrowDown")
+    await page.keyboard.press("ArrowDown")
+    await page.keyboard.press("ArrowDown")
+    await expect
+      .poll(async () => (await audioState(page))?.volume ?? 1)
+      .toBeLessThan(before)
+
+    // Leaving the volume wrap closes the panel.
+    await page.getByTestId("audio-play-pause").hover()
     await expect(panel).toBeHidden()
   })
 

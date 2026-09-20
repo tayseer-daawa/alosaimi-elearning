@@ -3,10 +3,12 @@ import { Keyboard, X } from "lucide-react"
 
 export const PLAYER_SHORTCUTS = [
   { keys: "مسافة / K", action: "تشغيل أو إيقاف" },
-  { keys: "← / →", action: "ترجيع أو تقديم ٥ ثوانٍ" },
+  // Mirrored for RTL: → = ترجيع, ← = تقديم (matches player chevron direction)
+  { keys: "→ / ←", action: "ترجيع أو تقديم ٥ ثوانٍ" },
   { keys: "J / L", action: "ترجيع أو تقديم ١٠ ثوانٍ" },
   { keys: "M", action: "كتم الصوت أو إلغاؤه" },
-  { keys: "↑ / ↓", action: "رفع أو خفض الصوت" },
+  { keys: "↓ / ↑", action: "رفع أو خفض الصوت" },
+  { keys: "< / >", action: "إبطاء أو تسريع التشغيل" },
   { keys: "Shift + N", action: "الدرس التالي" },
   { keys: "Shift + P", action: "الدرس السابق" },
   { keys: "؟", action: "عرض اختصارات لوحة المفاتيح" },
@@ -33,6 +35,11 @@ export default function PlayerShortcutsHelp({
       <Dialog.Trigger asChild>
         <IconButton
           variant="ghost"
+          size="sm"
+          h="8"
+          minW="8"
+          p={0}
+          borderRadius="full"
           color="brand.secondary"
           aria-label="اختصارات لوحة المفاتيح"
           data-testid="audio-shortcuts"
@@ -41,9 +48,10 @@ export default function PlayerShortcutsHelp({
         </IconButton>
       </Dialog.Trigger>
       <Dialog.Backdrop bg="blackAlpha.500" backdropFilter="blur(2px)" />
-      <Dialog.Positioner>
+      <Dialog.Positioner dir="rtl">
         <Dialog.Content
           dir="rtl"
+          lang="ar"
           mx={4}
           borderRadius="xl"
           position="relative"
@@ -53,7 +61,8 @@ export default function PlayerShortcutsHelp({
           <Dialog.CloseTrigger
             position="absolute"
             top="3"
-            insetEnd="3"
+            left="3"
+            right="auto"
             zIndex={1}
             display="inline-flex"
             alignItems="center"
@@ -63,7 +72,7 @@ export default function PlayerShortcutsHelp({
             w="8"
             p={0}
             border="none"
-            borderRadius="md"
+            borderRadius="full"
             bg="transparent"
             color="gray.500"
             cursor="pointer"
@@ -74,25 +83,55 @@ export default function PlayerShortcutsHelp({
             <X size={16} strokeWidth={2} />
           </Dialog.CloseTrigger>
 
-          <Dialog.Header pe={10}>
-            <Dialog.Title fontSize="md" color="brand.primary" fontWeight="bold">
+          <Dialog.Header
+            dir="rtl"
+            display="flex"
+            justifyContent="flex-start"
+            w="full"
+            ps={6}
+            pe={2}
+            pl={10}
+          >
+            <Dialog.Title
+              fontSize="md"
+              color="brand.primary"
+              fontWeight="bold"
+              w="full"
+              textAlign="right"
+              pe={1}
+              data-testid="audio-shortcuts-title"
+            >
               اختصارات المشغّل
             </Dialog.Title>
           </Dialog.Header>
 
-          <Dialog.Body pt={0} pb={5}>
-            <Dialog.Description fontSize="xs" color="gray.500" mb={4}>
+          <Dialog.Body pt={0} pb={5} dir="rtl">
+            <Dialog.Description
+              fontSize="xs"
+              color="gray.500"
+              mb={4}
+              w="full"
+              textAlign="right"
+              dir="rtl"
+            >
               استخدم لوحة المفاتيح للتحكم السريع أثناء الاستماع.
             </Dialog.Description>
-            <Flex direction="column" gap={2.5}>
+            <Flex direction="column" gap={2.5} dir="rtl">
               {PLAYER_SHORTCUTS.map((row) => (
                 <Flex
                   key={row.keys}
                   justify="space-between"
                   align="center"
                   gap={4}
+                  dir="rtl"
+                  w="full"
                 >
-                  <Text fontSize="sm" color="gray.700" flex="1">
+                  <Text
+                    fontSize="sm"
+                    color="gray.700"
+                    flex="1"
+                    textAlign="right"
+                  >
                     {row.action}
                   </Text>
                   <Box
@@ -106,6 +145,8 @@ export default function PlayerShortcutsHelp({
                     color="brand.primary"
                     whiteSpace="nowrap"
                     fontFamily="mono"
+                    flexShrink={0}
+                    dir="ltr"
                   >
                     {row.keys}
                   </Box>

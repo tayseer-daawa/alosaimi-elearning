@@ -31,13 +31,21 @@ export const buttonRecipe = defineRecipe({
         _hover: { filter: "brightness(0.95)" },
         _active: { filter: "brightness(0.9)" },
       },
+      ghost: {
+        bg: "transparent",
+        color: "inherit",
+        _hover: { bg: "blackAlpha.100" },
+        _active: { bg: "blackAlpha.200" },
+      },
     },
     size: {
       sm: {
-        h: "9",
-        px: "4",
+        h: "8",
+        minH: "8",
+        minW: "8",
+        px: "3",
         fontSize: "sm",
-        borderRadius: "xs",
+        borderRadius: "full",
       },
       md: {
         h: "4rem",
