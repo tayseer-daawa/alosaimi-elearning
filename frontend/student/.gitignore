@@ -34,4 +34,4 @@ openapi.json
 !.env.example
 *.md
 *.test.ts
-*.spec.ts
+# Playwright specs under tests/ are tracked — do not ignore *.spec.ts here.
