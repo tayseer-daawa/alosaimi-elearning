@@ -5,31 +5,44 @@ import { useMemo, useState } from "react"
 import { useBook } from "@/features/books/api/useBook"
 import { useLesson } from "@/features/books/api/useLesson"
 import { useLessonsByBook } from "@/features/books/api/useLessonsByBook"
+import { usePhase } from "@/features/phases/api/usePhase"
 import { useProgram } from "@/features/programs/api/useProgram"
 import { AppMenu } from "@/shared/components/AppMenu"
 import { Breadcrumbs } from "@/shared/components/BreadcrumbsNavigation"
 import AudioPlayer from "./AudioPlayer"
+import { LessonNotes } from "./LessonNotes"
+import { PdfReader } from "./PdfReader"
+
+type TabId = "book" | "notes"
 
 export default function CourseScreen() {
-  const [activeTab, setActiveTab] = useState("content")
+  const [activeTab, setActiveTab] = useState<TabId>("book")
   const navigate = useNavigate()
   const { programId, phaseId, bookId, courseId } = useParams({
     strict: false,
   })
 
   const programQuery = useProgram(programId)
+  const phaseQuery = usePhase(phaseId)
   const bookQuery = useBook(bookId)
   const lessonQuery = useLesson(courseId)
   const lessonsQuery = useLessonsByBook(bookId)
 
-  const lessons = lessonsQuery.data?.data ?? []
-  const currentIndex = useMemo(
-    () => lessons.findIndex((lesson) => lesson.id === courseId),
-    [lessons, courseId],
-  )
+  const lessons = useMemo(() => {
+    const data = lessonsQuery.data?.data ?? []
+    return [...data].sort((a, b) => a.order - b.order)
+  }, [lessonsQuery.data?.data])
+
+  const currentIndex = lessons.findIndex((lesson) => lesson.id === courseId)
   const lesson = lessonQuery.data
+  const bookTitle = bookQuery.data?.title ?? "الكتاب"
   const lessonLabel =
-    currentIndex >= 0 ? `المقرر ${currentIndex + 1}` : "المقرر"
+    currentIndex >= 0 ? `الدرس ${lessons[currentIndex].order + 1}` : "الدرس"
+  const phaseLabel =
+    phaseQuery.data != null ? `المرحلة ${phaseQuery.data.order + 1}` : "المرحلة"
+
+  const pdfUrl =
+    lesson?.book_part_pdf?.trim() || bookQuery.data?.pdf?.trim() || null
 
   const goToLesson = (lessonId: string) => {
     if (!programId || !phaseId || !bookId) return
@@ -64,7 +77,7 @@ export default function CourseScreen() {
   if (lessonQuery.isError || !lesson) {
     return (
       <Text dir="rtl" p={8} color="red.500">
-        تعذر تحميل المقرر.
+        تعذر تحميل الدرس.
       </Text>
     )
   }
@@ -75,64 +88,63 @@ export default function CourseScreen() {
       dir="rtl"
       px={{ lg: "16" }}
       py={{ lg: "10" }}
+      pb={{ base: "40", lg: "36" }}
       overflow="auto"
+      data-testid="course-screen"
     >
-      <Box>
-        <Container maxW="container.lg" px={8} py={4}>
-          <Flex
-            display={{ base: "none", lg: "flex" }}
-            align="center"
-            justify="center"
-            h="100%"
-            position="relative"
-          >
-            <AppMenu />
+      <Container maxW="container.lg" px={8} py={4}>
+        <Flex
+          display={{ base: "none", lg: "flex" }}
+          align="center"
+          justify="center"
+          position="relative"
+          mb={4}
+        >
+          <AppMenu />
+          <Heading size={{ base: "xl", lg: "5xl" }} color="brand.primary">
+            {bookTitle}
+          </Heading>
+        </Flex>
 
-            <Heading size={{ base: "xl", lg: "5xl" }} color="brand.primary">
-              المقررات
-            </Heading>
-          </Flex>
+        <Breadcrumbs
+          breadcrumbs={[
+            {
+              label: programQuery.data?.title ?? "البرنامج",
+              url: "/programs",
+            },
+            {
+              label: phaseLabel,
+              url: `/programs/${programId}/phases`,
+            },
+            {
+              label: bookTitle,
+              url: `/programs/${programId}/phases/${phaseId}/books/${bookId}`,
+            },
+            {
+              label: lessonLabel,
+              isCurrent: true,
+              hasDropdown: true,
+              options: lessons.map((item) => ({
+                label: `الدرس ${item.order + 1}`,
+                url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/${item.id}`,
+              })),
+            },
+          ]}
+        />
+      </Container>
 
-          <Breadcrumbs
-            breadcrumbs={[
-              {
-                label: programQuery.data?.title ?? "البرنامج",
-                url: "/programs",
-              },
-              {
-                label: phaseId ? "المرحلة" : "المرحلة",
-                url: `/programs/${programId}/phases`,
-              },
-              {
-                label: bookQuery.data?.title ?? "الكتاب",
-                url: `/programs/${programId}/phases/${phaseId}/books/${bookId}`,
-              },
-              {
-                label: lessonLabel,
-                isCurrent: true,
-                hasDropdown: true,
-                options: lessons.map((item, index) => ({
-                  label: `المقرر ${index + 1}`,
-                  url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/${item.id}`,
-                })),
-              },
-            ]}
-          />
-        </Container>
-      </Box>
       <Flex
         mt={2}
         display={{ base: "flex", lg: "none" }}
         justify="space-between"
         alignItems="center"
-        mb={8}
+        mb={6}
         px={3}
       >
         <Button
           variant="ghost"
           size="sm"
           color="brand.primary"
-          _hover={{ color: "gray.800" }}
           onClick={goPrev}
           disabled={currentIndex <= 0}
         >
@@ -140,7 +152,7 @@ export default function CourseScreen() {
           <Text>السابق</Text>
         </Button>
         <Text
-          fontSize="2xl"
+          fontSize="xl"
           fontWeight="semibold"
           color="text.default"
           textAlign="center"
@@ -151,7 +163,6 @@ export default function CourseScreen() {
           variant="ghost"
           size="sm"
           color="brand.primary"
-          _hover={{ color: "gray.800" }}
           onClick={goNext}
           disabled={currentIndex < 0 || currentIndex >= lessons.length - 1}
         >
@@ -162,24 +173,23 @@ export default function CourseScreen() {
 
       <Container
         bg="white"
-        w={{ base: "85%", lg: "100%" }}
+        w={{ base: "92%", lg: "100%" }}
         mx="auto"
-        mt={{ lg: "20" }}
-        mb={{ base: "32" }}
-        px={4}
-        py={8}
-        boxShadow={{ base: "lg", lg: "none" }}
+        mt={{ lg: "8" }}
+        px={{ base: 4, md: 6 }}
+        py={6}
+        boxShadow="lg"
         borderRadius={4}
       >
-        <Flex display={{ base: "flex", lg: "none" }} mb={6} gap={2}>
+        <Flex mb={6} gap={2}>
           <Button
             size="sm"
             flex={1}
-            onClick={() => setActiveTab("content")}
-            bg={activeTab === "content" ? "brand.primary" : "white"}
-            color={activeTab === "content" ? "white" : "gray.600"}
+            onClick={() => setActiveTab("book")}
+            bg={activeTab === "book" ? "brand.primary" : "gray.100"}
+            color={activeTab === "book" ? "white" : "gray.700"}
             borderRadius="lg"
-            fontWeight="medium"
+            data-testid="tab-book"
           >
             الكتاب
           </Button>
@@ -187,40 +197,29 @@ export default function CourseScreen() {
             size="sm"
             flex={1}
             onClick={() => setActiveTab("notes")}
-            bg={activeTab === "notes" ? "gray.200" : "gray.100"}
-            color={activeTab === "notes" ? "gray.800" : "gray.600"}
+            bg={activeTab === "notes" ? "brand.primary" : "gray.100"}
+            color={activeTab === "notes" ? "white" : "gray.700"}
             borderRadius="lg"
-            fontWeight="medium"
+            data-testid="tab-notes"
           >
             الملاحظات
           </Button>
         </Flex>
-        {activeTab === "content" && (
-          <Box p={2}>
-            <Text
-              color="brand.primary"
-              fontSize={{ base: "md", lg: "2xl" }}
-              textAlign="justify"
-              lineHeight={{ base: 1.8, lg: 2 }}
-              whiteSpace="pre-wrap"
-            >
-              {lesson.explanation_notes?.trim() ||
-                "لا يتوفر محتوى نصي لهذا المقرر بعد."}
-            </Text>
-          </Box>
-        )}
 
-        {activeTab === "notes" && (
-          <Box>
-            <Text
-              color="brand.secondary"
-              textAlign="center"
-              whiteSpace="pre-wrap"
-            >
-              {lesson.explanation_notes?.trim() || "لا توجد ملاحظات حتى الآن"}
-            </Text>
+        {activeTab === "book" ? (
+          <Box data-testid="tab-panel-book">
+            <PdfReader url={pdfUrl} title={bookTitle} />
           </Box>
-        )}
+        ) : null}
+        <Box
+          display={activeTab === "notes" ? "block" : "none"}
+          data-testid="tab-panel-notes"
+        >
+          <LessonNotes
+            lessonId={lesson.id}
+            explanationNotes={lesson.explanation_notes}
+          />
+        </Box>
       </Container>
 
       <Box
@@ -230,10 +229,17 @@ export default function CourseScreen() {
         right={0}
         bg="white"
         boxShadow="lg"
-        borderTop="1px solid"
-        borderColor="brand.secondary"
+        zIndex={10}
       >
-        <AudioPlayer key={lesson.id} src={lesson.lesson_audio || undefined} />
+        <AudioPlayer
+          key={lesson.id}
+          src={lesson.lesson_audio || undefined}
+          title={`${lessonLabel} — ${bookTitle}`}
+          onPrevLesson={goPrev}
+          onNextLesson={goNext}
+          hasPrevLesson={currentIndex > 0}
+          hasNextLesson={currentIndex >= 0 && currentIndex < lessons.length - 1}
+        />
       </Box>
     </Box>
   )

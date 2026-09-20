@@ -1,215 +1,505 @@
-import {
-  Box,
-  Button,
-  Flex,
-  HStack,
-  IconButton,
-  Image,
-  Slider,
-  Text,
-} from "@chakra-ui/react"
+import { Box, Flex, IconButton, Menu, Slider, Text } from "@chakra-ui/react"
 import {
   ChevronLeft,
   ChevronRight,
   Pause,
   Play,
-  SkipBack,
-  SkipForward,
   Volume2,
   VolumeX,
 } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
-import audioFile from "/assets/audio/020.mp3"
-import AudioIcon from "/assets/audio-icon.svg"
+import { useCallback, useEffect, useId, useRef, useState } from "react"
+import { PlayerActionHud, type PlayerHudPayload } from "./PlayerActionHud"
 
-type AudioPlayerProps = {
-  /** Remote lesson audio URL from the API; falls back to local sample. */
-  src?: string
+/** YouTube-like seek amounts (seconds). */
+const ARROW_SEEK = 5
+const JL_SEEK = 10
+const RATES = [0.75, 1, 1.25, 1.5, 1.75] as const
+
+function formatTime(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00"
+  const total = Math.floor(seconds)
+  const m = Math.floor(total / 60)
+  const s = total % 60
+  return `${m}:${s.toString().padStart(2, "0")}`
 }
 
-export default function AudioPlayer({ src }: AudioPlayerProps) {
+function seekHudDetail(seconds: number): string {
+  const abs = Math.abs(seconds)
+  return `${seconds < 0 ? "−" : "+"}${abs} ثوانٍ`
+}
+
+function volumeHudDetail(level: number): string {
+  return `${Math.round(level * 100)}٪`
+}
+
+function isPlayableSrc(src: string | undefined): src is string {
+  return Boolean(
+    src &&
+      /^https?:\/\//.test(src) &&
+      !/(?:example\.com|soundhelix\.com|pdfobject\.com)/.test(src),
+  )
+}
+
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  const tag = target.tagName
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true
+  return target.isContentEditable
+}
+
+export type AudioPlayerProps = {
+  src?: string
+  title?: string
+  onPrevLesson?: () => void
+  onNextLesson?: () => void
+  hasPrevLesson?: boolean
+  hasNextLesson?: boolean
+}
+
+export default function AudioPlayer({
+  src,
+  title = "الشرح الصوتي",
+  onPrevLesson,
+  onNextLesson,
+  hasPrevLesson = false,
+  hasNextLesson = false,
+}: AudioPlayerProps) {
+  const labelId = useId()
+  const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
-  const audioUrl =
-    src && /^https?:\/\//.test(src) && !src.includes("example.com")
-      ? src
-      : audioFile
-  const [volume, setVolume] = useState(1) // 1 = 100% volume
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false)
-  const audioRef = useRef<HTMLAudioElement>(null)
+  const [volume, setVolume] = useState(1)
+  const [muted, setMuted] = useState(false)
+  const [rate, setRate] = useState(1)
+  const [error, setError] = useState<string | null>(null)
+  const [showVolume, setShowVolume] = useState(false)
+  const [hudPayload, setHudPayload] = useState<PlayerHudPayload | null>(null)
+  const [hudFlashId, setHudFlashId] = useState(0)
+
+  const audioUrl = isPlayableSrc(src) ? src : undefined
+
+  const playingRef = useRef(isPlaying)
+  const mutedRef = useRef(muted)
+  const volumeRef = useRef(volume)
+  const onPrevRef = useRef(onPrevLesson)
+  const onNextRef = useRef(onNextLesson)
+  const hasPrevRef = useRef(hasPrevLesson)
+  const hasNextRef = useRef(hasNextLesson)
+
+  const flashHud = useCallback((payload: PlayerHudPayload) => {
+    setHudPayload(payload)
+    setHudFlashId((id) => id + 1)
+  }, [])
+
+  useEffect(() => {
+    playingRef.current = isPlaying
+  }, [isPlaying])
+  useEffect(() => {
+    mutedRef.current = muted
+  }, [muted])
+  useEffect(() => {
+    volumeRef.current = volume
+  }, [volume])
+  useEffect(() => {
+    onPrevRef.current = onPrevLesson
+    onNextRef.current = onNextLesson
+    hasPrevRef.current = hasPrevLesson
+    hasNextRef.current = hasNextLesson
+  }, [onPrevLesson, onNextLesson, hasPrevLesson, hasNextLesson])
 
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
 
-    const updateTime = () => {
-      setCurrentTime(audio.currentTime)
-    }
+    setIsPlaying(false)
+    setCurrentTime(0)
+    setDuration(0)
+    setError(null)
 
-    const updateDuration = () => {
-      if (audio.duration && !Number.isNaN(audio.duration)) {
-        setDuration(audio.duration)
-      }
-    }
+    if (!audioUrl) return
 
-    const handleEnded = () => {
+    const onTime = () => setCurrentTime(audio.currentTime)
+    const onMeta = () => {
+      if (Number.isFinite(audio.duration)) setDuration(audio.duration)
+    }
+    const onEnded = () => {
       setIsPlaying(false)
       setCurrentTime(0)
     }
+    const onError = () => {
+      setIsPlaying(false)
+      setError("تعذر تشغيل الملف الصوتي.")
+    }
 
-    audio.addEventListener("timeupdate", updateTime)
-    audio.addEventListener("loadedmetadata", updateDuration)
-    audio.addEventListener("durationchange", updateDuration)
-    audio.addEventListener("ended", handleEnded)
+    audio.addEventListener("timeupdate", onTime)
+    audio.addEventListener("loadedmetadata", onMeta)
+    audio.addEventListener("durationchange", onMeta)
+    audio.addEventListener("ended", onEnded)
+    audio.addEventListener("error", onError)
+    // audioUrl drives <audio src>; reload metadata for the new lesson
+    audio.src = audioUrl
+    audio.load()
 
     return () => {
-      audio.removeEventListener("timeupdate", updateTime)
-      audio.removeEventListener("loadedmetadata", updateDuration)
-      audio.removeEventListener("durationchange", updateDuration)
-      audio.removeEventListener("ended", handleEnded)
+      audio.removeEventListener("timeupdate", onTime)
+      audio.removeEventListener("loadedmetadata", onMeta)
+      audio.removeEventListener("durationchange", onMeta)
+      audio.removeEventListener("ended", onEnded)
+      audio.removeEventListener("error", onError)
     }
-  }, [])
+  }, [audioUrl])
 
-  const togglePlay = async () => {
+  useEffect(() => {
     const audio = audioRef.current
-    if (!audio || !audioUrl) {
-      alert("الرجاء اختيار ملف صوتي أولاً")
-      return
-    }
+    if (!audio) return
+    audio.volume = muted ? 0 : volume
+  }, [volume, muted])
 
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.playbackRate = rate
+  }, [rate])
+
+  useEffect(() => {
+    if (volume === 0) setMuted(true)
+  }, [volume])
+
+  const seekBy = useCallback(
+    (delta: number) => {
+      const audio = audioRef.current
+      if (!audio || !audioUrl) return
+      const max = Number.isFinite(audio.duration) ? audio.duration : 0
+      const next = Math.min(Math.max(0, audio.currentTime + delta), max)
+      audio.currentTime = next
+      setCurrentTime(next)
+    },
+    [audioUrl],
+  )
+
+  const seekTo = (value: number) => {
+    const audio = audioRef.current
+    setCurrentTime(value)
+    if (audio) audio.currentTime = value
+  }
+
+  const togglePlay = useCallback(async () => {
+    const audio = audioRef.current
+    if (!audio || !audioUrl) return
     try {
-      if (isPlaying) {
+      if (playingRef.current) {
         audio.pause()
         setIsPlaying(false)
       } else {
         await audio.play()
         setIsPlaying(true)
+        setError(null)
       }
-    } catch (error) {
-      console.error("Error playing audio:", error)
+    } catch {
       setIsPlaying(false)
+      setError("تعذر تشغيل الملف الصوتي.")
     }
-  }
+  }, [audioUrl])
 
-  const handleProgressChange = (value: number[]) => {
-    const audio = audioRef.current
-    const newTime = value[0]
-    setCurrentTime(newTime)
-    if (audio) {
-      audio.currentTime = newTime
-    }
-  }
+  const toggleMute = useCallback(
+    (showHud = false) => {
+      const nextMuted = !mutedRef.current
+      setMuted(nextMuted)
+      if (showHud) {
+        flashHud({ kind: nextMuted ? "mute" : "unmute" })
+      }
+    },
+    [flashHud],
+  )
 
-  const handleVolumeChange = (value: number) => {
-    setVolume(value)
-    if (audioRef.current) {
-      audioRef.current.volume = value
-    }
-  }
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isTypingTarget(event.target)) return
+      if (event.altKey || event.ctrlKey || event.metaKey) return
 
-  const toggleMute = () => {
-    if (volume > 0) {
-      setVolume(0)
-      if (audioRef.current) audioRef.current.volume = 0
-    } else {
-      setVolume(1)
-      if (audioRef.current) audioRef.current.volume = 1
+      const key = event.key
+      const lower = key.toLowerCase()
+
+      if (key === " " || lower === "k") {
+        event.preventDefault()
+        flashHud({ kind: playingRef.current ? "pause" : "play" })
+        void togglePlay()
+        return
+      }
+      if (key === "ArrowLeft") {
+        event.preventDefault()
+        seekBy(-ARROW_SEEK)
+        flashHud({
+          kind: "seek-back",
+          detail: seekHudDetail(-ARROW_SEEK),
+        })
+        return
+      }
+      if (key === "ArrowRight") {
+        event.preventDefault()
+        seekBy(ARROW_SEEK)
+        flashHud({
+          kind: "seek-forward",
+          detail: seekHudDetail(ARROW_SEEK),
+        })
+        return
+      }
+      if (lower === "j") {
+        event.preventDefault()
+        seekBy(-JL_SEEK)
+        flashHud({
+          kind: "seek-back",
+          detail: seekHudDetail(-JL_SEEK),
+        })
+        return
+      }
+      if (lower === "l") {
+        event.preventDefault()
+        seekBy(JL_SEEK)
+        flashHud({
+          kind: "seek-forward",
+          detail: seekHudDetail(JL_SEEK),
+        })
+        return
+      }
+      if (lower === "m") {
+        event.preventDefault()
+        toggleMute(true)
+        return
+      }
+      if (key === "ArrowUp") {
+        event.preventDefault()
+        const next = Math.min(
+          1,
+          Math.round((volumeRef.current + 0.05) * 100) / 100,
+        )
+        setMuted(false)
+        setVolume(next)
+        flashHud({ kind: "volume", detail: volumeHudDetail(next) })
+        return
+      }
+      if (key === "ArrowDown") {
+        event.preventDefault()
+        const next = Math.max(
+          0,
+          Math.round((volumeRef.current - 0.05) * 100) / 100,
+        )
+        setVolume(next)
+        if (next === 0) setMuted(true)
+        flashHud({ kind: "volume", detail: volumeHudDetail(next) })
+        return
+      }
+      if (key === "N" && event.shiftKey && hasNextRef.current) {
+        event.preventDefault()
+        flashHud({ kind: "next-lesson" })
+        onNextRef.current?.()
+        return
+      }
+      if (key === "P" && event.shiftKey && hasPrevRef.current) {
+        event.preventDefault()
+        flashHud({ kind: "prev-lesson" })
+        onPrevRef.current?.()
+      }
     }
-  }
+
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [togglePlay, seekBy, flashHud, toggleMute])
 
   return (
     <Box
-      borderTopWidth={1}
-      position={"relative"}
-      mx="auto"
-      px={6}
-      py={4}
+      borderTopWidth="1px"
+      borderColor="brand.secondary"
+      px={{ base: 3, md: 6 }}
+      py={3}
       dir="rtl"
+      data-testid="audio-player"
+      tabIndex={0}
+      outline="none"
+      _focusVisible={{ boxShadow: "outline" }}
+      aria-keyshortcuts="Space, ArrowLeft, ArrowRight, KeyJ, KeyL, KeyK, KeyM"
     >
-      {/* Hidden Audio Element */}
-      {/* biome-ignore lint/a11y/useMediaCaption: Captions are not available yet */}
-      <audio ref={audioRef} src={audioUrl} preload="metadata" />
+      <PlayerActionHud payload={hudPayload} flashId={hudFlashId} />
+      {audioUrl ? (
+        // biome-ignore lint/a11y/useMediaCaption: lesson audio has no captions yet
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          preload="metadata"
+          aria-labelledby={labelId}
+        />
+      ) : null}
 
-      {/* Title Button with Navigation */}
-      <Box
-        position="absolute"
-        display={{
-          base: "flex",
-          lg: "none",
-        }}
-        alignItems="center"
-        justifyContent={"space-around"}
-        top={-5}
-        bg={"brand.secondary"}
-        color="white"
-        borderRadius="full"
-        textAlign="center"
-        mx="auto"
-        left="50%"
-        transform="translateX(-50%)"
-        w={"60%"}
-      >
+      <Flex align="center" justify="center" gap={2} mb={2}>
         <IconButton
           variant="ghost"
-          color="white"
-          _hover={{ bg: "whiteAlpha.200" }}
+          color="brand.primary"
           size="sm"
-          aria-label="Previous"
+          aria-label="الدرس السابق"
+          disabled={!hasPrevLesson}
+          onClick={onPrevLesson}
+          data-testid="audio-prev-lesson"
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={18} />
+        </IconButton>
+        <Text
+          id={labelId}
+          fontSize="sm"
+          fontWeight="medium"
+          color="brand.primary"
+          textAlign="center"
+          lineClamp={1}
+          maxW={{ base: "60%", md: "md" }}
+        >
+          {title}
+        </Text>
+        <IconButton
+          variant="ghost"
+          color="brand.primary"
+          size="sm"
+          aria-label="الدرس التالي"
+          disabled={!hasNextLesson}
+          onClick={onNextLesson}
+          data-testid="audio-next-lesson"
+        >
+          <ChevronLeft size={18} />
+        </IconButton>
+      </Flex>
+
+      {!audioUrl && (
+        <Text
+          fontSize="sm"
+          color="brand.secondary"
+          textAlign="center"
+          mb={2}
+          data-testid="audio-player-empty"
+        >
+          لا يتوفر تسجيل صوتي لهذا الدرس.
+        </Text>
+      )}
+
+      {error && (
+        <Text fontSize="sm" color="red.500" textAlign="center" mb={2}>
+          {error}
+        </Text>
+      )}
+
+      <Flex align="center" gap={{ base: 2, md: 4 }} w="full" dir="ltr">
+        <IconButton
+          aria-label={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
+          bg="brand.secondary"
+          color="white"
+          borderRadius="full"
+          boxSize={10}
+          disabled={!audioUrl}
+          onClick={() => void togglePlay()}
+          _hover={{ opacity: 0.9 }}
+          data-testid="audio-play-pause"
+        >
+          {isPlaying ? (
+            <Pause size={20} fill="white" />
+          ) : (
+            <Play size={20} fill="white" />
+          )}
         </IconButton>
 
-        <Text fontSize="sm" fontWeight="medium">
-          شرح الشيخ العصيمي
+        <Text
+          fontSize="xs"
+          color="brand.secondary"
+          minW="10"
+          textAlign="end"
+          data-testid="audio-current-time"
+        >
+          {formatTime(currentTime)}
         </Text>
 
-        <IconButton
-          variant="ghost"
-          color="white"
-          _hover={{ bg: "whiteAlpha.200" }}
-          size="sm"
-          aria-label="Next"
-        >
-          <ChevronLeft size={20} />
-        </IconButton>
-      </Box>
-
-      {/* Player Controls */}
-      <Flex
-        align="center"
-        w="full"
-        px={{
-          lg: 24,
-        }}
-        gap={4}
-      >
-        <Button
-          variant="ghost"
-          p={2}
-          display={{
-            base: "none",
-            lg: "block",
-          }}
-        >
-          <Image src={AudioIcon} boxSize={5} objectFit="contain" />
-        </Button>
-
-        {/* Volume Control */}
-        <Box position="relative">
-          <IconButton
-            onClick={toggleMute}
-            onMouseEnter={() => setShowVolumeSlider(true)}
-            variant="ghost"
-            color="#2D836E"
-            _hover={{ color: "#1a4d4a" }}
-            aria-label="الصوت"
+        <Box flex="1" minW={0}>
+          <Slider.Root
+            min={0}
+            max={duration > 0 ? duration : 1}
+            step={0.1}
+            value={[Math.min(currentTime, duration || 0)]}
+            disabled={!audioUrl || duration <= 0}
+            onValueChange={({ value }) => seekTo(value[0] ?? 0)}
+            data-testid="audio-seek"
           >
-            {volume === 0 ? <VolumeX size={24} /> : <Volume2 size={24} />}
-          </IconButton>
+            <Slider.Control>
+              <Slider.Track h="1.5" borderRadius="full" bg="gray.200">
+                <Slider.Range bg="brand.secondary" />
+              </Slider.Track>
+              <Slider.Thumbs
+                boxSize={3}
+                bg="white"
+                borderWidth="2px"
+                borderColor="brand.secondary"
+              />
+            </Slider.Control>
+          </Slider.Root>
+        </Box>
 
-          {/* Volume Slider Popup */}
-          {showVolumeSlider && (
+        <Text
+          fontSize="xs"
+          color="brand.secondary"
+          minW="10"
+          textAlign="start"
+          data-testid="audio-duration"
+        >
+          {formatTime(duration)}
+        </Text>
+
+        <Menu.Root>
+          <Menu.Trigger asChild>
+            <IconButton
+              variant="ghost"
+              color="brand.secondary"
+              aria-label="سرعة التشغيل"
+              disabled={!audioUrl}
+              data-testid="audio-rate"
+            >
+              <Text fontSize="xs" fontWeight="bold">
+                {rate}×
+              </Text>
+            </IconButton>
+          </Menu.Trigger>
+          <Menu.Positioner>
+            <Menu.Content minW="24">
+              {RATES.map((r) => (
+                <Menu.Item
+                  key={r}
+                  value={String(r)}
+                  onClick={() => {
+                    setRate(r)
+                    flashHud({ kind: "rate", detail: `${r}×` })
+                  }}
+                >
+                  {r}×
+                </Menu.Item>
+              ))}
+            </Menu.Content>
+          </Menu.Positioner>
+        </Menu.Root>
+
+        <Box
+          position="relative"
+          onMouseEnter={() => setShowVolume(true)}
+          onMouseLeave={() => setShowVolume(false)}
+        >
+          <IconButton
+            variant="ghost"
+            color="brand.secondary"
+            aria-label={muted || volume === 0 ? "إلغاء كتم الصوت" : "كتم الصوت"}
+            disabled={!audioUrl}
+            onClick={() => toggleMute(true)}
+            data-testid="audio-mute"
+          >
+            {muted || volume === 0 ? (
+              <VolumeX size={22} />
+            ) : (
+              <Volume2 size={22} />
+            )}
+          </IconButton>
+          {showVolume && audioUrl && (
             <Box
               position="absolute"
               bottom="100%"
@@ -217,117 +507,46 @@ export default function AudioPlayer({ src }: AudioPlayerProps) {
               transform="translateX(-50%)"
               mb={2}
               bg="white"
-              boxShadow="xl"
-              borderRadius="lg"
-              px={4}
+              boxShadow="lg"
+              borderRadius="md"
+              px={3}
               py={3}
-              onMouseEnter={() => setShowVolumeSlider(true)}
-              onMouseLeave={() => setShowVolumeSlider(false)}
+              zIndex={2}
+              data-testid="audio-volume-panel"
             >
-              <Flex direction="column" align="center" gap={2}>
-                <Text fontSize="xs" color="gray.600">
-                  {Math.round(volume * 100)}%
-                </Text>
-                <Slider.Root
-                  height="200px"
-                  orientation="vertical"
-                  min={0}
-                  max={100}
-                  value={[Math.round(volume * 100)]}
-                  onValueChange={({ value }) => {
-                    handleVolumeChange(value[0] / 100)
-                  }}
-                >
-                  <Slider.Control>
-                    <Slider.Track>
-                      <Slider.Range bg={"brand.primary"} />
-                    </Slider.Track>
-                    <Slider.Thumbs borderColor={"brand.primary"} />
-                  </Slider.Control>
-                </Slider.Root>
-              </Flex>
+              <Slider.Root
+                height="28"
+                orientation="vertical"
+                min={0}
+                max={100}
+                value={[Math.round((muted ? 0 : volume) * 100)]}
+                onValueChange={({ value }) => {
+                  const next = (value[0] ?? 0) / 100
+                  setVolume(next)
+                  setMuted(next === 0)
+                }}
+              >
+                <Slider.Control>
+                  <Slider.Track>
+                    <Slider.Range bg="brand.primary" />
+                  </Slider.Track>
+                  <Slider.Thumbs borderColor="brand.primary" />
+                </Slider.Control>
+              </Slider.Root>
             </Box>
           )}
         </Box>
-
-        {/* Progress Bar */}
-        <Box
-          flex={1}
-          px={{
-            lg: 12,
-          }}
-        >
-          <Slider.Root
-            min={0}
-            max={duration || 100}
-            value={[currentTime]}
-            onValueChange={({ value }) => handleProgressChange(value)}
-            disabled={!audioUrl}
-          >
-            <Slider.Control>
-              <Slider.Track
-                h={0.5}
-                borderRadius="4px"
-                bg="#e5e7eb"
-                opacity={audioUrl ? 1 : 0.5}
-                cursor={audioUrl ? "pointer" : "not-allowed"}
-              >
-                <Slider.Range bg={"brand.secondary"} />
-              </Slider.Track>
-
-              <Slider.Thumbs
-                boxSize={3}
-                bg={"white"}
-                borderColor={"brand.secondary"}
-                borderRadius="full"
-              />
-            </Slider.Control>
-          </Slider.Root>
-        </Box>
-
-        {/* Play/Pause Button */}
-        <HStack gap={10}>
-          {/* Previous – only on lg+ */}
-          <IconButton
-            h={10}
-            w={10}
-            bg={"white"}
-            color="brand.secondary"
-            borderRadius="full"
-            aria-label="السابق"
-            display={{ base: "none", lg: "inline-flex" }}
-          >
-            <SkipForward fill="#2D836E" />
-          </IconButton>
-
-          {/* Play / Pause – always visible */}
-          <IconButton
-            h={10}
-            w={10}
-            onClick={togglePlay}
-            bg="brand.secondary"
-            color="white"
-            borderRadius="full"
-            aria-label={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
-            opacity={audioUrl ? 1 : 0.5}
-          >
-            {isPlaying ? <Pause fill="white" /> : <Play fill="white" />}
-          </IconButton>
-
-          {/* Next – only on lg+ */}
-          <IconButton
-            h={10}
-            w={10}
-            bg="white"
-            color="brand.secondary"
-            borderRadius="full"
-            aria-label="التالي"
-            display={{ base: "none", lg: "inline-flex" }}
-          >
-            <SkipBack fill="#2D836E" />
-          </IconButton>
-        </HStack>
       </Flex>
+
+      <Text
+        mt={2}
+        fontSize="2xs"
+        color="gray.500"
+        textAlign="center"
+        display={{ base: "none", md: "block" }}
+      >
+        ← → للترجيع/التقديم · مسافة أو K للتشغيل · J / L عشر ثوانٍ · M كتم
+      </Text>
     </Box>
   )
 }
