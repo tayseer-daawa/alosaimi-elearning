@@ -8,8 +8,10 @@ from sqlmodel import func, select
 from app import crud
 from app.api.deps import SessionDep, get_current_admin_or_superuser
 from app.models import (
+    BooksPublic,
     Message,
     Phase,
+    PhaseBook,
     PhaseCreate,
     PhasePublic,
     PhasesPublic,
@@ -64,6 +66,34 @@ def read_phase(session: SessionDep, phase_id: uuid.UUID) -> Phase:
     if not phase:
         raise HTTPException(status_code=404, detail="Phase not found")
     return phase
+
+
+@router.get("/{phase_id}/books", response_model=BooksPublic)
+def read_books_by_phase(
+    session: SessionDep,
+    phase_id: uuid.UUID,
+    skip: int = 0,
+    limit: int = Query(default=100, le=500),
+) -> BooksPublic:
+    """
+    Retrieve books for a specific phase (ordered by phase-book order).
+
+    # For guest users as well
+    """
+    phase = crud.get_phase(session=session, phase_id=phase_id)
+    if not phase:
+        raise HTTPException(status_code=404, detail="Phase not found")
+
+    books = crud.get_books_by_phase(
+        session=session, phase_id=phase_id, skip=skip, limit=limit
+    )
+    count_statement = (
+        select(func.count())
+        .select_from(PhaseBook)
+        .where(PhaseBook.phase_id == phase_id)
+    )
+    count = session.exec(count_statement).one()
+    return BooksPublic(data=books, count=count)
 
 
 @router.post(

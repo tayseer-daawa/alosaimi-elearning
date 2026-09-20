@@ -166,6 +166,34 @@ def test_add_book_to_phase(
     assert content["message"] == "Book added to phase successfully"
 
 
+def test_read_books_by_phase(client: TestClient, db: Session) -> None:
+    program = create_random_program(db)
+    phase_in = PhaseCreate(order=1, program_id=program.id)
+    phase = crud.create_phase(session=db, phase_in=phase_in)
+
+    book1 = create_random_book(db)
+    book2 = create_random_book(db)
+    crud.add_book_to_phase(session=db, phase_id=phase.id, book_id=book1.id, order=1)
+    crud.add_book_to_phase(session=db, phase_id=phase.id, book_id=book2.id, order=0)
+
+    response = client.get(f"{settings.API_V1_STR}/phases/{phase.id}/books")
+    assert response.status_code == 200
+    content = response.json()
+    assert content["count"] >= 2
+    ids = [item["id"] for item in content["data"]]
+    assert str(book2.id) in ids
+    assert str(book1.id) in ids
+    # Ordered by PhaseBook.order
+    assert ids.index(str(book2.id)) < ids.index(str(book1.id))
+
+
+def test_read_books_by_phase_not_found(client: TestClient) -> None:
+    response = client.get(
+        f"{settings.API_V1_STR}/phases/00000000-0000-0000-0000-000000000000/books"
+    )
+    assert response.status_code == 404
+
+
 def test_remove_book_from_phase(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
