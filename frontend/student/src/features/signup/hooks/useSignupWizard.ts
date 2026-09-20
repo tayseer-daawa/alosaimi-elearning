@@ -68,7 +68,7 @@ export function useSignupWizard() {
       case "goal":
         return wantsNotifications !== null
       case "password":
-        return password.length >= 6 && password === confirmPassword
+        return password.length >= 8 && password === confirmPassword
       default:
         return false
     }
@@ -111,8 +111,8 @@ export function useSignupWizard() {
         nextErrors.goal = "الرجاء اختيار نعم أو لا"
         break
       case "password":
-        if (password.length < 6) {
-          nextErrors.password = "كلمة السر يجب أن تكون 6 أحرف على الأقل"
+        if (password.length < 8) {
+          nextErrors.password = "كلمة السر يجب أن تكون 8 أحرف على الأقل"
         }
         if (!confirmPassword.trim().length) {
           nextErrors.confirmPassword = "الرجاء تأكيد كلمة السر"
