@@ -2,6 +2,7 @@ import { Box, Button, Container, Flex, Heading, Text } from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { MoveLeft, MoveRight } from "lucide-react"
 import { useMemo, useState } from "react"
+
 import { useBook } from "@/features/books/api/useBook"
 import { useLesson } from "@/features/books/api/useLesson"
 import { useLessonsByBook } from "@/features/books/api/useLessonsByBook"
@@ -10,6 +11,7 @@ import { useProgram } from "@/features/programs/api/useProgram"
 import { AppMenu } from "@/shared/components/AppMenu"
 import { Breadcrumbs } from "@/shared/components/BreadcrumbsNavigation"
 import AudioPlayer from "./AudioPlayer"
+import LessonListDrawer from "./LessonListDrawer"
 import { LessonNotes } from "./LessonNotes"
 import { PdfReader } from "./PdfReader"
 
@@ -17,6 +19,7 @@ type TabId = "book" | "notes"
 
 export default function CourseScreen() {
   const [activeTab, setActiveTab] = useState<TabId>("book")
+  const [lessonListOpen, setLessonListOpen] = useState(false)
   const navigate = useNavigate()
   const { programId, phaseId, bookId, courseId } = useParams({
     strict: false,
@@ -54,6 +57,14 @@ export default function CourseScreen() {
         bookId,
         courseId: lessonId,
       },
+    })
+  }
+
+  const goToBook = () => {
+    if (!programId || !phaseId || !bookId) return
+    navigate({
+      to: "/programs/$programId/phases/$phaseId/books/$bookId",
+      params: { programId, phaseId, bookId },
     })
   }
 
@@ -104,15 +115,54 @@ export default function CourseScreen() {
       <Container maxW="container.lg" px={8} py={4}>
         <Flex
           display={{ base: "none", lg: "flex" }}
+          direction="column"
           align="center"
-          justify="center"
-          position="relative"
           mb={4}
+          gap={3}
         >
-          <AppMenu />
-          <Heading size={{ base: "xl", lg: "5xl" }} color="brand.primary">
-            {bookTitle}
-          </Heading>
+          <Flex
+            position="relative"
+            w="full"
+            align="center"
+            justify="center"
+            minH="14"
+          >
+            <AppMenu />
+            <Heading size={{ base: "xl", lg: "5xl" }} color="brand.primary">
+              {bookTitle}
+            </Heading>
+          </Flex>
+          <Button
+            variant="ghost"
+            size="sm"
+            color="brand.primary"
+            onClick={goToBook}
+            data-testid="back-to-book"
+          >
+            <MoveRight size={18} />
+            العودة إلى الكتاب
+          </Button>
+        </Flex>
+
+        <Flex
+          display={{ base: "flex", lg: "none" }}
+          align="center"
+          justify="space-between"
+          gap={2}
+          mb={2}
+          px={0}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            color="brand.primary"
+            onClick={goToBook}
+            data-testid="back-to-book-mobile"
+          >
+            <MoveRight size={18} />
+            العودة إلى الكتاب
+          </Button>
+          <AppMenu position="static" />
         </Flex>
 
         <Breadcrumbs
@@ -244,12 +294,22 @@ export default function CourseScreen() {
           key={lesson.id}
           src={lesson.lesson_audio || undefined}
           title={`${lessonLabel} — ${bookTitle}`}
+          lessonId={lesson.id}
           onPrevLesson={goPrev}
           onNextLesson={goNext}
           hasPrevLesson={currentIndex > 0}
           hasNextLesson={currentIndex >= 0 && currentIndex < lessons.length - 1}
+          onOpenLessonList={() => setLessonListOpen(true)}
         />
       </Box>
+
+      <LessonListDrawer
+        open={lessonListOpen}
+        onOpenChange={setLessonListOpen}
+        lessons={lessons}
+        currentLessonId={lesson.id}
+        onSelectLesson={goToLesson}
+      />
     </Box>
   )
 }
