@@ -92,6 +92,23 @@ Copy the content and use that as password / secret key. And run that again to ge
 
 Backend docs: [backend/README.md](./backend/README.md).
 
+### Development seed (local fake data)
+
+Prestart only creates `FIRST_SUPERUSER` from `.env`. For demo students, a teacher, and a sample Program → Session graph, run the **manual** local seed (local-only; never part of production):
+
+```bash
+# stack must be up and the DB reachable
+cd backend && uv run python -m app.seed --verbose
+
+# or
+bash backend/scripts/seed-dev.sh --verbose
+
+# wipe seed-owned rows, then reseed
+cd backend && uv run python -m app.seed --clean
+```
+
+Full docs, credentials, and flags: [backend/app/seed/README.md](./backend/app/seed/README.md).
+
 ## Frontend Development
 
 Frontend Admin docs: [frontend/admin/README.md](./frontend/admin/README.md).
