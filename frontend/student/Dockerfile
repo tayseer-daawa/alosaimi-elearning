@@ -10,6 +10,9 @@ RUN npm ci
 COPY ./ /app/
 
 ARG VITE_API_URL=${VITE_API_URL}
+# Defaults off; pass true via compose build args to enable notes UI at build time.
+ARG VITE_NOTES_FEATURE_ENABLED=false
+ENV VITE_NOTES_FEATURE_ENABLED=$VITE_NOTES_FEATURE_ENABLED
 
 RUN npm run build
 

@@ -191,7 +191,7 @@ export function BooksListSkeleton() {
 /** Course player — same shell as CourseScreen (breakpoints, RTL split, player). */
 export function CourseSkeleton() {
   return (
-    <ScreenSkeleton label="جاري تحميل الدرس">
+    <ScreenSkeleton label="جاري تحميل المقرر">
       <Box
         minH="100vh"
         dir="rtl"
@@ -282,82 +282,23 @@ export function CourseSkeleton() {
           boxShadow="lg"
           borderRadius={4}
         >
-          <Flex mb={6} gap={2} display={{ base: "flex", lg: "none" }}>
-            <Skeleton {...sk} height="36px" flex={1} borderRadius="lg" />
-            <Skeleton {...sk} height="36px" flex={1} borderRadius="lg" />
-          </Flex>
-
-          {/*
-            DOM order matches CourseScreen: PDF then notes.
-            RTL row → PDF on the right (~61%), notes on the left (~38%).
-            Mobile: notes hidden (tabs); PDF full width.
-          */}
-          <Flex
-            direction={{ base: "column", lg: "row" }}
-            align="stretch"
-            gap={{ base: 0, lg: 8 }}
-          >
-            <Box flex={{ lg: "1.55" }} minW={0} w="full">
-              <Skeleton
-                {...sk}
-                height="16px"
-                w="56px"
-                mb={3}
-                borderRadius="md"
-                display={{ base: "none", lg: "block" }}
-                ms="auto"
-              />
-              {/* PDF frame: toolbar strip + body */}
-              <Box
-                borderWidth="1px"
-                borderColor="gray.100"
-                borderRadius="md"
-                overflow="hidden"
-              >
-                <Skeleton {...sk} height="40px" w="full" borderRadius={0} />
-                <Skeleton
-                  {...sk}
-                  height={{ base: "380px", md: "520px" }}
-                  w="full"
-                  borderRadius={0}
-                />
-              </Box>
-            </Box>
-
+          {/* PDF full width (notes UI deferred for v0). */}
+          <Box w="full" minW={0}>
             <Box
-              flex={{ lg: "1" }}
-              minW={{ lg: "280px" }}
-              maxW={{ lg: "420px" }}
-              w={{ lg: "38%" }}
-              display={{ base: "none", lg: "block" }}
-              borderStartWidth="1px"
+              borderWidth="1px"
               borderColor="gray.100"
-              ps={6}
+              borderRadius="md"
+              overflow="hidden"
             >
+              <Skeleton {...sk} height="40px" w="full" borderRadius={0} />
               <Skeleton
                 {...sk}
-                height="16px"
-                w="72px"
-                mb={3}
-                borderRadius="md"
-                ms="auto"
-              />
-              {/* Explanation collapsible trigger */}
-              <Skeleton
-                {...sk}
-                height="40px"
+                height={{ base: "380px", md: "520px" }}
                 w="full"
-                mb={4}
-                borderRadius="md"
+                borderRadius={0}
               />
-              {/* My notes header + insert-time */}
-              <Flex justify="space-between" align="center" mb={2} gap={2}>
-                <Skeleton {...sk} height="16px" w="72px" borderRadius="md" />
-                <Skeleton {...sk} height="28px" w="128px" borderRadius="md" />
-              </Flex>
-              <Skeleton {...sk} height="220px" w="full" borderRadius="md" />
             </Box>
-          </Flex>
+          </Box>
         </Box>
 
         {/* Fixed player — mirrors AudioPlayer title row + seek row */}

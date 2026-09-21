@@ -110,27 +110,21 @@ test.describe("course lesson player", () => {
     await loginAsStudent(page)
   })
 
-  test("shows PDF reader, notes tab, and audio player controls", async ({
-    page,
-  }) => {
+  test("shows PDF reader and audio player controls", async ({ page }) => {
     await openFirstLesson(page)
 
-    // Desktop Chrome: PDF + notes side-by-side (no tabs).
-    await expect(page.getByTestId("tab-book")).toBeHidden()
-    await expect(page.getByTestId("tab-notes")).toBeHidden()
+    // v0: notes UI hidden — PDF full width, no book/notes tabs.
+    await expect(page.getByTestId("tab-book")).toHaveCount(0)
+    await expect(page.getByTestId("tab-notes")).toHaveCount(0)
+    await expect(page.getByTestId("tab-panel-notes")).toHaveCount(0)
+    await expect(page.getByTestId("lesson-notes")).toHaveCount(0)
     await expect(page.getByTestId("tab-panel-book")).toBeVisible()
-    await expect(page.getByTestId("tab-panel-notes")).toBeVisible()
     await expect(page.getByTestId("pdf-reader")).toBeVisible()
     await expect(page.getByTestId("pdf-reader-frame")).toBeVisible()
-    await expect(page.getByTestId("lesson-notes")).toBeVisible()
-    await expect(page.getByTestId("lesson-notes-input")).toBeVisible()
-
-    const note = `ملاحظة اختبار ${Date.now()}`
-    await page.getByTestId("lesson-notes-input").fill(note)
-    await expect(page.getByTestId("lesson-notes-saved")).toHaveText(
-      "تم الحفظ محلياً",
+    await expect(page.getByTestId("course-split")).toHaveAttribute(
+      "data-notes-open",
+      "false",
     )
-    await expect(page.getByTestId("lesson-notes-input")).toHaveValue(note)
 
     const player = page.getByTestId("audio-player")
     await expect(player).toBeVisible()
@@ -152,47 +146,17 @@ test.describe("course lesson player", () => {
     }
   })
 
-  test("collapses and expands the notes pane on desktop", async ({ page }) => {
-    await openFirstLesson(page)
-
-    await expect(page.getByTestId("tab-panel-notes")).toBeVisible()
-    await expect(page.getByTestId("notes-pane-collapse")).toBeVisible()
-
-    await page.getByTestId("notes-pane-collapse").click()
-    await expect(page.getByTestId("tab-panel-notes")).toBeHidden()
-    await expect(page.getByTestId("notes-pane-expand")).toBeVisible()
-    await expect(page.getByTestId("course-split")).toHaveAttribute(
-      "data-notes-open",
-      "false",
-    )
-
-    // Collapsed preference persists across reload.
-    await page.reload()
-    await expect(page.getByTestId("course-screen")).toBeVisible()
-    await expect(page.getByTestId("tab-panel-notes")).toBeHidden()
-    await expect(page.getByTestId("notes-pane-expand")).toBeVisible()
-
-    await page.getByTestId("notes-pane-expand").click()
-    await expect(page.getByTestId("tab-panel-notes")).toBeVisible()
-    await expect(page.getByTestId("lesson-notes-input")).toBeVisible()
-    await expect(page.getByTestId("course-split")).toHaveAttribute(
-      "data-notes-open",
-      "true",
-    )
-  })
-
-  test("uses tabs for PDF and notes on mobile", async ({ page }) => {
+  test("shows PDF full width on mobile without notes tabs", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await openFirstLesson(page)
 
-    await expect(page.getByTestId("tab-book")).toBeVisible()
-    await expect(page.getByTestId("tab-notes")).toBeVisible()
+    await expect(page.getByTestId("tab-book")).toHaveCount(0)
+    await expect(page.getByTestId("tab-notes")).toHaveCount(0)
     await expect(page.getByTestId("tab-panel-book")).toBeVisible()
-    await expect(page.getByTestId("lesson-notes-input")).toBeHidden()
-
-    await page.getByTestId("tab-notes").click()
-    await expect(page.getByTestId("lesson-notes-input")).toBeVisible()
-    await expect(page.getByTestId("pdf-reader")).toBeHidden()
+    await expect(page.getByTestId("pdf-reader")).toBeVisible()
+    await expect(page.getByTestId("lesson-notes")).toHaveCount(0)
   })
 
   test("shows PDF timeout panel with retry and open-in-tab", async ({
@@ -213,33 +177,29 @@ test.describe("course lesson player", () => {
     await expect(page.getByTestId("pdf-reader-open-tab")).toBeVisible()
   })
 
-  test("keeps long teacher explanation collapsed so my notes stay visible", async ({
-    page,
-  }) => {
-    await openFirstLesson(page)
-
-    const toggle = page.getByTestId("lesson-explanation-toggle")
-    if ((await toggle.count()) === 0) {
-      test.skip()
-      return
-    }
-
-    const expanded = await toggle.getAttribute("aria-expanded")
-    if (expanded === "true") {
-      // Short explanation opens by default on desktop.
-      await expect(page.getByTestId("lesson-explanation")).toBeVisible()
-      return
-    }
-
-    await expect(page.getByTestId("lesson-notes-input")).toBeVisible()
-    await expect(page.getByTestId("lesson-explanation")).toBeHidden()
-    await toggle.click()
-    await expect(page.getByTestId("lesson-explanation")).toBeVisible()
-  })
-
   test("UI controls: play, mute, rate, and seek", async ({ page }) => {
     await openFirstLesson(page)
     await waitForAudioReady(page)
+
+    // Desktop: ±10 must be on-screen — not shortcut-only (non-technical users).
+    await expect(page.getByTestId("audio-skip-back")).toBeVisible()
+    await expect(page.getByTestId("audio-skip-forward")).toBeVisible()
+    await expect(page.getByTestId("audio-skip-back")).toHaveAttribute(
+      "aria-label",
+      "ترجيع 10 ثوانٍ",
+    )
+    await page.evaluate(() => {
+      const audio = document.querySelector("audio")
+      if (audio) audio.currentTime = 30
+    })
+    await page.getByTestId("audio-skip-forward").click()
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 0)
+      .toBeGreaterThanOrEqual(39.5)
+    await page.getByTestId("audio-skip-back").click()
+    await expect
+      .poll(async () => (await audioState(page))?.currentTime ?? 0)
+      .toBeLessThanOrEqual(31)
 
     const play = page.getByTestId("audio-play-pause")
     await play.click()
@@ -415,7 +375,7 @@ test.describe("course lesson player", () => {
     await expect(panel).toContainText("→ / ←")
     await expect(panel).toContainText("تشغيل أو إيقاف")
     await expect(panel).toContainText("إبطاء أو تسريع التشغيل")
-    await expect(panel).toContainText("الدرس التالي")
+    await expect(panel).toContainText("المقرر التالي")
     // Dimmed overlay behind the dialog
     await expect(page.locator("[data-part='backdrop']").first()).toBeVisible()
 
@@ -581,7 +541,7 @@ test.describe("course lesson player", () => {
     await page.getByTestId("lesson-list-open").click()
     const drawer = page.getByTestId("lesson-list-drawer")
     await expect(drawer).toBeVisible()
-    await expect(drawer).toContainText("دروس الكتاب")
+    await expect(drawer).toContainText("مقررات الكتاب")
     await expect(drawer.getByTestId("lesson-list-item-0")).toBeVisible()
     await expect(drawer).toContainText("استئناف من")
 

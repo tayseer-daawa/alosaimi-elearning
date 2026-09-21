@@ -100,11 +100,11 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
         data-testid="pdf-reader-empty"
       >
         <Text color="brand.primary" fontWeight="medium">
-          لا يتوفر ملف PDF لهذا الدرس
+          لا يتوفر ملف PDF لهذا المقرر
         </Text>
         <Text fontSize="sm" color="brand.secondary" maxW="md">
-          يمكنك متابعة الشرح الصوتي والملاحظات. سيظهر الملف هنا عند إضافة رابط
-          للكتاب أو للدرس.
+          يمكنك متابعة الشرح الصوتي. سيظهر الملف هنا عند إضافة رابط للكتاب أو
+          للمقرر.
         </Text>
       </Box>
     )
