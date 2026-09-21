@@ -38,9 +38,7 @@ def clean_seed_data(*, session: Session, verbose: bool = False) -> None:
         session.commit()
 
 
-def _clean_program_graph(
-    *, session: Session, program: Program, verbose: bool
-) -> None:
+def _clean_program_graph(*, session: Session, program: Program, verbose: bool) -> None:
     """Delete attempts → exams → sessions (cascade events/enrollments) → program.
 
     Books linked only via this program are deleted after program removal if they
