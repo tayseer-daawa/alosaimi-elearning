@@ -205,7 +205,13 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
         borderRadius="md"
         overflow="hidden"
         bg="gray.50"
-        minH={{ base: "min(70vh, 520px)", md: "560px" }}
+        // Fill leftover viewport under the header; leave room for the fixed player.
+        h={{
+          base: "min(62dvh, 480px)",
+          md: "calc(100dvh - 14rem)",
+          xl: "calc(100dvh - 13rem)",
+        }}
+        minH={{ base: "280px", md: "420px" }}
         position="relative"
         display={status === "timeout" ? "none" : "block"}
       >
@@ -231,7 +237,7 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
           title={`قراءة ${title}`}
           style={{
             width: "100%",
-            height: "min(70vh, 520px)",
+            height: "100%",
             border: 0,
             display: "block",
           }}

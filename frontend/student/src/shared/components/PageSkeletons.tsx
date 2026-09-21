@@ -293,7 +293,12 @@ export function CourseSkeleton() {
               <Skeleton {...sk} height="40px" w="full" borderRadius={0} />
               <Skeleton
                 {...sk}
-                height={{ base: "380px", md: "520px" }}
+                height={{
+                  base: "min(62dvh, 480px)",
+                  md: "calc(100dvh - 14rem)",
+                  xl: "calc(100dvh - 13rem)",
+                }}
+                minH={{ base: "280px", md: "420px" }}
                 w="full"
                 borderRadius={0}
               />
