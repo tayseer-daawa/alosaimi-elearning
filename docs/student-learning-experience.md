@@ -14,12 +14,13 @@ What “good enough for beta” means today:
 
 | Area | Behavior |
 | --- | --- |
-| Audio | Custom player with keyboard shortcuts, resume, rate, mute, lesson list, safe-area / touch targets |
+| Audio | Custom player with **visible ±10s seek** (desktop + mobile), keyboard shortcuts as bonus (arrows ±5, J/L ±10), resume, rate, mute, lesson list, safe-area / touch targets |
 | PDF | Browser iframe viewer + «فتح PDF في تبويب جديد»; empty and timeout states with retry |
-| Layout | Desktop RTL split (PDF \| notes); notes column collapsible; mobile tabs |
-| Notes | Local `localStorage` draft, insert/jump timestamps tied to audio, long «ملاحظات الشرح» collapsed by default |
-| Focus | Clicking player / notes / outside the iframe restores shortcuts; hint when the iframe steals focus |
+| Layout | Desktop PDF full width (notes UI gated off for v0); mobile PDF-first |
+| Notes | Deferred for v0 (`VITE_NOTES_FEATURE_ENABLED=false`); code kept for later |
+| Focus | Clicking player / outside the iframe restores shortcuts; hint when the iframe steals focus |
 | Loading | Layout-aware skeletons on browse + course screens |
+| Audience | Non-technical Sharia learners — primary actions must be on-screen buttons, not shortcut-only |
 
 **Do not** restyle the browser’s native PDF chrome (English / LTR toolbar inside an RTL app). That cost is high and the win is low while we stay on iframe.
 
