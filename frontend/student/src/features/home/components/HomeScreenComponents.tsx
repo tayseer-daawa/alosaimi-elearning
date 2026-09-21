@@ -43,7 +43,7 @@ export default function HomeScreenComponents({
   const cardTitle = continueTitle || featured?.title || "لا توجد برامج بعد"
   const cardSubtitle = continueSubtitle || featured?.subtitle
   const eyebrow = continueMode ? "متابعة التعلم" : "ابدأ من هنا"
-  const ctaLabel = continueMode ? "متابعة الدرس" : "ابدأ التعلم"
+  const ctaLabel = continueMode ? "متابعة المقرر" : "ابدأ التعلم"
 
   return (
     <Box

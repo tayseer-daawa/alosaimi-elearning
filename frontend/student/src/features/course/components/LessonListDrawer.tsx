@@ -75,7 +75,7 @@ export default function LessonListDrawer({
                   color="brand.primary"
                   textAlign="right"
                 >
-                  دروس الكتاب
+                  مقررات الكتاب
                 </Drawer.Title>
                 {/*
                   Recipe CloseTrigger uses insetEnd → physical `right` and
@@ -132,7 +132,7 @@ export default function LessonListDrawer({
                         flexShrink={0}
                         color={completed ? "brand.secondary" : "gray.400"}
                         aria-label={
-                          completed ? "إلغاء إكمال الدرس" : "وضع كمكتمل"
+                          completed ? "إلغاء إكمال المقرر" : "وضع كمكتمل"
                         }
                         onClick={() => {
                           toggleLessonCompleted(item.id)
@@ -169,7 +169,7 @@ export default function LessonListDrawer({
                           dir="rtl"
                         >
                           <Text fontSize="sm" w="full" textAlign="right">
-                            الدرس {item.order + 1}
+                            المقرر {item.order + 1}
                           </Text>
                           {resume && !completed ? (
                             <Text

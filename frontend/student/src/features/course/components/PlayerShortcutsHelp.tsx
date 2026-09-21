@@ -9,8 +9,8 @@ export const PLAYER_SHORTCUTS = [
   { keys: "M", action: "كتم الصوت أو إلغاؤه" },
   { keys: "↓ / ↑", action: "رفع أو خفض الصوت" },
   { keys: "< / >", action: "إبطاء أو تسريع التشغيل" },
-  { keys: "Shift + N", action: "الدرس التالي" },
-  { keys: "Shift + P", action: "الدرس السابق" },
+  { keys: "Shift + N", action: "المقرر التالي" },
+  { keys: "Shift + P", action: "المقرر السابق" },
   { keys: "؟", action: "عرض اختصارات لوحة المفاتيح" },
 ] as const
 
