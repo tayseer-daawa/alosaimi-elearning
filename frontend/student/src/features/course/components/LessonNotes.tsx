@@ -7,11 +7,13 @@ import {
   Textarea,
 } from "@chakra-ui/react"
 import { ChevronDown, Clock } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { formatNoteTimestamp, listNoteTimestamps } from "../lib/noteTimestamps"
 import { releasePdfFocus } from "../lib/releasePdfFocus"
 
 const storageKey = (lessonId: string) => `lesson_notes:${lessonId}`
+/** Wait for typing to settle before writing + showing «تم الحفظ محلياً». */
+const SAVE_DEBOUNCE_MS = 450
 
 /** Chakra `lg` breakpoint — short explanations open by default from here up. */
 const LG_MQ = "(min-width: 62em)"
@@ -40,43 +42,98 @@ export function LessonNotes({
   onSeekTo,
 }: LessonNotesProps) {
   const [draft, setDraft] = useState("")
-  const [hydrated, setHydrated] = useState(false)
   const [savedHint, setSavedHint] = useState(false)
   const explanation = explanationNotes?.trim() ?? ""
   const [explanationOpen, setExplanationOpen] = useState(() =>
     shouldOpenExplanation(explanationNotes ?? ""),
   )
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const draftRef = useRef(draft)
+  const lessonIdRef = useRef(lessonId)
+  const saveTimerRef = useRef<number | null>(null)
+
+  const clearSaveTimer = useCallback(() => {
+    if (saveTimerRef.current == null) return
+    window.clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = null
+  }, [])
+
+  const flushSave = useCallback(
+    (id: string, text: string) => {
+      clearSaveTimer()
+      localStorage.setItem(storageKey(id), text)
+      setSavedHint(true)
+    },
+    [clearSaveTimer],
+  )
+
+  const scheduleSave = useCallback(
+    (id: string, text: string) => {
+      setSavedHint(false)
+      clearSaveTimer()
+      saveTimerRef.current = window.setTimeout(() => {
+        saveTimerRef.current = null
+        localStorage.setItem(storageKey(id), text)
+        setSavedHint(true)
+      }, SAVE_DEBOUNCE_MS)
+    },
+    [clearSaveTimer],
+  )
 
   useEffect(() => {
-    setHydrated(false)
+    draftRef.current = draft
+  }, [draft])
+
+  useEffect(() => {
+    lessonIdRef.current = lessonId
+  }, [lessonId])
+
+  useEffect(() => {
+    clearSaveTimer()
     const saved = localStorage.getItem(storageKey(lessonId))
     setDraft(saved ?? "")
-    setHydrated(true)
-    setSavedHint(false)
-  }, [lessonId])
+    setSavedHint(saved != null && saved.length > 0)
+    return () => {
+      clearSaveTimer()
+      localStorage.setItem(storageKey(lessonId), draftRef.current)
+    }
+  }, [lessonId, clearSaveTimer])
 
   useEffect(() => {
     setExplanationOpen(shouldOpenExplanation(explanationNotes ?? ""))
   }, [explanationNotes])
 
+  // Flush pending debounce on tab hide / unload so a fast leave doesn't drop text.
   useEffect(() => {
-    if (!hydrated) return
-    localStorage.setItem(storageKey(lessonId), draft)
-    setSavedHint(true)
-  }, [draft, lessonId, hydrated])
+    const flush = () => {
+      clearSaveTimer()
+      localStorage.setItem(storageKey(lessonIdRef.current), draftRef.current)
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flush()
+    }
+    window.addEventListener("pagehide", flush)
+    document.addEventListener("visibilitychange", onVisibility)
+    return () => {
+      window.removeEventListener("pagehide", flush)
+      document.removeEventListener("visibilitychange", onVisibility)
+    }
+  }, [clearSaveTimer])
 
   const timestamps = listNoteTimestamps(draft)
   const canInsertTime = Boolean(getCurrentTime)
+
+  const applyDraft = (next: string) => {
+    setDraft(next)
+    scheduleSave(lessonId, next)
+  }
 
   const insertCurrentTime = () => {
     if (!getCurrentTime) return
     const token = formatNoteTimestamp(getCurrentTime())
     const el = textareaRef.current
     if (!el) {
-      setDraft(
-        (prev) => `${prev}${prev && !prev.endsWith(" ") ? " " : ""}${token} `,
-      )
+      applyDraft(`${draft}${draft && !draft.endsWith(" ") ? " " : ""}${token} `)
       return
     }
     const start = el.selectionStart ?? draft.length
@@ -87,8 +144,7 @@ export function LessonNotes({
     const needsTrail = after.length > 0 && !/^\s/.test(after)
     const inserted = `${needsLead ? " " : ""}${token}${needsTrail ? " " : " "}`
     const next = `${before}${inserted}${after}`
-    setDraft(next)
-    setSavedHint(false)
+    applyDraft(next)
     const caret = before.length + inserted.length
     requestAnimationFrame(() => {
       el.focus()
@@ -172,10 +228,8 @@ export function LessonNotes({
       <Textarea
         ref={textareaRef}
         value={draft}
-        onChange={(e) => {
-          setDraft(e.target.value)
-          setSavedHint(false)
-        }}
+        onChange={(e) => applyDraft(e.target.value)}
+        onBlur={() => flushSave(lessonId, draftRef.current)}
         placeholder="اكتب ملاحظاتك على هذا الدرس…"
         minH={{ base: "180px", lg: "280px" }}
         resize="vertical"
