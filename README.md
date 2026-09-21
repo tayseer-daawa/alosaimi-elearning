@@ -2,6 +2,8 @@
 
 Arabic e-learning platform for **برنامج مهمات العلم** (Muhimmat al-Ilm) — Sheikh صالح بن عبدالله العصيمي’s foundational **15 متون** curriculum (aqidah, fiqh, hadith, usul, tafsir principles, Arabic grammar), with cohort sessions, lessons, and exams.
 
+**Audience (student app):** most learners are **not** power users — older adults, parents, and mothers studying Sharia. Prefer **large visible controls** over keyboard-only or hidden gestures. Shortcuts may exist as a bonus; never as the only way to do something (e.g. audio ±seek must be on-screen on desktop and mobile).
+
 - **Student app** (`frontend/student`, :5174) — Arabic RTL SPA for browsing program → phase → matn → lessons  
 - **Admin app** (`frontend/admin`, :5173) — English LTR dashboard for content and users  
 - **Backend** (`backend`, :8000) — FastAPI + PostgreSQL  
