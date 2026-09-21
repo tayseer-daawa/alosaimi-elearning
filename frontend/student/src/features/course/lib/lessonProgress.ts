@@ -106,6 +106,18 @@ export function isLessonCompleted(lessonId: string): boolean {
   }
 }
 
+/** Device-local browse badge: completed > started (resume) > none. */
+export type LessonProgressStatus = "none" | "started" | "completed"
+
+export function getLessonProgressStatus(
+  lessonId: string,
+): LessonProgressStatus {
+  if (isLessonCompleted(lessonId)) return "completed"
+  const playback = loadPlayback(lessonId)
+  if (playback && playback.position >= 2) return "started"
+  return "none"
+}
+
 export function markLessonCompleted(lessonId: string): void {
   try {
     localStorage.setItem(
