@@ -123,6 +123,8 @@ General development docs: [development.md](./development.md).
 
 This includes using Docker Compose, custom local domains, `.env` configurations, etc.
 
+Student course player roadmap (beta baseline, deferred PDF work, feature catalog, best practices): [docs/student-learning-experience.md](./docs/student-learning-experience.md).
+
 ## License
 
 The project is licensed under the terms of the MIT license.

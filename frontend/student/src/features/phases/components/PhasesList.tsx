@@ -81,12 +81,14 @@ export const PhasesList = () => {
               transition="all 0.3s"
             >
               <Box p={8} cursor="pointer" onClick={() => toggleStage(stage.id)}>
-                <Flex mb={4} align="center" justify="space-between">
+                <Flex mb={4} align="center" justify="space-between" gap={3}>
                   <Text
                     fontSize={{ base: "xl", lg: "3xl" }}
                     fontWeight="semibold"
                     color={isExpanded ? "white" : "brand.primary"}
                     textAlign="right"
+                    flex="1"
+                    minW={0}
                   >
                     {title}
                   </Text>
@@ -113,14 +115,22 @@ export const PhasesList = () => {
                   fontSize={{ base: "md", lg: "xl" }}
                   color={isExpanded ? "brand.lightGray" : "brand.secondary"}
                   lineHeight="tall"
-                  textAlign="justify"
+                  textAlign="right"
                   w="full"
                 >
                   {description}
                 </Text>
 
                 {isExpanded && stage.books.length > 0 && (
-                  <Grid templateColumns="repeat(2, 1fr)" gap={2} mt={4}>
+                  <Grid
+                    templateColumns={{
+                      base: "1fr",
+                      sm: "repeat(2, minmax(0, 1fr))",
+                    }}
+                    gap={3}
+                    mt={5}
+                    w="full"
+                  >
                     {stage.books.map((book) => (
                       <Button
                         key={book.id}
@@ -128,8 +138,18 @@ export const PhasesList = () => {
                         color="text.default"
                         _hover={{ bg: "#d4cc85" }}
                         borderRadius="4px"
-                        fontSize="md"
+                        fontSize={{ base: "sm", md: "md" }}
                         fontWeight="semibold"
+                        h="auto"
+                        minH="12"
+                        minW={0}
+                        w="full"
+                        px={3}
+                        py={3}
+                        whiteSpace="normal"
+                        lineHeight="short"
+                        textAlign="center"
+                        overflow="hidden"
                         onClick={(e) => {
                           e.stopPropagation()
                           navigate({
@@ -142,7 +162,14 @@ export const PhasesList = () => {
                           })
                         }}
                       >
-                        {book.title}
+                        <Text
+                          as="span"
+                          w="full"
+                          lineClamp={2}
+                          overflowWrap="anywhere"
+                        >
+                          {book.title}
+                        </Text>
                       </Button>
                     ))}
                   </Grid>
