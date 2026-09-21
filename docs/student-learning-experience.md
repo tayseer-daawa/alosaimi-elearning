@@ -4,6 +4,8 @@ Product and engineering guide for the **student course player** (شرح صوتي
 
 Use this when prioritizing post-beta work. Domain vocabulary and curriculum map live in [`.claude/skills/muhimmat-al-ilm/SKILL.md`](../.claude/skills/muhimmat-al-ilm/SKILL.md). Agent conventions live in [`AGENTS.md`](../AGENTS.md).
 
+**API / auth / production readiness** (what is wired vs localStorage vs missing): [student-frontend-api-readiness.md](./student-frontend-api-readiness.md).
+
 ---
 
 ## Beta baseline (shipped)
@@ -125,7 +127,7 @@ A checklist of improvements that fit **مهمات العلم–style** platforms
 | Feature | Status | Notes |
 | --- | --- | --- |
 | Program → phase → book → lesson | Done | Real Arabic titles |
-| Continue learning | Partial | Home helpers; harden with real progress |
+| Continue learning | Done (beta) | Last opened path in `localStorage`; API/enrollment later |
 | Search متون / lessons | Todo | Arabic-aware search |
 | Favorites / pinned books | Todo | |
 | Recently played | Todo | |
