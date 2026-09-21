@@ -116,7 +116,7 @@ export default function CourseScreen() {
       dir="rtl"
       px={{ base: 0, lg: "16" }}
       py={{ base: 2, lg: "10" }}
-      pb={{ base: "36", lg: "36" }}
+      pb={{ base: "48", lg: "36" }}
       data-testid="course-screen"
       onPointerDown={(event) => {
         // PDF iframe swallows keyboard events; click outside restores shortcuts.

@@ -1021,7 +1021,13 @@ export default function AudioPlayer({
         </Box>
       )}
 
-      <Flex align="center" gap={{ base: 2, md: 4 }} w="full" dir="ltr">
+      <Flex
+        align="center"
+        gap={{ base: 2, md: 4 }}
+        w="full"
+        dir="ltr"
+        flexWrap={{ base: "wrap", md: "nowrap" }}
+      >
         <IconButton
           aria-label={
             isBuffering ? "جاري التحميل" : isPlaying ? "إيقاف مؤقت" : "تشغيل"
@@ -1035,6 +1041,8 @@ export default function AudioPlayer({
           onClick={() => void togglePlay()}
           _hover={{ opacity: 0.9 }}
           data-testid="audio-play-pause"
+          order={{ base: 2, md: 0 }}
+          flexShrink={0}
         >
           {isBuffering ? (
             <Box
@@ -1056,208 +1064,233 @@ export default function AudioPlayer({
           )}
         </IconButton>
 
-        <Text
-          fontSize="xs"
-          color="brand.secondary"
-          minW={{ base: "12", md: "14" }}
-          textAlign="end"
-          fontVariantNumeric="tabular-nums"
-          data-testid="audio-current-time"
+        {/* Full-width seek row on mobile; inline with play on desktop */}
+        <Flex
+          order={{ base: 1, md: 0 }}
+          flex={{ base: "1 0 100%", md: "1" }}
+          minW={0}
+          align="center"
+          gap={2}
         >
-          {formatTime(displayTime)}
-        </Text>
-
-        <Box flex="1" minW={0} py={{ base: 3, md: 2 }}>
-          <Slider.Root
-            min={0}
-            max={duration > 0 ? duration : 1}
-            step={1}
-            value={[Math.min(displayTime, duration || 0)]}
-            disabled={!audioUrl || duration <= 0}
-            onValueChange={({ value }) => previewScrub(value[0] ?? 0)}
-            onValueChangeEnd={({ value }) => {
-              // Pointer drags commit via window pointerup + beginPointerScrub.
-              // This path covers keyboard nudges on the thumb.
-              if (pointerScrubbingRef.current) return
-              commitSeek(value[0] ?? 0)
-              focusPlayerChrome()
-            }}
-            data-testid="audio-seek"
+          <Text
+            fontSize="xs"
+            color="brand.secondary"
+            minW={{ base: "10", md: "14" }}
+            textAlign="end"
+            fontVariantNumeric="tabular-nums"
+            flexShrink={0}
+            data-testid="audio-current-time"
           >
-            <Slider.Control
-              h={{ base: "8", md: "5" }}
-              display="flex"
-              alignItems="center"
-              cursor="pointer"
-              onPointerDown={(event) => {
-                if (event.button !== 0) return
-                beginPointerScrub()
+            {formatTime(displayTime)}
+          </Text>
+
+          <Box flex="1" minW={0} py={{ base: 2, md: 2 }}>
+            <Slider.Root
+              min={0}
+              max={duration > 0 ? duration : 1}
+              step={1}
+              value={[Math.min(displayTime, duration || 0)]}
+              disabled={!audioUrl || duration <= 0}
+              onValueChange={({ value }) => previewScrub(value[0] ?? 0)}
+              onValueChangeEnd={({ value }) => {
+                // Pointer drags commit via window pointerup + beginPointerScrub.
+                // This path covers keyboard nudges on the thumb.
+                if (pointerScrubbingRef.current) return
+                commitSeek(value[0] ?? 0)
+                focusPlayerChrome()
               }}
+              data-testid="audio-seek"
             >
-              <Slider.Track
-                h={{ base: "3", md: "2.5" }}
-                borderRadius="full"
-                bg="gray.200"
-                position="relative"
-                overflow="hidden"
+              <Slider.Control
+                h={{ base: "10", md: "5" }}
+                display="flex"
+                alignItems="center"
+                cursor="pointer"
+                onPointerDown={(event) => {
+                  if (event.button !== 0) return
+                  beginPointerScrub()
+                }}
               >
-                {duration > 0
-                  ? bufferedRanges.map((range) => (
-                      <Box
-                        key={`${range.start}-${range.end}`}
-                        position="absolute"
-                        top={0}
-                        bottom={0}
-                        left={`${(range.start / duration) * 100}%`}
-                        width={`${((range.end - range.start) / duration) * 100}%`}
-                        bg="gray.400"
-                        opacity={0.55}
-                        pointerEvents="none"
-                        data-testid="audio-buffered-range"
-                      />
-                    ))
-                  : null}
-                <Slider.Range
-                  bg="brand.secondary"
+                <Slider.Track
+                  h={{ base: "3.5", md: "2.5" }}
+                  borderRadius="full"
+                  bg="gray.200"
                   position="relative"
-                  zIndex={1}
+                  overflow="hidden"
+                >
+                  {duration > 0
+                    ? bufferedRanges.map((range) => (
+                        <Box
+                          key={`${range.start}-${range.end}`}
+                          position="absolute"
+                          top={0}
+                          bottom={0}
+                          left={`${(range.start / duration) * 100}%`}
+                          width={`${((range.end - range.start) / duration) * 100}%`}
+                          bg="gray.400"
+                          opacity={0.55}
+                          pointerEvents="none"
+                          data-testid="audio-buffered-range"
+                        />
+                      ))
+                    : null}
+                  <Slider.Range
+                    bg="brand.secondary"
+                    position="relative"
+                    zIndex={1}
+                  />
+                </Slider.Track>
+                <Slider.Thumbs
+                  boxSize={{ base: 5, md: 4 }}
+                  bg="white"
+                  borderWidth="2px"
+                  borderColor="brand.secondary"
+                  shadow="sm"
+                  zIndex={2}
+                  _hover={{ boxSize: { base: 6, md: 5 } }}
+                  _active={{ boxSize: { base: 6, md: 5 } }}
                 />
-              </Slider.Track>
-              <Slider.Thumbs
-                boxSize={{ base: 5, md: 4 }}
-                bg="white"
-                borderWidth="2px"
-                borderColor="brand.secondary"
-                shadow="sm"
-                zIndex={2}
-                _hover={{ boxSize: { base: 6, md: 5 } }}
-                _active={{ boxSize: { base: 6, md: 5 } }}
-              />
-            </Slider.Control>
-          </Slider.Root>
-        </Box>
+              </Slider.Control>
+            </Slider.Root>
+          </Box>
 
-        <Text
-          fontSize="xs"
-          color="brand.secondary"
-          minW={{ base: "12", md: "14" }}
-          textAlign="start"
-          fontVariantNumeric="tabular-nums"
-          data-testid="audio-duration"
+          <Text
+            fontSize="xs"
+            color="brand.secondary"
+            minW={{ base: "12", md: "14" }}
+            textAlign="start"
+            fontVariantNumeric="tabular-nums"
+            flexShrink={0}
+            data-testid="audio-duration"
+          >
+            {formatTime(duration)}
+          </Text>
+        </Flex>
+
+        <Flex
+          order={{ base: 2, md: 0 }}
+          align="center"
+          gap={1}
+          ms={{ base: "auto", md: 0 }}
+          flexShrink={0}
         >
-          {formatTime(duration)}
-        </Text>
+          <Menu.Root>
+            <Menu.Trigger asChild>
+              <IconButton
+                {...chromeIconProps}
+                minW={{ base: "11", md: "10" }}
+                px={2}
+                aria-label="سرعة التشغيل"
+                disabled={!audioUrl}
+                data-testid="audio-rate"
+              >
+                <Text fontSize="xs" fontWeight="bold" lineHeight="1">
+                  {rate}×
+                </Text>
+              </IconButton>
+            </Menu.Trigger>
+            <Menu.Positioner>
+              <Menu.Content minW="24" borderRadius="lg" py={1}>
+                {RATES.map((r) => (
+                  <Menu.Item
+                    key={r}
+                    value={String(r)}
+                    borderRadius="md"
+                    onClick={() => {
+                      setRate(r)
+                      rateRef.current = r
+                      persistPlayback(
+                        audioRef.current?.currentTime ?? 0,
+                        r,
+                        true,
+                      )
+                      flashHud({ kind: "rate", detail: `${r}×` })
+                      // Defer so the menu can close, then drop focus off the trigger/items.
+                      window.setTimeout(() => focusPlayerChrome(), 0)
+                    }}
+                  >
+                    {r}×
+                  </Menu.Item>
+                ))}
+              </Menu.Content>
+            </Menu.Positioner>
+          </Menu.Root>
 
-        <Menu.Root>
-          <Menu.Trigger asChild>
+          <Box
+            position="relative"
+            onMouseEnter={() => setShowVolume(true)}
+            onMouseLeave={() => setShowVolume(false)}
+            data-testid="audio-volume-wrap"
+          >
             <IconButton
               {...chromeIconProps}
-              minW={{ base: "11", md: "10" }}
-              px={2}
-              aria-label="سرعة التشغيل"
+              aria-label={
+                muted || volume === 0 ? "إلغاء كتم الصوت" : "كتم الصوت"
+              }
               disabled={!audioUrl}
-              data-testid="audio-rate"
+              onClick={() => {
+                toggleMute(true)
+                focusPlayerChrome()
+              }}
+              data-testid="audio-mute"
             >
-              <Text fontSize="xs" fontWeight="bold" lineHeight="1">
-                {rate}×
-              </Text>
+              {muted || volume === 0 ? (
+                <VolumeX size={22} />
+              ) : (
+                <Volume2 size={22} />
+              )}
             </IconButton>
-          </Menu.Trigger>
-          <Menu.Positioner>
-            <Menu.Content minW="24" borderRadius="lg" py={1}>
-              {RATES.map((r) => (
-                <Menu.Item
-                  key={r}
-                  value={String(r)}
-                  borderRadius="md"
-                  onClick={() => {
-                    setRate(r)
-                    rateRef.current = r
-                    persistPlayback(audioRef.current?.currentTime ?? 0, r, true)
-                    flashHud({ kind: "rate", detail: `${r}×` })
-                    // Defer so the menu can close, then drop focus off the trigger/items.
-                    window.setTimeout(() => focusPlayerChrome(), 0)
-                  }}
-                >
-                  {r}×
-                </Menu.Item>
-              ))}
-            </Menu.Content>
-          </Menu.Positioner>
-        </Menu.Root>
-
-        <Box
-          position="relative"
-          onMouseEnter={() => setShowVolume(true)}
-          onMouseLeave={() => setShowVolume(false)}
-          data-testid="audio-volume-wrap"
-        >
-          <IconButton
-            {...chromeIconProps}
-            aria-label={muted || volume === 0 ? "إلغاء كتم الصوت" : "كتم الصوت"}
-            disabled={!audioUrl}
-            onClick={() => {
-              toggleMute(true)
-              focusPlayerChrome()
-            }}
-            data-testid="audio-mute"
-          >
-            {muted || volume === 0 ? (
-              <VolumeX size={22} />
-            ) : (
-              <Volume2 size={22} />
-            )}
-          </IconButton>
-          {showVolume && audioUrl && (
-            <Box
-              position="absolute"
-              bottom="100%"
-              left="50%"
-              transform="translateX(-50%)"
-              // Padding bridges the gap so the cursor never "leaves" the hover zone.
-              pb={3}
-              pt={1}
-              px={1}
-              zIndex={2}
-              data-testid="audio-volume-bridge"
-            >
+            {showVolume && audioUrl && (
               <Box
-                bg="white"
-                boxShadow="lg"
-                borderRadius="lg"
-                px={3}
-                py={3}
-                data-testid="audio-volume-panel"
+                position="absolute"
+                bottom="100%"
+                left="50%"
+                transform="translateX(-50%)"
+                // Padding bridges the gap so the cursor never "leaves" the hover zone.
+                pb={3}
+                pt={1}
+                px={1}
+                zIndex={2}
+                data-testid="audio-volume-bridge"
               >
-                <Slider.Root
-                  height="28"
-                  orientation="vertical"
-                  min={0}
-                  max={100}
-                  value={[Math.round((muted ? 0 : volume) * 100)]}
-                  onValueChange={({ value }) => {
-                    const next = (value[0] ?? 0) / 100
-                    setVolume(next)
-                    setMuted(next === 0)
-                  }}
-                  onValueChangeEnd={() => focusPlayerChrome()}
+                <Box
+                  bg="white"
+                  boxShadow="lg"
+                  borderRadius="lg"
+                  px={3}
+                  py={3}
+                  data-testid="audio-volume-panel"
                 >
-                  <Slider.Control>
-                    <Slider.Track>
-                      <Slider.Range bg="brand.primary" />
-                    </Slider.Track>
-                    <Slider.Thumbs borderColor="brand.primary" />
-                  </Slider.Control>
-                </Slider.Root>
+                  <Slider.Root
+                    height="28"
+                    orientation="vertical"
+                    min={0}
+                    max={100}
+                    value={[Math.round((muted ? 0 : volume) * 100)]}
+                    onValueChange={({ value }) => {
+                      const next = (value[0] ?? 0) / 100
+                      setVolume(next)
+                      setMuted(next === 0)
+                    }}
+                    onValueChangeEnd={() => focusPlayerChrome()}
+                  >
+                    <Slider.Control>
+                      <Slider.Track>
+                        <Slider.Range bg="brand.primary" />
+                      </Slider.Track>
+                      <Slider.Thumbs borderColor="brand.primary" />
+                    </Slider.Control>
+                  </Slider.Root>
+                </Box>
               </Box>
-            </Box>
-          )}
-        </Box>
+            )}
+          </Box>
 
-        <PlayerShortcutsHelp
-          open={shortcutsOpen}
-          onOpenChange={setShortcutsOpen}
-        />
+          <PlayerShortcutsHelp
+            open={shortcutsOpen}
+            onOpenChange={setShortcutsOpen}
+          />
+        </Flex>
       </Flex>
     </Box>
   )

@@ -495,12 +495,17 @@ test.describe("course lesson player", () => {
     const { lessonId } = await openFirstLesson(page)
     await waitForAudioReady(page)
 
-    await page.evaluate((id) => {
-      localStorage.setItem(
-        `lesson_playback:${id}`,
-        JSON.stringify({ position: 45, rate: 1.5, updatedAt: Date.now() }),
-      )
-    }, lessonId)
+    // Seed on the next document load — pagehide on the current page would
+    // otherwise flush React's still-default rate/position over evaluate().
+    await page.addInitScript(
+      ({ id, position, rate }) => {
+        localStorage.setItem(
+          `lesson_playback:${id}`,
+          JSON.stringify({ position, rate, updatedAt: Date.now() }),
+        )
+      },
+      { id: lessonId, position: 45, rate: 1.5 },
+    )
 
     await page.reload()
     await expect(page.getByTestId("course-screen")).toBeVisible()
@@ -521,7 +526,8 @@ test.describe("course lesson player", () => {
     await openFirstLesson(page)
     await waitForAudioReady(page)
 
-    await page.evaluate(() => {
+    // Seed after navigation — pagehide flushes in-memory volume over evaluate().
+    await page.addInitScript(() => {
       localStorage.setItem(
         "audio_player_volume",
         JSON.stringify({ volume: 0.4, muted: true }),
