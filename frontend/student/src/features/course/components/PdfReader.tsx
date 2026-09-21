@@ -129,7 +129,7 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
         }
       }}
     >
-      <Flex justify="flex-end" mb={3} gap={3} flexWrap="wrap">
+      <Flex justify="flex-end" mb={{ base: 2, md: 3 }} gap={2} flexWrap="wrap">
         {status === "timeout" ? (
           <Button
             variant="ghost"
@@ -147,7 +147,7 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
           target="_blank"
           rel="noopener noreferrer"
           color="brand.primary"
-          fontSize="sm"
+          fontSize={{ base: "xs", md: "sm" }}
           textDecoration="underline"
           display="inline-flex"
           alignItems="center"
@@ -205,7 +205,7 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
         borderRadius="md"
         overflow="hidden"
         bg="gray.50"
-        minH={{ base: "420px", md: "560px" }}
+        minH={{ base: "min(70vh, 520px)", md: "560px" }}
         position="relative"
         display={status === "timeout" ? "none" : "block"}
       >
@@ -229,7 +229,12 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
           key={reloadKey}
           src={href}
           title={`قراءة ${title}`}
-          style={{ width: "100%", height: "560px", border: 0 }}
+          style={{
+            width: "100%",
+            height: "min(70vh, 520px)",
+            border: 0,
+            display: "block",
+          }}
           data-testid="pdf-reader-frame"
           onLoad={() => setStatus("ready")}
           onFocus={() => onFocusChangeRef.current?.(true)}

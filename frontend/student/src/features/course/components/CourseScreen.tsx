@@ -8,12 +8,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
-import {
-  MoveLeft,
-  MoveRight,
-  PanelLeftClose,
-  PanelLeftOpen,
-} from "lucide-react"
+import { MoveRight, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { useMemo, useRef, useState } from "react"
 
 import { useBook } from "@/features/books/api/useBook"
@@ -119,9 +114,9 @@ export default function CourseScreen() {
     <Box
       minH="100vh"
       dir="rtl"
-      px={{ lg: "16" }}
-      py={{ lg: "10" }}
-      pb={{ base: "40", lg: "36" }}
+      px={{ base: 0, lg: "16" }}
+      py={{ base: 2, lg: "10" }}
+      pb={{ base: "36", lg: "36" }}
       data-testid="course-screen"
       onPointerDown={(event) => {
         // PDF iframe swallows keyboard events; click outside restores shortcuts.
@@ -131,7 +126,11 @@ export default function CourseScreen() {
         }
       }}
     >
-      <Container maxW="container.lg" px={8} py={4}>
+      <Container
+        maxW="container.lg"
+        px={{ base: 3, lg: 8 }}
+        py={{ base: 2, lg: 4 }}
+      >
         <Flex
           display={{ base: "none", lg: "flex" }}
           direction="column"
@@ -168,13 +167,15 @@ export default function CourseScreen() {
           align="center"
           justify="space-between"
           gap={2}
-          mb={2}
-          px={0}
+          mb={1}
         >
           <Button
             variant="ghost"
             size="sm"
             color="brand.primary"
+            px={2}
+            h="10"
+            minH="10"
             onClick={goToBook}
             data-testid="back-to-book-mobile"
           >
@@ -185,6 +186,7 @@ export default function CourseScreen() {
         </Flex>
 
         <Breadcrumbs
+          compact
           breadcrumbs={[
             {
               label: programQuery.data?.title ?? "البرنامج",
@@ -211,61 +213,34 @@ export default function CourseScreen() {
         />
       </Container>
 
-      <Flex
-        mt={2}
-        display={{ base: "flex", lg: "none" }}
-        justify="space-between"
-        alignItems="center"
-        mb={6}
-        px={3}
-      >
-        <Button
-          variant="ghost"
-          size="sm"
-          color="brand.primary"
-          onClick={goPrev}
-          disabled={currentIndex <= 0}
-        >
-          <MoveRight size={20} />
-          <Text>السابق</Text>
-        </Button>
-        <Text
-          fontSize="xl"
-          fontWeight="semibold"
-          color="text.default"
-          textAlign="center"
-        >
-          {lessonLabel}
-        </Text>
-        <Button
-          variant="ghost"
-          size="sm"
-          color="brand.primary"
-          onClick={goNext}
-          disabled={currentIndex < 0 || currentIndex >= lessons.length - 1}
-        >
-          <Text>التالي</Text>
-          <MoveLeft size={20} />
-        </Button>
-      </Flex>
+      {/*
+        Mobile prev/next lives in the audio player — avoid a second chrome row
+        that pushes the PDF below the fold.
+      */}
 
       <Container
         bg="white"
-        w={{ base: "92%", lg: "100%" }}
+        w={{ base: "100%", lg: "100%" }}
         maxW={{ lg: "container.xl" }}
         mx="auto"
-        mt={{ lg: "8" }}
-        px={{ base: 4, md: 6 }}
-        py={6}
-        boxShadow="lg"
-        borderRadius={4}
+        mt={{ base: 2, lg: "8" }}
+        px={{ base: 3, md: 6 }}
+        py={{ base: 3, md: 6 }}
+        boxShadow={{ base: "sm", lg: "lg" }}
+        borderRadius={{ base: 0, lg: 4 }}
         data-testid="course-content"
       >
         {/* Tabs — mobile / tablet only */}
-        <Flex mb={6} gap={2} display={{ base: "flex", lg: "none" }}>
+        <Flex
+          mb={{ base: 3, lg: 6 }}
+          gap={2}
+          display={{ base: "flex", lg: "none" }}
+        >
           <Button
             size="sm"
             flex={1}
+            h="10"
+            minH="10"
             onClick={() => setActiveTab("book")}
             bg={activeTab === "book" ? "brand.primary" : "gray.100"}
             color={activeTab === "book" ? "white" : "gray.700"}
@@ -277,6 +252,8 @@ export default function CourseScreen() {
           <Button
             size="sm"
             flex={1}
+            h="10"
+            minH="10"
             onClick={() => setActiveTab("notes")}
             bg={activeTab === "notes" ? "brand.primary" : "gray.100"}
             color={activeTab === "notes" ? "white" : "gray.700"}
