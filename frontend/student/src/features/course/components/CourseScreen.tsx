@@ -19,6 +19,7 @@ import { useProgram } from "@/features/programs/api/useProgram"
 import { AppMenu } from "@/shared/components/AppMenu"
 import { Breadcrumbs } from "@/shared/components/BreadcrumbsNavigation"
 import { CourseSkeleton } from "@/shared/components/PageSkeletons"
+import { NOTES_FEATURE_ENABLED } from "../lib/featureFlags"
 import { saveLastLearningPath } from "../lib/lessonProgress"
 import {
   readNotesPaneOpen,
@@ -67,12 +68,15 @@ export default function CourseScreen() {
   const lesson = lessonQuery.data
   const bookTitle = bookQuery.data?.title ?? "الكتاب"
   const lessonLabel =
-    currentIndex >= 0 ? `الدرس ${lessons[currentIndex].order + 1}` : "الدرس"
+    currentIndex >= 0 ? `المقرر ${lessons[currentIndex].order + 1}` : "المقرر"
   const phaseLabel =
     phaseQuery.data != null ? `المرحلة ${phaseQuery.data.order + 1}` : "المرحلة"
 
   const pdfUrl =
     lesson?.book_part_pdf?.trim() || bookQuery.data?.pdf?.trim() || null
+
+  const showNotes = NOTES_FEATURE_ENABLED
+  const notesOpen = showNotes && notesPaneOpen
 
   const goToLesson = (lessonId: string) => {
     if (!programId || !phaseId || !bookId) return
@@ -111,7 +115,7 @@ export default function CourseScreen() {
   if (lessonQuery.isError || !lesson) {
     return (
       <Text dir="rtl" p={8} color="red.500">
-        تعذر تحميل الدرس.
+        تعذر تحميل المقرر.
       </Text>
     )
   }
@@ -211,7 +215,7 @@ export default function CourseScreen() {
               isCurrent: true,
               hasDropdown: true,
               options: lessons.map((item) => ({
-                label: `الدرس ${item.order + 1}`,
+                label: `المقرر ${item.order + 1}`,
                 url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/${item.id}`,
               })),
             },
@@ -236,106 +240,106 @@ export default function CourseScreen() {
         borderRadius={{ base: 0, lg: 4 }}
         data-testid="course-content"
       >
-        {/* Tabs — mobile / tablet only */}
-        <Flex
-          mb={{ base: 3, lg: 6 }}
-          gap={2}
-          display={{ base: "flex", lg: "none" }}
-        >
-          <Button
-            size="sm"
-            flex={1}
-            h="10"
-            minH="10"
-            onClick={() => setActiveTab("book")}
-            bg={activeTab === "book" ? "brand.primary" : "gray.100"}
-            color={activeTab === "book" ? "white" : "gray.700"}
-            borderRadius="lg"
-            data-testid="tab-book"
+        {/* Tabs — mobile / tablet only, when notes are enabled */}
+        {showNotes ? (
+          <Flex
+            mb={{ base: 3, lg: 6 }}
+            gap={2}
+            display={{ base: "flex", lg: "none" }}
           >
-            الكتاب
-          </Button>
-          <Button
-            size="sm"
-            flex={1}
-            h="10"
-            minH="10"
-            onClick={() => setActiveTab("notes")}
-            bg={activeTab === "notes" ? "brand.primary" : "gray.100"}
-            color={activeTab === "notes" ? "white" : "gray.700"}
-            borderRadius="lg"
-            data-testid="tab-notes"
-          >
-            الملاحظات
-          </Button>
-        </Flex>
+            <Button
+              size="sm"
+              flex={1}
+              h="10"
+              minH="10"
+              onClick={() => setActiveTab("book")}
+              bg={activeTab === "book" ? "brand.primary" : "gray.100"}
+              color={activeTab === "book" ? "white" : "gray.700"}
+              borderRadius="lg"
+              data-testid="tab-book"
+            >
+              الكتاب
+            </Button>
+            <Button
+              size="sm"
+              flex={1}
+              h="10"
+              minH="10"
+              onClick={() => setActiveTab("notes")}
+              bg={activeTab === "notes" ? "brand.primary" : "gray.100"}
+              color={activeTab === "notes" ? "white" : "gray.700"}
+              borderRadius="lg"
+              data-testid="tab-notes"
+            >
+              الملاحظات
+            </Button>
+          </Flex>
+        ) : null}
 
         {/*
-          Desktop (lg+): PDF | notes side-by-side (RTL → PDF on the right).
-          Notes column can collapse so the PDF goes full width.
-          Mobile: one panel at a time via tabs.
+          Desktop (lg+): PDF | notes side-by-side when notes enabled
+          (RTL → PDF on the right). Otherwise PDF full width.
+          Mobile: tabs when notes enabled; otherwise PDF only.
         */}
         <Flex
           direction={{ base: "column", lg: "row" }}
           align={{ base: "stretch", lg: "flex-start" }}
-          gap={{ base: 0, lg: notesPaneOpen ? 8 : 0 }}
+          gap={{ base: 0, lg: notesOpen ? 8 : 0 }}
           data-testid="course-split"
-          data-notes-open={notesPaneOpen ? "true" : "false"}
+          data-notes-open={notesOpen ? "true" : "false"}
         >
           <Box
-            flex={{ lg: notesPaneOpen ? "1.55" : "1" }}
+            flex={{ lg: notesOpen ? "1.55" : "1" }}
             minW={0}
-            w={{ lg: notesPaneOpen ? "auto" : "full" }}
+            w={{ lg: notesOpen ? "auto" : "full" }}
             display={{
-              base: activeTab === "book" ? "block" : "none",
+              base: !showNotes || activeTab === "book" ? "block" : "none",
               lg: "block",
             }}
             data-testid="tab-panel-book"
           >
-            <Flex
-              display={{ base: "none", lg: "flex" }}
-              align="center"
-              justify="space-between"
-              gap={3}
-              mb={3}
-            >
-              <Text
-                fontSize="sm"
-                fontWeight="semibold"
-                color="brand.primary"
-                textAlign="right"
+            {showNotes ? (
+              <Flex
+                display={{ base: "none", lg: "flex" }}
+                align="center"
+                justify="space-between"
+                gap={3}
+                mb={3}
               >
-                الكتاب
-              </Text>
-              {/*
-                Second child lands on the inline-end (left): the seam beside
-                the notes column, not the outer edge of that column.
-              */}
-              {notesPaneOpen ? (
-                <IconButton
-                  variant="ghost"
-                  size="sm"
-                  color="brand.secondary"
-                  aria-label="إخفاء الملاحظات"
-                  title="إخفاء الملاحظات"
-                  onClick={() => setNotesOpen(false)}
-                  data-testid="notes-pane-collapse"
-                >
-                  <PanelLeftClose size={18} />
-                </IconButton>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <Text
+                  fontSize="sm"
+                  fontWeight="semibold"
                   color="brand.primary"
-                  onClick={() => setNotesOpen(true)}
-                  data-testid="notes-pane-expand"
+                  textAlign="right"
                 >
-                  <PanelLeftOpen size={16} />
-                  إظهار الملاحظات
-                </Button>
-              )}
-            </Flex>
+                  الكتاب
+                </Text>
+                {notesPaneOpen ? (
+                  <IconButton
+                    variant="ghost"
+                    size="sm"
+                    color="brand.secondary"
+                    aria-label="إخفاء الملاحظات"
+                    title="إخفاء الملاحظات"
+                    onClick={() => setNotesOpen(false)}
+                    data-testid="notes-pane-collapse"
+                  >
+                    <PanelLeftClose size={18} />
+                  </IconButton>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    color="brand.primary"
+                    onClick={() => setNotesOpen(true)}
+                    data-testid="notes-pane-expand"
+                  >
+                    <PanelLeftOpen size={16} />
+                    إظهار الملاحظات
+                  </Button>
+                )}
+              </Flex>
+            ) : null}
             <PdfReader
               url={pdfUrl}
               title={bookTitle}
@@ -343,48 +347,52 @@ export default function CourseScreen() {
             />
           </Box>
 
-          <Box
-            flex={{ lg: "1" }}
-            minW={{ lg: "280px" }}
-            maxW={{ lg: "420px" }}
-            w={{ lg: "38%" }}
-            display={{
-              base: activeTab === "notes" ? "block" : "none",
-              lg: notesPaneOpen ? "block" : "none",
-            }}
-            borderStartWidth={{ lg: "1px" }}
-            borderColor={{ lg: "gray.100" }}
-            ps={{ lg: 6 }}
-            data-testid="tab-panel-notes"
-          >
+          {showNotes ? (
             <Box
-              position={{ lg: "sticky" }}
-              top={{ lg: 4 }}
-              maxH={{ lg: "calc(100vh - 11rem)" }}
-              overflowY={{ lg: "auto" }}
-              overscrollBehavior="contain"
-              pe={{ lg: 1 }}
+              flex={{ lg: "1" }}
+              minW={{ lg: "280px" }}
+              maxW={{ lg: "420px" }}
+              w={{ lg: "38%" }}
+              display={{
+                base: activeTab === "notes" ? "block" : "none",
+                lg: notesPaneOpen ? "block" : "none",
+              }}
+              borderStartWidth={{ lg: "1px" }}
+              borderColor={{ lg: "gray.100" }}
+              ps={{ lg: 6 }}
+              data-testid="tab-panel-notes"
             >
-              <Text
-                display={{ base: "none", lg: "block" }}
-                fontSize="sm"
-                fontWeight="semibold"
-                color="brand.primary"
-                mb={3}
-                textAlign="right"
+              <Box
+                position={{ lg: "sticky" }}
+                top={{ lg: 4 }}
+                maxH={{ lg: "calc(100vh - 11rem)" }}
+                overflowY={{ lg: "auto" }}
+                overscrollBehavior="contain"
+                pe={{ lg: 1 }}
               >
-                الملاحظات
-              </Text>
-              <LessonNotes
-                lessonId={lesson.id}
-                explanationNotes={lesson.explanation_notes}
-                getCurrentTime={() =>
-                  playbackApiRef.current?.getCurrentTime() ?? 0
-                }
-                onSeekTo={(seconds) => playbackApiRef.current?.seekTo(seconds)}
-              />
+                <Text
+                  display={{ base: "none", lg: "block" }}
+                  fontSize="sm"
+                  fontWeight="semibold"
+                  color="brand.primary"
+                  mb={3}
+                  textAlign="right"
+                >
+                  الملاحظات
+                </Text>
+                <LessonNotes
+                  lessonId={lesson.id}
+                  explanationNotes={lesson.explanation_notes}
+                  getCurrentTime={() =>
+                    playbackApiRef.current?.getCurrentTime() ?? 0
+                  }
+                  onSeekTo={(seconds) =>
+                    playbackApiRef.current?.seekTo(seconds)
+                  }
+                />
+              </Box>
             </Box>
-          </Box>
+          ) : null}
         </Flex>
       </Container>
 
@@ -432,7 +440,7 @@ export default function CourseScreen() {
           hasPrevLesson={currentIndex > 0}
           hasNextLesson={currentIndex >= 0 && currentIndex < lessons.length - 1}
           onOpenLessonList={() => setLessonListOpen(true)}
-          playbackApiRef={playbackApiRef}
+          playbackApiRef={showNotes ? playbackApiRef : undefined}
         />
       </Box>
 

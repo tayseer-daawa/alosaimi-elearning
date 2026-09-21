@@ -156,6 +156,8 @@ export default function AudioPlayer({
   playbackApiRef,
 }: AudioPlayerProps) {
   const labelId = useId()
+  /** Visible skip on every viewport — ±10 (podcast habit). Arrows still ±5. */
+  const skipSeconds = JL_SEEK
   const audioRef = useRef<HTMLAudioElement>(null)
   const playerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -901,7 +903,7 @@ export default function AudioPlayer({
         <IconButton
           {...chromeIconProps}
           color="brand.primary"
-          aria-label="الدرس السابق"
+          aria-label="المقرر السابق"
           disabled={!hasPrevLesson}
           onClick={onPrevLesson}
           data-testid="audio-prev-lesson"
@@ -919,9 +921,9 @@ export default function AudioPlayer({
           maxW={{ base: "72%", md: "md" }}
           onClick={onOpenLessonList}
           disabled={!onOpenLessonList}
-          aria-label={`قائمة الدروس — ${title}`}
+          aria-label={`قائمة المقررات — ${title}`}
           data-testid="lesson-list-open"
-          title="فتح قائمة الدروس"
+          title="فتح قائمة المقررات"
         >
           <Flex align="center" gap={1.5} minW={0}>
             <Text
@@ -941,7 +943,7 @@ export default function AudioPlayer({
         <IconButton
           {...chromeIconProps}
           color="brand.primary"
-          aria-label="الدرس التالي"
+          aria-label="المقرر التالي"
           disabled={!hasNextLesson}
           onClick={onNextLesson}
           data-testid="audio-next-lesson"
@@ -958,7 +960,7 @@ export default function AudioPlayer({
           mb={2}
           data-testid="audio-player-empty"
         >
-          لا يتوفر تسجيل صوتي لهذا الدرس.
+          لا يتوفر تسجيل صوتي لهذا المقرر.
         </Text>
       )}
 
@@ -1029,21 +1031,9 @@ export default function AudioPlayer({
         dir="ltr"
         alignItems="center"
         columnGap={{ base: 2, md: 4 }}
-        rowGap={{ base: 1, md: 0 }}
-        gridTemplateColumns={{
-          base: "auto 1fr auto",
-          md: "auto auto 1fr auto auto auto auto",
-        }}
-        gridTemplateAreas={{
-          base: `
-            "cur seek dur"
-            "rate transport mute"
-          `,
-          md: `"play cur seek dur rate mute help"`,
-        }}
+        gridTemplateColumns="auto 1fr auto"
       >
         <Text
-          gridArea="cur"
           fontSize="xs"
           color="brand.secondary"
           minW={{ base: "10", md: "14" }}
@@ -1055,7 +1045,7 @@ export default function AudioPlayer({
           {formatTime(displayTime)}
         </Text>
 
-        <Box gridArea="seek" minW={0} py={{ base: 2, md: 2 }}>
+        <Box minW={0} py={{ base: 1, md: 1 }}>
           <Slider.Root
             min={0}
             max={duration > 0 ? duration : 1}
@@ -1126,7 +1116,6 @@ export default function AudioPlayer({
         </Box>
 
         <Text
-          gridArea="dur"
           fontSize="xs"
           color="brand.secondary"
           minW={{ base: "12", md: "14" }}
@@ -1137,161 +1126,157 @@ export default function AudioPlayer({
         >
           {formatTime(duration)}
         </Text>
+      </Box>
 
-        {/* Mobile: ±10s around play. Desktop: play alone in its column. */}
-        <Flex
-          gridArea={{ base: "transport", md: "play" }}
-          align="center"
-          justify="center"
-          gap={2}
-          flexShrink={0}
+      {/*
+        One centered cluster under the seek bar: rate · ±10 · play · mute/help.
+        Keep side actions next to transport — not pinned to the screen edges.
+      */}
+      <Flex
+        dir="ltr"
+        align="center"
+        justify="center"
+        gap={{ base: 1.5, md: 2 }}
+        mt={{ base: 0.5, md: 1 }}
+        flexWrap="wrap"
+      >
+        <Menu.Root>
+          <Menu.Trigger asChild>
+            <IconButton
+              {...chromeIconProps}
+              minW={{ base: "11", md: "10" }}
+              px={2}
+              aria-label="سرعة التشغيل"
+              disabled={!audioUrl}
+              data-testid="audio-rate"
+            >
+              <Text fontSize="xs" fontWeight="bold" lineHeight="1">
+                {rate}×
+              </Text>
+            </IconButton>
+          </Menu.Trigger>
+          <Menu.Positioner>
+            <Menu.Content minW="24" borderRadius="lg" py={1}>
+              {RATES.map((r) => (
+                <Menu.Item
+                  key={r}
+                  value={String(r)}
+                  borderRadius="md"
+                  onClick={() => {
+                    setRate(r)
+                    rateRef.current = r
+                    persistPlayback(audioRef.current?.currentTime ?? 0, r, true)
+                    flashHud({ kind: "rate", detail: `${r}×` })
+                    // Defer so the menu can close, then drop focus off the trigger/items.
+                    window.setTimeout(() => focusPlayerChrome(), 0)
+                  }}
+                >
+                  {r}×
+                </Menu.Item>
+              ))}
+            </Menu.Content>
+          </Menu.Positioner>
+        </Menu.Root>
+
+        <IconButton
+          {...chromeIconProps}
+          h={{ base: "12", md: "8" }}
+          minH={{ base: "12", md: "8" }}
+          minW={{ base: "12", md: "8" }}
+          aria-label={`ترجيع ${skipSeconds} ثوانٍ`}
+          disabled={!audioUrl}
+          onClick={() => {
+            seekBy(-skipSeconds)
+            flashHud({
+              kind: "seek-back",
+              detail: seekHudDetail(-skipSeconds),
+            })
+            focusPlayerChrome()
+          }}
+          data-testid="audio-skip-back"
         >
-          <IconButton
-            {...chromeIconProps}
-            display={{ base: "inline-flex", md: "none" }}
-            h="12"
-            minH="12"
-            minW="12"
-            aria-label={`ترجيع ${JL_SEEK} ثوانٍ`}
-            disabled={!audioUrl}
-            onClick={() => {
-              seekBy(-JL_SEEK)
-              flashHud({
-                kind: "seek-back",
-                detail: seekHudDetail(-JL_SEEK),
-              })
-              focusPlayerChrome()
-            }}
-            data-testid="audio-skip-back"
-          >
-            <Flex direction="column" align="center" justify="center" gap={0.5}>
-              <RotateCcw size={18} strokeWidth={2.25} aria-hidden />
-              <Text
-                as="span"
-                fontSize="2xs"
-                fontWeight="bold"
-                lineHeight="1"
-                fontVariantNumeric="tabular-nums"
-              >
-                {JL_SEEK}
-              </Text>
-            </Flex>
-          </IconButton>
+          <Flex direction="column" align="center" justify="center" gap={0.5}>
+            <RotateCcw size={18} strokeWidth={2.25} aria-hidden />
+            <Text
+              as="span"
+              fontSize="2xs"
+              fontWeight="bold"
+              lineHeight="1"
+              fontVariantNumeric="tabular-nums"
+            >
+              {skipSeconds}
+            </Text>
+          </Flex>
+        </IconButton>
 
-          <IconButton
-            aria-label={
-              isBuffering ? "جاري التحميل" : isPlaying ? "إيقاف مؤقت" : "تشغيل"
-            }
-            bg="brand.secondary"
-            color="white"
-            borderRadius="full"
-            boxSize={{ base: 12, md: 10 }}
-            minW={{ base: 12, md: 10 }}
-            disabled={!audioUrl}
-            onClick={() => void togglePlay()}
-            _hover={{ opacity: 0.9 }}
-            data-testid="audio-play-pause"
-          >
-            {isBuffering ? (
-              <Box
-                display="inline-flex"
-                animation="spin 0.9s linear infinite"
-                css={{
-                  "@keyframes spin": {
-                    from: { transform: "rotate(0deg)" },
-                    to: { transform: "rotate(360deg)" },
-                  },
-                }}
-              >
-                <RefreshCw size={20} />
-              </Box>
-            ) : isPlaying ? (
-              <Pause size={20} fill="white" />
-            ) : (
-              <Play size={20} fill="white" />
-            )}
-          </IconButton>
+        <IconButton
+          aria-label={
+            isBuffering ? "جاري التحميل" : isPlaying ? "إيقاف مؤقت" : "تشغيل"
+          }
+          bg="brand.secondary"
+          color="white"
+          borderRadius="full"
+          boxSize={{ base: 12, md: 12 }}
+          minW={{ base: 12, md: 12 }}
+          disabled={!audioUrl}
+          onClick={() => void togglePlay()}
+          _hover={{ opacity: 0.9 }}
+          data-testid="audio-play-pause"
+        >
+          {isBuffering ? (
+            <Box
+              display="inline-flex"
+              animation="spin 0.9s linear infinite"
+              css={{
+                "@keyframes spin": {
+                  from: { transform: "rotate(0deg)" },
+                  to: { transform: "rotate(360deg)" },
+                },
+              }}
+            >
+              <RefreshCw size={20} />
+            </Box>
+          ) : isPlaying ? (
+            <Pause size={20} fill="white" />
+          ) : (
+            <Play size={20} fill="white" />
+          )}
+        </IconButton>
 
-          <IconButton
-            {...chromeIconProps}
-            display={{ base: "inline-flex", md: "none" }}
-            h="12"
-            minH="12"
-            minW="12"
-            aria-label={`تقديم ${JL_SEEK} ثوانٍ`}
-            disabled={!audioUrl}
-            onClick={() => {
-              seekBy(JL_SEEK)
-              flashHud({
-                kind: "seek-forward",
-                detail: seekHudDetail(JL_SEEK),
-              })
-              focusPlayerChrome()
-            }}
-            data-testid="audio-skip-forward"
-          >
-            <Flex direction="column" align="center" justify="center" gap={0.5}>
-              <RotateCw size={18} strokeWidth={2.25} aria-hidden />
-              <Text
-                as="span"
-                fontSize="2xs"
-                fontWeight="bold"
-                lineHeight="1"
-                fontVariantNumeric="tabular-nums"
-              >
-                {JL_SEEK}
-              </Text>
-            </Flex>
-          </IconButton>
-        </Flex>
+        <IconButton
+          {...chromeIconProps}
+          h={{ base: "12", md: "8" }}
+          minH={{ base: "12", md: "8" }}
+          minW={{ base: "12", md: "8" }}
+          aria-label={`تقديم ${skipSeconds} ثوانٍ`}
+          disabled={!audioUrl}
+          onClick={() => {
+            seekBy(skipSeconds)
+            flashHud({
+              kind: "seek-forward",
+              detail: seekHudDetail(skipSeconds),
+            })
+            focusPlayerChrome()
+          }}
+          data-testid="audio-skip-forward"
+        >
+          <Flex direction="column" align="center" justify="center" gap={0.5}>
+            <RotateCw size={18} strokeWidth={2.25} aria-hidden />
+            <Text
+              as="span"
+              fontSize="2xs"
+              fontWeight="bold"
+              lineHeight="1"
+              fontVariantNumeric="tabular-nums"
+            >
+              {skipSeconds}
+            </Text>
+          </Flex>
+        </IconButton>
 
-        <Box gridArea="rate" justifySelf={{ base: "start", md: "center" }}>
-          <Menu.Root>
-            <Menu.Trigger asChild>
-              <IconButton
-                {...chromeIconProps}
-                minW={{ base: "11", md: "10" }}
-                px={2}
-                aria-label="سرعة التشغيل"
-                disabled={!audioUrl}
-                data-testid="audio-rate"
-              >
-                <Text fontSize="xs" fontWeight="bold" lineHeight="1">
-                  {rate}×
-                </Text>
-              </IconButton>
-            </Menu.Trigger>
-            <Menu.Positioner>
-              <Menu.Content minW="24" borderRadius="lg" py={1}>
-                {RATES.map((r) => (
-                  <Menu.Item
-                    key={r}
-                    value={String(r)}
-                    borderRadius="md"
-                    onClick={() => {
-                      setRate(r)
-                      rateRef.current = r
-                      persistPlayback(
-                        audioRef.current?.currentTime ?? 0,
-                        r,
-                        true,
-                      )
-                      flashHud({ kind: "rate", detail: `${r}×` })
-                      // Defer so the menu can close, then drop focus off the trigger/items.
-                      window.setTimeout(() => focusPlayerChrome(), 0)
-                    }}
-                  >
-                    {r}×
-                  </Menu.Item>
-                ))}
-              </Menu.Content>
-            </Menu.Positioner>
-          </Menu.Root>
-        </Box>
-
-        <Box
-          gridArea="mute"
-          justifySelf={{ base: "end", md: "center" }}
+        <Flex
+          align="center"
+          gap={1}
           position="relative"
           onMouseEnter={() => setShowVolume(true)}
           onMouseLeave={() => setShowVolume(false)}
@@ -1357,15 +1342,14 @@ export default function AudioPlayer({
               </Box>
             </Box>
           )}
-        </Box>
-
-        <Box gridArea="help" display={{ base: "none", md: "block" }}>
-          <PlayerShortcutsHelp
-            open={shortcutsOpen}
-            onOpenChange={setShortcutsOpen}
-          />
-        </Box>
-      </Box>
+          <Box display={{ base: "none", md: "block" }}>
+            <PlayerShortcutsHelp
+              open={shortcutsOpen}
+              onOpenChange={setShortcutsOpen}
+            />
+          </Box>
+        </Flex>
+      </Flex>
     </Box>
   )
 }
