@@ -432,6 +432,10 @@ test.describe("course lesson player", () => {
     await expect
       .poll(async () => (await audioState(page))?.volume ?? 1)
       .toBeLessThan(before)
+    await expect(page.getByTestId("player-action-hud")).toContainText(
+      "مستوى الصوت",
+    )
+    await expect(page.getByTestId("player-action-hud-detail")).toBeVisible()
 
     // Leaving the volume wrap closes the panel.
     await page.getByTestId("audio-play-pause").hover()
@@ -522,6 +526,39 @@ test.describe("course lesson player", () => {
         }),
       )
       .toBe(false)
+  })
+
+  test("unmute restores audible level after volume was zeroed", async ({
+    page,
+  }) => {
+    await openFirstLesson(page)
+    await waitForAudioReady(page)
+
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        "audio_player_volume",
+        JSON.stringify({ volume: 0, muted: true }),
+      )
+    })
+    await page.reload()
+    await expect(page.getByTestId("course-screen")).toBeVisible()
+    await waitForAudioReady(page)
+
+    await expect(page.getByTestId("audio-mute")).toHaveAttribute(
+      "aria-label",
+      "إلغاء كتم الصوت",
+    )
+    await page.getByTestId("audio-mute").click()
+    await expect(page.getByTestId("player-action-hud")).toContainText(
+      "الصوت مفعّل",
+    )
+    await expect
+      .poll(async () => (await audioState(page))?.volume ?? 0)
+      .toBeGreaterThan(0)
+    await expect(page.getByTestId("audio-mute")).toHaveAttribute(
+      "aria-label",
+      "كتم الصوت",
+    )
   })
 
   test("lesson drawer shows resume and completion toggles", async ({
