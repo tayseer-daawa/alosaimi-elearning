@@ -84,7 +84,9 @@ def seed_content(
     _ensure_orphan_book(session=session, verbose=verbose)
 
     if primary is None or primary_first_book is None:
-        logger.warning("skip session/exam — primary program %r missing", PRIMARY_PROGRAM_TITLE)
+        logger.warning(
+            "skip session/exam — primary program %r missing", PRIMARY_PROGRAM_TITLE
+        )
         return
 
     first_lessons = crud.get_lessons_by_book(
@@ -119,25 +121,23 @@ def seed_content(
 def _ensure_program(
     *, session: Session, spec: SeedProgramSpec, verbose: bool
 ) -> Program:
-    existing = session.exec(
-        select(Program).where(Program.title == spec.title)
-    ).first()
+    existing = session.exec(select(Program).where(Program.title == spec.title)).first()
     if existing:
         if verbose:
             logger.info("skip program %r", spec.title)
         return existing
     program = crud.create_program(
         session=session,
-        program_in=ProgramCreate(
-            title=spec.title, days_of_study=spec.days_of_study
-        ),
+        program_in=ProgramCreate(title=spec.title, days_of_study=spec.days_of_study),
     )
     if verbose:
         logger.info("created program %r", spec.title)
     return program
 
 
-def _ensure_phase(*, session: Session, program: Program, order: int, verbose: bool) -> Phase:
+def _ensure_phase(
+    *, session: Session, program: Program, order: int, verbose: bool
+) -> Phase:
     phases = crud.get_phases_by_program(session=session, program_id=program.id)
     for phase in phases:
         if phase.order == order:
@@ -286,9 +286,7 @@ def _ensure_lessons_and_questions(
                     ),
                 )
                 if verbose:
-                    logger.info(
-                        "refreshed lesson order=%s on %r", order, book.title
-                    )
+                    logger.info("refreshed lesson order=%s on %r", order, book.title)
             elif verbose:
                 logger.info("skip lesson order=%s on %r", order, book.title)
         else:
@@ -325,7 +323,9 @@ def _ensure_questions(
     existing = crud.get_questions_by_lesson(session=session, lesson_id=lesson.id)
     if len(existing) >= count:
         if verbose:
-            logger.info("skip questions for lesson %s (have %s)", lesson.id, len(existing))
+            logger.info(
+                "skip questions for lesson %s (have %s)", lesson.id, len(existing)
+            )
         return
     for i in range(len(existing), count):
         crud.create_question(
