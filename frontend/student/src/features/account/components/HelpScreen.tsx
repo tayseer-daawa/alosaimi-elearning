@@ -12,7 +12,7 @@ export default function HelpScreen() {
           textAlign="right"
           mb={6}
         >
-          إذا واجهت مشكلة في الدخول أو تشغيل الدروس، تواصل مع فريق الدعم
+          إذا واجهت مشكلة في الدخول أو تشغيل المقررات، تواصل مع فريق الدعم
           وسنساعدك في أقرب وقت ممكن.
         </Text>
         <Text fontSize="sm" color="gray.500" mb={1} textAlign="right">

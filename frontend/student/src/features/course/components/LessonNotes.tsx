@@ -230,7 +230,7 @@ export function LessonNotes({
         value={draft}
         onChange={(e) => applyDraft(e.target.value)}
         onBlur={() => flushSave(lessonId, draftRef.current)}
-        placeholder="اكتب ملاحظاتك على هذا الدرس…"
+        placeholder="اكتب ملاحظاتك على هذا المقرر…"
         minH={{ base: "180px", lg: "280px" }}
         resize="vertical"
         bg="white"

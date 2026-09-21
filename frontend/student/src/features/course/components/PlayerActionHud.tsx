@@ -39,8 +39,8 @@ const LABELS: Record<PlayerHudKind, string> = {
   "seek-back": "ترجيع",
   "seek-forward": "تقديم",
   volume: "مستوى الصوت",
-  "next-lesson": "الدرس التالي",
-  "prev-lesson": "الدرس السابق",
+  "next-lesson": "المقرر التالي",
+  "prev-lesson": "المقرر السابق",
   rate: "سرعة التشغيل",
 }
 
