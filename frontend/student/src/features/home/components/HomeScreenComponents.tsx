@@ -21,6 +21,10 @@ interface ProgramSummary {
 interface HomeScreenProps {
   allPrograms?: ProgramSummary[]
   userName?: string
+  /** True when this device has a saved last lesson path. */
+  continueMode?: boolean
+  continueTitle?: string
+  continueSubtitle?: string
   onContinueLearning?: () => void
   onViewAllPrograms?: () => void
 }
@@ -28,11 +32,18 @@ interface HomeScreenProps {
 export default function HomeScreenComponents({
   allPrograms = [],
   userName = "الطالب",
+  continueMode = false,
+  continueTitle,
+  continueSubtitle,
   onContinueLearning,
   onViewAllPrograms,
 }: HomeScreenProps) {
   const featured = allPrograms[0]
   const totalPrograms = allPrograms.length
+  const cardTitle = continueTitle || featured?.title || "لا توجد برامج بعد"
+  const cardSubtitle = continueSubtitle || featured?.subtitle
+  const eyebrow = continueMode ? "متابعة التعلم" : "ابدأ من هنا"
+  const ctaLabel = continueMode ? "متابعة الدرس" : "ابدأ التعلم"
 
   return (
     <Box
@@ -107,7 +118,7 @@ export default function HomeScreenComponents({
                   fontWeight="600"
                   letterSpacing="0.5px"
                 >
-                  ابدأ من هنا
+                  {eyebrow}
                 </Text>
 
                 <Heading
@@ -116,16 +127,16 @@ export default function HomeScreenComponents({
                   lineHeight="1.2"
                   fontWeight="700"
                 >
-                  {featured?.title || "لا توجد برامج بعد"}
+                  {cardTitle}
                 </Heading>
 
-                {featured?.subtitle ? (
+                {cardSubtitle ? (
                   <Text
                     fontSize={{ base: "md", lg: "xl" }}
                     color="brand.secondary"
                     fontWeight="500"
                   >
-                    {featured.subtitle}
+                    {cardSubtitle}
                   </Text>
                 ) : null}
               </VStack>
@@ -157,9 +168,7 @@ export default function HomeScreenComponents({
               }}
             >
               <Flex align="center" gap={3}>
-                <Text fontSize={{ base: "lg", lg: "2xl" }}>
-                  استعرض البرنامج
-                </Text>
+                <Text fontSize={{ base: "lg", lg: "2xl" }}>{ctaLabel}</Text>
                 <Icon as={MoveLeft} boxSize={{ base: 5, lg: 7 }} />
               </Flex>
             </Button>

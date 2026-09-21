@@ -128,6 +128,9 @@ A checklist of improvements that fit **مهمات العلم–style** platforms
 | --- | --- | --- |
 | Program → phase → book → lesson | Done | Real Arabic titles |
 | Continue learning | Done (beta) | Last opened path in `localStorage`; API/enrollment later |
+| Lesson list badges (مكتمل / جارٍ) | Done (beta) | Device-local from `lesson_completed` / `lesson_playback` |
+| Phase book chip «آخر درس» | Done (beta) | Highlights `continue_learning_path.bookId` only |
+| Program card progress bars | Deferred | No cheap aggregate without scanning all lessons |
 | Search متون / lessons | Todo | Arabic-aware search |
 | Favorites / pinned books | Todo | |
 | Recently played | Todo | |
@@ -157,8 +160,8 @@ A checklist of improvements that fit **مهمات العلم–style** platforms
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Per-lesson complete | Local partial | API next |
-| Per-book / phase progress | Todo | |
+| Per-lesson complete | Done (beta) | Local + badges on book lesson list |
+| Per-book / phase progress % | Todo | Needs lesson-id aggregation or API |
 | Streaks | Optional | Easy to get gimmicky — use lightly |
 | Certificates | Later | After trustworthy completion rules |
 | Notifications (lesson / exam) | Later | Email first; push optional |
