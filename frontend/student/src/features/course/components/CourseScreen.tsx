@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { MoveRight, PanelLeftClose, PanelLeftOpen } from "lucide-react"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { useBook } from "@/features/books/api/useBook"
 import { useLesson } from "@/features/books/api/useLesson"
@@ -19,6 +19,7 @@ import { useProgram } from "@/features/programs/api/useProgram"
 import { AppMenu } from "@/shared/components/AppMenu"
 import { Breadcrumbs } from "@/shared/components/BreadcrumbsNavigation"
 import { CourseSkeleton } from "@/shared/components/PageSkeletons"
+import { saveLastLearningPath } from "../lib/lessonProgress"
 import {
   readNotesPaneOpen,
   writeNotesPaneOpen,
@@ -41,6 +42,11 @@ export default function CourseScreen() {
   const { programId, phaseId, bookId, courseId } = useParams({
     strict: false,
   })
+
+  useEffect(() => {
+    if (!programId || !phaseId || !bookId || !courseId) return
+    saveLastLearningPath({ programId, phaseId, bookId, courseId })
+  }, [programId, phaseId, bookId, courseId])
 
   const setNotesOpen = (open: boolean) => {
     setNotesPaneOpen(open)

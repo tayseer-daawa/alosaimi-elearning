@@ -13,7 +13,7 @@ export default function HomeScreen() {
   const userQuery = useCurrentUser()
 
   const programs = programsQuery.data?.data ?? []
-  // Featured entry is the first catalog item — not enrollment/progress (API has neither).
+  // Featured card still uses the first catalog program for display copy.
   const cards = programs.map((program) => ({
     id: program.id,
     title: program.title,
@@ -24,6 +24,7 @@ export default function HomeScreen() {
     const first = programs[0]
     if (!first) return
 
+    // Prefers last opened lesson on this device; falls back to first leaf.
     const target = await resolveContinueLearning(first.id)
     if (!target) {
       navigate({
