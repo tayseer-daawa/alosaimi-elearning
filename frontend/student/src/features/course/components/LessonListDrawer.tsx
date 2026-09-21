@@ -66,22 +66,8 @@ export default function LessonListDrawer({
         <Drawer.Backdrop />
         <Drawer.Positioner dir="rtl">
           <Drawer.Content dir="rtl" lang="ar" data-testid="lesson-list-drawer">
-            <Drawer.Header py={3} px={3}>
-              <Flex dir="rtl" align="center" gap={2} w="full">
-                {/* First in RTL DOM → physical right (start) */}
-                <Drawer.CloseTrigger asChild>
-                  <IconButton
-                    variant="ghost"
-                    size="sm"
-                    borderRadius="full"
-                    flexShrink={0}
-                    color="gray.500"
-                    aria-label="إغلاق"
-                    data-testid="lesson-list-close"
-                  >
-                    <X size={16} strokeWidth={2} />
-                  </IconButton>
-                </Drawer.CloseTrigger>
+            <Drawer.Header py={3} px={3} position="relative">
+              <Flex dir="rtl" align="center" w="full" pe={10}>
                 <Drawer.Title
                   flex="1"
                   fontSize="md"
@@ -91,6 +77,27 @@ export default function LessonListDrawer({
                 >
                   دروس الكتاب
                 </Drawer.Title>
+                {/*
+                  Recipe CloseTrigger uses insetEnd → physical `right` and
+                  overlaps the RTL title. Pin to the drawer’s free edge (left).
+                */}
+                <Drawer.CloseTrigger asChild>
+                  <IconButton
+                    variant="ghost"
+                    size="sm"
+                    borderRadius="full"
+                    flexShrink={0}
+                    color="gray.500"
+                    position="absolute"
+                    top={3}
+                    left={3}
+                    right="auto"
+                    aria-label="إغلاق"
+                    data-testid="lesson-list-close"
+                  >
+                    <X size={16} strokeWidth={2} />
+                  </IconButton>
+                </Drawer.CloseTrigger>
               </Flex>
             </Drawer.Header>
 

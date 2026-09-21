@@ -9,11 +9,20 @@ import {
 import { ChevronDown, Clock } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { formatNoteTimestamp, listNoteTimestamps } from "../lib/noteTimestamps"
+import { releasePdfFocus } from "../lib/releasePdfFocus"
 
 const storageKey = (lessonId: string) => `lesson_notes:${lessonId}`
 
-/** Chakra `lg` breakpoint — explanation open by default from here up. */
+/** Chakra `lg` breakpoint — short explanations open by default from here up. */
 const LG_MQ = "(min-width: 62em)"
+/** Longer teacher notes stay collapsed so «ملاحظاتي» stays above the fold. */
+const LONG_EXPLANATION_CHARS = 320
+
+function shouldOpenExplanation(text: string): boolean {
+  if (typeof window === "undefined") return false
+  if (!window.matchMedia(LG_MQ).matches) return false
+  return text.trim().length <= LONG_EXPLANATION_CHARS
+}
 
 type LessonNotesProps = {
   lessonId: string
@@ -33,10 +42,10 @@ export function LessonNotes({
   const [draft, setDraft] = useState("")
   const [hydrated, setHydrated] = useState(false)
   const [savedHint, setSavedHint] = useState(false)
-  const [explanationOpen, setExplanationOpen] = useState(() => {
-    if (typeof window === "undefined") return false
-    return window.matchMedia(LG_MQ).matches
-  })
+  const explanation = explanationNotes?.trim() ?? ""
+  const [explanationOpen, setExplanationOpen] = useState(() =>
+    shouldOpenExplanation(explanationNotes ?? ""),
+  )
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
@@ -48,12 +57,15 @@ export function LessonNotes({
   }, [lessonId])
 
   useEffect(() => {
+    setExplanationOpen(shouldOpenExplanation(explanationNotes ?? ""))
+  }, [explanationNotes])
+
+  useEffect(() => {
     if (!hydrated) return
     localStorage.setItem(storageKey(lessonId), draft)
     setSavedHint(true)
   }, [draft, lessonId, hydrated])
 
-  const explanation = explanationNotes?.trim()
   const timestamps = listNoteTimestamps(draft)
   const canInsertTime = Boolean(getCurrentTime)
 
@@ -85,7 +97,12 @@ export function LessonNotes({
   }
 
   return (
-    <Box data-testid="lesson-notes">
+    <Box
+      data-testid="lesson-notes"
+      onPointerDown={() => {
+        releasePdfFocus()
+      }}
+    >
       {explanation ? (
         <Collapsible.Root
           open={explanationOpen}

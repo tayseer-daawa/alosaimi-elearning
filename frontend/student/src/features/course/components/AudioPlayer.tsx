@@ -30,6 +30,7 @@ import {
   savePlaybackSafe,
   saveVolumePrefs,
 } from "../lib/lessonProgress"
+import { releasePdfFocus } from "../lib/releasePdfFocus"
 import { PlayerActionHud, type PlayerHudPayload } from "./PlayerActionHud"
 import PlayerShortcutsHelp from "./PlayerShortcutsHelp"
 
@@ -118,11 +119,7 @@ function isMenuNavigationTarget(target: EventTarget | null): boolean {
 }
 
 function blurIframes() {
-  for (const frame of document.querySelectorAll("iframe")) {
-    if (document.activeElement === frame) {
-      frame.blur()
-    }
-  }
+  releasePdfFocus()
 }
 
 export type AudioPlaybackApi = {
@@ -873,6 +870,12 @@ export default function AudioPlayer({
       tabIndex={0}
       outline="none"
       _focusVisible={{ boxShadow: "outline" }}
+      onPointerDown={() => {
+        // Reclaim shortcuts as soon as the pointer lands on the player.
+        if (document.activeElement instanceof HTMLIFrameElement) {
+          focusPlayerChrome()
+        }
+      }}
       onMouseEnter={() => {
         // PDF iframe steals keys; reclaim when the pointer returns to the player.
         if (document.activeElement instanceof HTMLIFrameElement) {

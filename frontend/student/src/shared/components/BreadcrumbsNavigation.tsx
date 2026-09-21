@@ -1,5 +1,6 @@
 import { Button, Flex, Menu, Text } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
+import { ChevronLeft } from "lucide-react"
 
 type BreadcrumbOption = {
   label: string
@@ -84,12 +85,21 @@ export function Breadcrumbs({ breadcrumbs }: BreadcrumbsProps) {
                   </Menu.Content>
                 </Menu.Positioner>
               </Menu.Root>
+            ) : crumb.isCurrent ? (
+              <Text
+                fontSize="sm"
+                fontWeight="medium"
+                color="brand.primary"
+                px={1}
+              >
+                {crumb.label}
+              </Text>
             ) : (
               <Button
                 variant="ghost"
                 size="sm"
                 px={0}
-                color={crumb.isCurrent ? "brand.primary" : "gray.400"}
+                color="gray.400"
                 _hover={{ color: "brand.primary", bg: "transparent" }}
                 onClick={() => crumb.url && navigate({ to: crumb.url })}
               >
@@ -97,11 +107,13 @@ export function Breadcrumbs({ breadcrumbs }: BreadcrumbsProps) {
               </Button>
             )}
 
-            {index < breadcrumbs.length && (
-              <Text color={crumb.isCurrent ? "brand.primary" : "gray.400"}>
-                &gt;
-              </Text>
-            )}
+            {index < breadcrumbs.length - 1 ? (
+              <ChevronLeft
+                size={14}
+                aria-hidden
+                color="var(--chakra-colors-gray-400)"
+              />
+            ) : null}
           </Flex>
         ))}
       </Flex>

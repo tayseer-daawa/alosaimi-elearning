@@ -1,6 +1,19 @@
-import { Box, Button, Container, Flex, Heading, Text } from "@chakra-ui/react"
+import {
+  Box,
+  Button,
+  Container,
+  Flex,
+  Heading,
+  IconButton,
+  Text,
+} from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
-import { MoveLeft, MoveRight } from "lucide-react"
+import {
+  MoveLeft,
+  MoveRight,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react"
 import { useMemo, useRef, useState } from "react"
 
 import { useBook } from "@/features/books/api/useBook"
@@ -11,6 +24,11 @@ import { useProgram } from "@/features/programs/api/useProgram"
 import { AppMenu } from "@/shared/components/AppMenu"
 import { Breadcrumbs } from "@/shared/components/BreadcrumbsNavigation"
 import { CourseSkeleton } from "@/shared/components/PageSkeletons"
+import {
+  readNotesPaneOpen,
+  writeNotesPaneOpen,
+} from "../lib/notesPanePreference"
+import { releasePdfFocus } from "../lib/releasePdfFocus"
 import AudioPlayer, { type AudioPlaybackApi } from "./AudioPlayer"
 import LessonListDrawer from "./LessonListDrawer"
 import { LessonNotes } from "./LessonNotes"
@@ -22,12 +40,17 @@ export default function CourseScreen() {
   const [activeTab, setActiveTab] = useState<TabId>("book")
   const [lessonListOpen, setLessonListOpen] = useState(false)
   const [pdfIframeFocused, setPdfIframeFocused] = useState(false)
+  const [notesPaneOpen, setNotesPaneOpen] = useState(readNotesPaneOpen)
   const playbackApiRef = useRef<AudioPlaybackApi | null>(null)
   const navigate = useNavigate()
   const { programId, phaseId, bookId, courseId } = useParams({
     strict: false,
   })
 
+  const setNotesOpen = (open: boolean) => {
+    setNotesPaneOpen(open)
+    writeNotesPaneOpen(open)
+  }
   const programQuery = useProgram(programId)
   const phaseQuery = usePhase(phaseId)
   const bookQuery = useBook(bookId)
@@ -99,15 +122,12 @@ export default function CourseScreen() {
       px={{ lg: "16" }}
       py={{ lg: "10" }}
       pb={{ base: "40", lg: "36" }}
-      overflow="auto"
       data-testid="course-screen"
-      onMouseDown={(event) => {
-        // PDF iframe swallows keyboard events; clicking elsewhere restores shortcuts.
-        if (
-          document.activeElement instanceof HTMLIFrameElement &&
-          !(event.target instanceof HTMLIFrameElement)
-        ) {
-          document.activeElement.blur()
+      onPointerDown={(event) => {
+        // PDF iframe swallows keyboard events; click outside restores shortcuts.
+        if (event.target instanceof HTMLIFrameElement) return
+        if (releasePdfFocus()) {
+          setPdfIframeFocused(false)
         }
       }}
     >
@@ -269,33 +289,70 @@ export default function CourseScreen() {
 
         {/*
           Desktop (lg+): PDF | notes side-by-side (RTL → PDF on the right).
+          Notes column can collapse so the PDF goes full width.
           Mobile: one panel at a time via tabs.
         */}
         <Flex
           direction={{ base: "column", lg: "row" }}
-          align="stretch"
-          gap={{ base: 0, lg: 8 }}
+          align={{ base: "stretch", lg: "flex-start" }}
+          gap={{ base: 0, lg: notesPaneOpen ? 8 : 0 }}
           data-testid="course-split"
+          data-notes-open={notesPaneOpen ? "true" : "false"}
         >
           <Box
-            flex={{ lg: "1.55" }}
+            flex={{ lg: notesPaneOpen ? "1.55" : "1" }}
             minW={0}
+            w={{ lg: notesPaneOpen ? "auto" : "full" }}
             display={{
               base: activeTab === "book" ? "block" : "none",
               lg: "block",
             }}
             data-testid="tab-panel-book"
           >
-            <Text
-              display={{ base: "none", lg: "block" }}
-              fontSize="sm"
-              fontWeight="semibold"
-              color="brand.primary"
+            <Flex
+              display={{ base: "none", lg: "flex" }}
+              align="center"
+              justify="space-between"
+              gap={3}
               mb={3}
-              textAlign="right"
             >
-              الكتاب
-            </Text>
+              <Text
+                fontSize="sm"
+                fontWeight="semibold"
+                color="brand.primary"
+                textAlign="right"
+              >
+                الكتاب
+              </Text>
+              {/*
+                Second child lands on the inline-end (left): the seam beside
+                the notes column, not the outer edge of that column.
+              */}
+              {notesPaneOpen ? (
+                <IconButton
+                  variant="ghost"
+                  size="sm"
+                  color="brand.secondary"
+                  aria-label="إخفاء الملاحظات"
+                  title="إخفاء الملاحظات"
+                  onClick={() => setNotesOpen(false)}
+                  data-testid="notes-pane-collapse"
+                >
+                  <PanelLeftClose size={18} />
+                </IconButton>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  color="brand.primary"
+                  onClick={() => setNotesOpen(true)}
+                  data-testid="notes-pane-expand"
+                >
+                  <PanelLeftOpen size={16} />
+                  إظهار الملاحظات
+                </Button>
+              )}
+            </Flex>
             <PdfReader
               url={pdfUrl}
               title={bookTitle}
@@ -310,7 +367,7 @@ export default function CourseScreen() {
             w={{ lg: "38%" }}
             display={{
               base: activeTab === "notes" ? "block" : "none",
-              lg: "block",
+              lg: notesPaneOpen ? "block" : "none",
             }}
             borderStartWidth={{ lg: "1px" }}
             borderColor={{ lg: "gray.100" }}
@@ -320,8 +377,10 @@ export default function CourseScreen() {
             <Box
               position={{ lg: "sticky" }}
               top={{ lg: 4 }}
-              maxH={{ lg: "calc(100vh - 12rem)" }}
+              maxH={{ lg: "calc(100vh - 11rem)" }}
               overflowY={{ lg: "auto" }}
+              overscrollBehavior="contain"
+              pe={{ lg: 1 }}
             >
               <Text
                 display={{ base: "none", lg: "block" }}

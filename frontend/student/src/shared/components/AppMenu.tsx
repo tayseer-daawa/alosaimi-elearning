@@ -114,14 +114,14 @@ export function AppMenu({ position = "absolute" }: AppMenuProps) {
               flexDirection="column"
               data-testid="app-menu-drawer"
             >
-              <Drawer.Header pt={6} px={5} pb={4}>
+              <Drawer.Header pt={6} px={5} pb={4} position="relative">
                 <Flex
                   dir="rtl"
                   align="flex-start"
                   justify="space-between"
                   gap={3}
                 >
-                  <Box flex="1" minW={0} textAlign="right">
+                  <Box flex="1" minW={0} textAlign="right" pe={10}>
                     <Text
                       fontSize="lg"
                       fontWeight="bold"
@@ -143,6 +143,10 @@ export function AppMenu({ position = "absolute" }: AppMenuProps) {
                       </Text>
                     ) : null}
                   </Box>
+                  {/*
+                    Recipe CloseTrigger uses insetEnd → physical `right` here and
+                    overlaps the RTL greeting. Pin to the drawer’s free edge (left).
+                  */}
                   <Drawer.CloseTrigger asChild>
                     <IconButton
                       variant="ghost"
@@ -150,6 +154,10 @@ export function AppMenu({ position = "absolute" }: AppMenuProps) {
                       borderRadius="full"
                       flexShrink={0}
                       color="gray.400"
+                      position="absolute"
+                      top={4}
+                      left={3}
+                      right="auto"
                       aria-label="إغلاق"
                       data-testid="app-menu-close"
                     >
