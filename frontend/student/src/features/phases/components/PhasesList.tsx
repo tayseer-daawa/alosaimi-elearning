@@ -1,6 +1,7 @@
 import { Box, Button, Flex, Grid, Image, Text, VStack } from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
+import { loadLastLearningPath } from "@/features/course/lib/lessonProgress"
 import { PhasesListSkeleton } from "@/shared/components/PageSkeletons"
 import headphones from "/assets/headphones.svg"
 import { usePhasesWithBooks } from "../api/usePhasesWithBooks"
@@ -16,6 +17,7 @@ export const PhasesList = () => {
   const [expandedStage, setExpandedStage] = useState<string | null>(null)
   const [didInitExpand, setDidInitExpand] = useState(false)
   const navigate = useNavigate()
+  const lastBookId = loadLastLearningPath()?.bookId ?? null
 
   const orderedStages = stages
     ? [...stages].sort((a, b) => a.order - b.order)
@@ -131,47 +133,73 @@ export const PhasesList = () => {
                     mt={5}
                     w="full"
                   >
-                    {stage.books.map((book) => (
-                      <Button
-                        key={book.id}
-                        bg="brand.accent"
-                        color="text.default"
-                        _hover={{ bg: "#d4cc85" }}
-                        borderRadius="4px"
-                        fontSize={{ base: "sm", md: "md" }}
-                        fontWeight="semibold"
-                        h="auto"
-                        minH="12"
-                        minW={0}
-                        w="full"
-                        px={3}
-                        py={3}
-                        whiteSpace="normal"
-                        lineHeight="short"
-                        textAlign="center"
-                        overflow="hidden"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          navigate({
-                            to: "/programs/$programId/phases/$phaseId/books/$bookId",
-                            params: {
-                              programId: programId ?? "",
-                              phaseId: stage.id,
-                              bookId: book.id,
-                            },
-                          })
-                        }}
-                      >
-                        <Text
-                          as="span"
+                    {stage.books.map((book) => {
+                      const isLastOpened = lastBookId === book.id
+                      return (
+                        <Button
+                          key={book.id}
+                          bg="brand.accent"
+                          color="text.default"
+                          _hover={{ bg: "#d4cc85" }}
+                          borderRadius="4px"
+                          borderWidth={isLastOpened ? "2px" : "0"}
+                          borderColor={
+                            isLastOpened ? "brand.primary" : "transparent"
+                          }
+                          fontSize={{ base: "sm", md: "md" }}
+                          fontWeight="semibold"
+                          h="auto"
+                          minH="12"
+                          minW={0}
                           w="full"
-                          lineClamp={2}
-                          overflowWrap="anywhere"
+                          px={3}
+                          py={3}
+                          whiteSpace="normal"
+                          lineHeight="short"
+                          textAlign="center"
+                          overflow="hidden"
+                          position="relative"
+                          data-testid={
+                            isLastOpened
+                              ? "phase-book-chip-last"
+                              : "phase-book-chip"
+                          }
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            navigate({
+                              to: "/programs/$programId/phases/$phaseId/books/$bookId",
+                              params: {
+                                programId: programId ?? "",
+                                phaseId: stage.id,
+                                bookId: book.id,
+                              },
+                            })
+                          }}
                         >
-                          {book.title}
-                        </Text>
-                      </Button>
-                    ))}
+                          <VStack gap={1} w="full" align="center">
+                            {isLastOpened ? (
+                              <Text
+                                as="span"
+                                fontSize="2xs"
+                                fontWeight="bold"
+                                color="brand.primary"
+                                lineHeight="1"
+                              >
+                                آخر درس
+                              </Text>
+                            ) : null}
+                            <Text
+                              as="span"
+                              w="full"
+                              lineClamp={2}
+                              overflowWrap="anywhere"
+                            >
+                              {book.title}
+                            </Text>
+                          </VStack>
+                        </Button>
+                      )
+                    })}
                   </Grid>
                 )}
               </Box>

@@ -1,5 +1,10 @@
 import { Box, Flex, Link, Text } from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
+import { Check } from "lucide-react"
+import {
+  getLessonProgressStatus,
+  type LessonProgressStatus,
+} from "@/features/course/lib/lessonProgress"
 
 export type BookLessonView = {
   id: string
@@ -17,6 +22,47 @@ export type BookView = {
 
 interface BooksItemProps {
   book: BookView
+}
+
+function LessonStatusBadge({ status }: { status: LessonProgressStatus }) {
+  if (status === "none") return null
+  if (status === "completed") {
+    return (
+      <Flex
+        as="span"
+        align="center"
+        gap={1}
+        px={2}
+        py={0.5}
+        borderRadius="full"
+        bg="brand.lightTeal"
+        color="brand.primary"
+        fontSize="xs"
+        fontWeight="semibold"
+        flexShrink={0}
+        data-testid="lesson-badge-completed"
+      >
+        <Check size={12} aria-hidden />
+        مكتمل
+      </Flex>
+    )
+  }
+  return (
+    <Text
+      as="span"
+      px={2}
+      py={0.5}
+      borderRadius="full"
+      bg="gray.100"
+      color="brand.secondary"
+      fontSize="xs"
+      fontWeight="semibold"
+      flexShrink={0}
+      data-testid="lesson-badge-started"
+    >
+      جارٍ
+    </Text>
+  )
 }
 
 export const BooksItem = ({ book }: BooksItemProps) => {
@@ -91,29 +137,40 @@ export const BooksItem = ({ book }: BooksItemProps) => {
             >
               {book.lessons.map((lesson) => {
                 const notes = lesson.explanation_notes?.trim()
+                const status = getLessonProgressStatus(lesson.id)
                 return (
                   <Box as="li" key={lesson.id} mb={3}>
-                    <Text
+                    <Flex
                       as="span"
-                      fontSize={{ base: "sm", lg: "md" }}
-                      color="brand.primary"
-                      textDecoration="underline"
-                      cursor="pointer"
-                      _hover={{ opacity: 0.8 }}
-                      onClick={() =>
-                        navigate({
-                          to: "/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId",
-                          params: {
-                            programId: programId ?? "",
-                            phaseId: phaseId ?? "",
-                            bookId: bookId ?? book.id,
-                            courseId: lesson.id,
-                          },
-                        })
-                      }
+                      display="inline-flex"
+                      align="center"
+                      gap={2}
+                      flexWrap="wrap"
+                      verticalAlign="middle"
                     >
-                      {`الدرس ${lesson.order + 1}`}
-                    </Text>
+                      <Text
+                        as="span"
+                        fontSize={{ base: "sm", lg: "md" }}
+                        color="brand.primary"
+                        textDecoration="underline"
+                        cursor="pointer"
+                        _hover={{ opacity: 0.8 }}
+                        onClick={() =>
+                          navigate({
+                            to: "/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId",
+                            params: {
+                              programId: programId ?? "",
+                              phaseId: phaseId ?? "",
+                              bookId: bookId ?? book.id,
+                              courseId: lesson.id,
+                            },
+                          })
+                        }
+                      >
+                        {`الدرس ${lesson.order + 1}`}
+                      </Text>
+                      <LessonStatusBadge status={status} />
+                    </Flex>
                     {notes ? (
                       <Text
                         mt={1}

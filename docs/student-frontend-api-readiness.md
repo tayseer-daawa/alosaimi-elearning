@@ -21,7 +21,7 @@ Catalog + auth + course player are on the real API. Progress, sessions, exams, a
 | Programs → phases → books → lessons | Wired | Generated OpenAPI client + feature repos |
 | Course PDF / audio / teacher notes | Wired | From lesson/book API fields |
 | 401 / 403 handling | Wired | Clear session → `/welcome` |
-| Student notes / playback / completion / continue path | Local only | `localStorage` — not cross-device |
+| Student notes / playback / completion / continue path / browse badges | Local only | `localStorage` — not cross-device |
 | ProgramSession enrollment | Unwired | Client SDK exists; no student UX |
 | Exams / questions / attempts | Unwired | Client SDK exists; no student UX |
 | Account / profile edit / help | Partial / static | Placeholder support email |
