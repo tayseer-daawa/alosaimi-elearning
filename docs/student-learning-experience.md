@@ -129,7 +129,7 @@ A checklist of improvements that fit **مهمات العلم–style** platforms
 | Program → phase → book → lesson | Done | Real Arabic titles |
 | Continue learning | Done (beta) | Last opened path in `localStorage`; API/enrollment later |
 | Lesson list badges (مكتمل / جارٍ) | Done (beta) | Device-local from `lesson_completed` / `lesson_playback` |
-| Phase book chip «آخر درس» | Done (beta) | Highlights `continue_learning_path.bookId` only |
+| Phase book chip «متابعة» | Done (beta) | Corner pill + tinted chip for `continue_learning_path.bookId` |
 | Program card progress bars | Deferred | No cheap aggregate without scanning all lessons |
 | Search متون / lessons | Todo | Arabic-aware search |
 | Favorites / pinned books | Todo | |

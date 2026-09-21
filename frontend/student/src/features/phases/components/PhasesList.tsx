@@ -138,11 +138,13 @@ export const PhasesList = () => {
                       return (
                         <Button
                           key={book.id}
-                          bg="brand.accent"
+                          bg={isLastOpened ? "white" : "brand.accent"}
                           color="text.default"
-                          _hover={{ bg: "#d4cc85" }}
+                          _hover={{
+                            bg: isLastOpened ? "brand.lightTeal" : "#d4cc85",
+                          }}
                           borderRadius="4px"
-                          borderWidth={isLastOpened ? "2px" : "0"}
+                          borderWidth="2px"
                           borderColor={
                             isLastOpened ? "brand.primary" : "transparent"
                           }
@@ -154,6 +156,7 @@ export const PhasesList = () => {
                           w="full"
                           px={3}
                           py={3}
+                          pt={isLastOpened ? 6 : 3}
                           whiteSpace="normal"
                           lineHeight="short"
                           textAlign="center"
@@ -176,27 +179,33 @@ export const PhasesList = () => {
                             })
                           }}
                         >
-                          <VStack gap={1} w="full" align="center">
-                            {isLastOpened ? (
-                              <Text
-                                as="span"
-                                fontSize="2xs"
-                                fontWeight="bold"
-                                color="brand.primary"
-                                lineHeight="1"
-                              >
-                                آخر درس
-                              </Text>
-                            ) : null}
+                          {isLastOpened ? (
                             <Text
                               as="span"
-                              w="full"
-                              lineClamp={2}
-                              overflowWrap="anywhere"
+                              position="absolute"
+                              top="0"
+                              insetInlineStart="0"
+                              px={2}
+                              py={0.5}
+                              borderBottomEndRadius="md"
+                              bg="brand.primary"
+                              color="white"
+                              fontSize="2xs"
+                              fontWeight="bold"
+                              lineHeight="1.2"
+                              letterSpacing="0.02em"
                             >
-                              {book.title}
+                              متابعة
                             </Text>
-                          </VStack>
+                          ) : null}
+                          <Text
+                            as="span"
+                            w="full"
+                            lineClamp={2}
+                            overflowWrap="anywhere"
+                          >
+                            {book.title}
+                          </Text>
                         </Button>
                       )
                     })}
