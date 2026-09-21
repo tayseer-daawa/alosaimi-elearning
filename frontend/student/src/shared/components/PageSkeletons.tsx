@@ -301,7 +301,7 @@ export function CourseSkeleton() {
           </Box>
         </Box>
 
-        {/* Fixed player — mirrors AudioPlayer title row + seek row */}
+        {/* Fixed player — title, then seek row, then actions under the track */}
         <Box
           position="fixed"
           bottom={0}
@@ -328,15 +328,80 @@ export function CourseSkeleton() {
             />
             <SkeletonCircle size="8" css={sk.css} variant="pulse" />
           </Flex>
-          <Flex align="center" gap={{ base: 2, md: 4 }} w="full" dir="ltr">
-            <SkeletonCircle size="10" css={sk.css} variant="pulse" />
-            <Skeleton {...sk} height="12px" w="36px" borderRadius="sm" />
-            <Skeleton {...sk} height="10px" flex="1" borderRadius="full" />
-            <Skeleton {...sk} height="12px" w="36px" borderRadius="sm" />
-            <Skeleton {...sk} height="32px" w="36px" borderRadius="md" />
-            <SkeletonCircle size="8" css={sk.css} variant="pulse" />
-            <SkeletonCircle size="8" css={sk.css} variant="pulse" />
-          </Flex>
+
+          <Box
+            display="grid"
+            w="full"
+            dir="ltr"
+            alignItems="center"
+            columnGap={{ base: 2, md: 4 }}
+            rowGap={{ base: 0.5, md: 0.5 }}
+            gridTemplateColumns="auto 1fr auto"
+            gridTemplateAreas={`
+              "cur seek dur"
+              ". controls ."
+            `}
+          >
+            <Skeleton
+              gridArea="cur"
+              {...sk}
+              height="12px"
+              w={{ base: "36px", md: "40px" }}
+              borderRadius="sm"
+            />
+            <Skeleton
+              gridArea="seek"
+              {...sk}
+              height={{ base: "14px", md: "10px" }}
+              w="full"
+              borderRadius="full"
+              my={{ base: 1, md: 1 }}
+            />
+            <Skeleton
+              gridArea="dur"
+              {...sk}
+              height="12px"
+              w={{ base: "40px", md: "44px" }}
+              borderRadius="sm"
+            />
+
+            <Flex
+              gridArea="controls"
+              w="full"
+              align="center"
+              justify="space-between"
+              gap={{ base: 1, md: 2 }}
+            >
+              <Skeleton
+                {...sk}
+                height={{ base: "28px", md: "32px" }}
+                w={{ base: "36px", md: "40px" }}
+                borderRadius="full"
+              />
+              <Flex align="center" justify="center" gap={{ base: 2, md: 3 }}>
+                <SkeletonCircle
+                  size={{ base: "10", md: "8" }}
+                  css={sk.css}
+                  variant="pulse"
+                />
+                <SkeletonCircle size="12" css={sk.css} variant="pulse" />
+                <SkeletonCircle
+                  size={{ base: "10", md: "8" }}
+                  css={sk.css}
+                  variant="pulse"
+                />
+              </Flex>
+              <Flex align="center" gap={1}>
+                <SkeletonCircle size="8" css={sk.css} variant="pulse" />
+                <SkeletonCircle
+                  size="8"
+                  css={sk.css}
+                  variant="pulse"
+                  display={{ base: "none", md: "block" }}
+                />
+              </Flex>
+            </Flex>
+          </Box>
         </Box>
       </Box>
     </ScreenSkeleton>

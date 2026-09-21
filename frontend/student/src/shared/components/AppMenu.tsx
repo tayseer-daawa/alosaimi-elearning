@@ -60,7 +60,7 @@ export function AppMenu({ position = "absolute" }: AppMenuProps) {
     <>
       <Box
         position={position}
-        right={position === "absolute" ? { base: 0, lg: 14 } : undefined}
+        right={position === "absolute" ? { base: 0, lg: 2 } : undefined}
         zIndex="10"
       >
         <Button
