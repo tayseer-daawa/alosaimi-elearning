@@ -384,8 +384,9 @@ export default function CourseScreen() {
 
       {pdfIframeFocused ? (
         <Box
+          display={{ base: "none", md: "block" }}
           position="fixed"
-          bottom={{ base: "7.5rem", md: "6.5rem" }}
+          bottom="6.5rem"
           left="50%"
           transform="translateX(-50%)"
           zIndex={20}

@@ -41,6 +41,7 @@ export default function PlayerShortcutsHelp({
           p={0}
           borderRadius="full"
           color="brand.secondary"
+          display={{ base: "none", md: "inline-flex" }}
           aria-label="اختصارات لوحة المفاتيح"
           data-testid="audio-shortcuts"
         >
