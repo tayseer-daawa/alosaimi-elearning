@@ -16,6 +16,8 @@ import {
   Pause,
   Play,
   RefreshCw,
+  RotateCcw,
+  RotateCw,
   Volume2,
   VolumeX,
 } from "lucide-react"
@@ -1021,159 +1023,229 @@ export default function AudioPlayer({
         </Box>
       )}
 
-      <Flex
-        align="center"
-        gap={{ base: 2, md: 4 }}
+      <Box
+        display="grid"
         w="full"
         dir="ltr"
-        flexWrap={{ base: "wrap", md: "nowrap" }}
+        alignItems="center"
+        columnGap={{ base: 2, md: 4 }}
+        rowGap={{ base: 1, md: 0 }}
+        gridTemplateColumns={{
+          base: "auto 1fr auto",
+          md: "auto auto 1fr auto auto auto auto",
+        }}
+        gridTemplateAreas={{
+          base: `
+            "cur seek dur"
+            "rate transport mute"
+          `,
+          md: `"play cur seek dur rate mute help"`,
+        }}
       >
-        <IconButton
-          aria-label={
-            isBuffering ? "جاري التحميل" : isPlaying ? "إيقاف مؤقت" : "تشغيل"
-          }
-          bg="brand.secondary"
-          color="white"
-          borderRadius="full"
-          boxSize={{ base: 11, md: 10 }}
-          minW={{ base: 11, md: 10 }}
-          disabled={!audioUrl}
-          onClick={() => void togglePlay()}
-          _hover={{ opacity: 0.9 }}
-          data-testid="audio-play-pause"
-          order={{ base: 2, md: 0 }}
+        <Text
+          gridArea="cur"
+          fontSize="xs"
+          color="brand.secondary"
+          minW={{ base: "10", md: "14" }}
+          textAlign="end"
+          fontVariantNumeric="tabular-nums"
+          flexShrink={0}
+          data-testid="audio-current-time"
+        >
+          {formatTime(displayTime)}
+        </Text>
+
+        <Box gridArea="seek" minW={0} py={{ base: 2, md: 2 }}>
+          <Slider.Root
+            min={0}
+            max={duration > 0 ? duration : 1}
+            step={1}
+            value={[Math.min(displayTime, duration || 0)]}
+            disabled={!audioUrl || duration <= 0}
+            onValueChange={({ value }) => previewScrub(value[0] ?? 0)}
+            onValueChangeEnd={({ value }) => {
+              // Pointer drags commit via window pointerup + beginPointerScrub.
+              // This path covers keyboard nudges on the thumb.
+              if (pointerScrubbingRef.current) return
+              commitSeek(value[0] ?? 0)
+              focusPlayerChrome()
+            }}
+            data-testid="audio-seek"
+          >
+            <Slider.Control
+              h={{ base: "10", md: "5" }}
+              display="flex"
+              alignItems="center"
+              cursor="pointer"
+              onPointerDown={(event) => {
+                if (event.button !== 0) return
+                beginPointerScrub()
+              }}
+            >
+              <Slider.Track
+                h={{ base: "3.5", md: "2.5" }}
+                borderRadius="full"
+                bg="gray.200"
+                position="relative"
+                overflow="hidden"
+              >
+                {duration > 0
+                  ? bufferedRanges.map((range) => (
+                      <Box
+                        key={`${range.start}-${range.end}`}
+                        position="absolute"
+                        top={0}
+                        bottom={0}
+                        left={`${(range.start / duration) * 100}%`}
+                        width={`${((range.end - range.start) / duration) * 100}%`}
+                        bg="gray.400"
+                        opacity={0.55}
+                        pointerEvents="none"
+                        data-testid="audio-buffered-range"
+                      />
+                    ))
+                  : null}
+                <Slider.Range
+                  bg="brand.secondary"
+                  position="relative"
+                  zIndex={1}
+                />
+              </Slider.Track>
+              <Slider.Thumbs
+                boxSize={{ base: 5, md: 4 }}
+                bg="white"
+                borderWidth="2px"
+                borderColor="brand.secondary"
+                shadow="sm"
+                zIndex={2}
+                _hover={{ boxSize: { base: 6, md: 5 } }}
+                _active={{ boxSize: { base: 6, md: 5 } }}
+              />
+            </Slider.Control>
+          </Slider.Root>
+        </Box>
+
+        <Text
+          gridArea="dur"
+          fontSize="xs"
+          color="brand.secondary"
+          minW={{ base: "12", md: "14" }}
+          textAlign="start"
+          fontVariantNumeric="tabular-nums"
+          flexShrink={0}
+          data-testid="audio-duration"
+        >
+          {formatTime(duration)}
+        </Text>
+
+        {/* Mobile: ±10s around play. Desktop: play alone in its column. */}
+        <Flex
+          gridArea={{ base: "transport", md: "play" }}
+          align="center"
+          justify="center"
+          gap={2}
           flexShrink={0}
         >
-          {isBuffering ? (
-            <Box
-              display="inline-flex"
-              animation="spin 0.9s linear infinite"
-              css={{
-                "@keyframes spin": {
-                  from: { transform: "rotate(0deg)" },
-                  to: { transform: "rotate(360deg)" },
-                },
-              }}
-            >
-              <RefreshCw size={20} />
-            </Box>
-          ) : isPlaying ? (
-            <Pause size={20} fill="white" />
-          ) : (
-            <Play size={20} fill="white" />
-          )}
-        </IconButton>
-
-        {/* Full-width seek row on mobile; inline with play on desktop */}
-        <Flex
-          order={{ base: 1, md: 0 }}
-          flex={{ base: "1 0 100%", md: "1" }}
-          minW={0}
-          align="center"
-          gap={2}
-        >
-          <Text
-            fontSize="xs"
-            color="brand.secondary"
-            minW={{ base: "10", md: "14" }}
-            textAlign="end"
-            fontVariantNumeric="tabular-nums"
-            flexShrink={0}
-            data-testid="audio-current-time"
+          <IconButton
+            {...chromeIconProps}
+            display={{ base: "inline-flex", md: "none" }}
+            h="12"
+            minH="12"
+            minW="12"
+            aria-label={`ترجيع ${JL_SEEK} ثوانٍ`}
+            disabled={!audioUrl}
+            onClick={() => {
+              seekBy(-JL_SEEK)
+              flashHud({
+                kind: "seek-back",
+                detail: seekHudDetail(-JL_SEEK),
+              })
+              focusPlayerChrome()
+            }}
+            data-testid="audio-skip-back"
           >
-            {formatTime(displayTime)}
-          </Text>
+            <Flex direction="column" align="center" justify="center" gap={0.5}>
+              <RotateCcw size={18} strokeWidth={2.25} aria-hidden />
+              <Text
+                as="span"
+                fontSize="2xs"
+                fontWeight="bold"
+                lineHeight="1"
+                fontVariantNumeric="tabular-nums"
+              >
+                {JL_SEEK}
+              </Text>
+            </Flex>
+          </IconButton>
 
-          <Box flex="1" minW={0} py={{ base: 2, md: 2 }}>
-            <Slider.Root
-              min={0}
-              max={duration > 0 ? duration : 1}
-              step={1}
-              value={[Math.min(displayTime, duration || 0)]}
-              disabled={!audioUrl || duration <= 0}
-              onValueChange={({ value }) => previewScrub(value[0] ?? 0)}
-              onValueChangeEnd={({ value }) => {
-                // Pointer drags commit via window pointerup + beginPointerScrub.
-                // This path covers keyboard nudges on the thumb.
-                if (pointerScrubbingRef.current) return
-                commitSeek(value[0] ?? 0)
-                focusPlayerChrome()
-              }}
-              data-testid="audio-seek"
-            >
-              <Slider.Control
-                h={{ base: "10", md: "5" }}
-                display="flex"
-                alignItems="center"
-                cursor="pointer"
-                onPointerDown={(event) => {
-                  if (event.button !== 0) return
-                  beginPointerScrub()
+          <IconButton
+            aria-label={
+              isBuffering ? "جاري التحميل" : isPlaying ? "إيقاف مؤقت" : "تشغيل"
+            }
+            bg="brand.secondary"
+            color="white"
+            borderRadius="full"
+            boxSize={{ base: 12, md: 10 }}
+            minW={{ base: 12, md: 10 }}
+            disabled={!audioUrl}
+            onClick={() => void togglePlay()}
+            _hover={{ opacity: 0.9 }}
+            data-testid="audio-play-pause"
+          >
+            {isBuffering ? (
+              <Box
+                display="inline-flex"
+                animation="spin 0.9s linear infinite"
+                css={{
+                  "@keyframes spin": {
+                    from: { transform: "rotate(0deg)" },
+                    to: { transform: "rotate(360deg)" },
+                  },
                 }}
               >
-                <Slider.Track
-                  h={{ base: "3.5", md: "2.5" }}
-                  borderRadius="full"
-                  bg="gray.200"
-                  position="relative"
-                  overflow="hidden"
-                >
-                  {duration > 0
-                    ? bufferedRanges.map((range) => (
-                        <Box
-                          key={`${range.start}-${range.end}`}
-                          position="absolute"
-                          top={0}
-                          bottom={0}
-                          left={`${(range.start / duration) * 100}%`}
-                          width={`${((range.end - range.start) / duration) * 100}%`}
-                          bg="gray.400"
-                          opacity={0.55}
-                          pointerEvents="none"
-                          data-testid="audio-buffered-range"
-                        />
-                      ))
-                    : null}
-                  <Slider.Range
-                    bg="brand.secondary"
-                    position="relative"
-                    zIndex={1}
-                  />
-                </Slider.Track>
-                <Slider.Thumbs
-                  boxSize={{ base: 5, md: 4 }}
-                  bg="white"
-                  borderWidth="2px"
-                  borderColor="brand.secondary"
-                  shadow="sm"
-                  zIndex={2}
-                  _hover={{ boxSize: { base: 6, md: 5 } }}
-                  _active={{ boxSize: { base: 6, md: 5 } }}
-                />
-              </Slider.Control>
-            </Slider.Root>
-          </Box>
+                <RefreshCw size={20} />
+              </Box>
+            ) : isPlaying ? (
+              <Pause size={20} fill="white" />
+            ) : (
+              <Play size={20} fill="white" />
+            )}
+          </IconButton>
 
-          <Text
-            fontSize="xs"
-            color="brand.secondary"
-            minW={{ base: "12", md: "14" }}
-            textAlign="start"
-            fontVariantNumeric="tabular-nums"
-            flexShrink={0}
-            data-testid="audio-duration"
+          <IconButton
+            {...chromeIconProps}
+            display={{ base: "inline-flex", md: "none" }}
+            h="12"
+            minH="12"
+            minW="12"
+            aria-label={`تقديم ${JL_SEEK} ثوانٍ`}
+            disabled={!audioUrl}
+            onClick={() => {
+              seekBy(JL_SEEK)
+              flashHud({
+                kind: "seek-forward",
+                detail: seekHudDetail(JL_SEEK),
+              })
+              focusPlayerChrome()
+            }}
+            data-testid="audio-skip-forward"
           >
-            {formatTime(duration)}
-          </Text>
+            <Flex direction="column" align="center" justify="center" gap={0.5}>
+              <RotateCw size={18} strokeWidth={2.25} aria-hidden />
+              <Text
+                as="span"
+                fontSize="2xs"
+                fontWeight="bold"
+                lineHeight="1"
+                fontVariantNumeric="tabular-nums"
+              >
+                {JL_SEEK}
+              </Text>
+            </Flex>
+          </IconButton>
         </Flex>
 
-        <Flex
-          order={{ base: 2, md: 0 }}
-          align="center"
-          gap={1}
-          ms={{ base: "auto", md: 0 }}
-          flexShrink={0}
-        >
+        <Box gridArea="rate" justifySelf={{ base: "start", md: "center" }}>
           <Menu.Root>
             <Menu.Trigger asChild>
               <IconButton
@@ -1215,83 +1287,85 @@ export default function AudioPlayer({
               </Menu.Content>
             </Menu.Positioner>
           </Menu.Root>
+        </Box>
 
-          <Box
-            position="relative"
-            onMouseEnter={() => setShowVolume(true)}
-            onMouseLeave={() => setShowVolume(false)}
-            data-testid="audio-volume-wrap"
+        <Box
+          gridArea="mute"
+          justifySelf={{ base: "end", md: "center" }}
+          position="relative"
+          onMouseEnter={() => setShowVolume(true)}
+          onMouseLeave={() => setShowVolume(false)}
+          data-testid="audio-volume-wrap"
+        >
+          <IconButton
+            {...chromeIconProps}
+            aria-label={muted || volume === 0 ? "إلغاء كتم الصوت" : "كتم الصوت"}
+            disabled={!audioUrl}
+            onClick={() => {
+              toggleMute(true)
+              focusPlayerChrome()
+            }}
+            data-testid="audio-mute"
           >
-            <IconButton
-              {...chromeIconProps}
-              aria-label={
-                muted || volume === 0 ? "إلغاء كتم الصوت" : "كتم الصوت"
-              }
-              disabled={!audioUrl}
-              onClick={() => {
-                toggleMute(true)
-                focusPlayerChrome()
-              }}
-              data-testid="audio-mute"
-            >
-              {muted || volume === 0 ? (
-                <VolumeX size={22} />
-              ) : (
-                <Volume2 size={22} />
-              )}
-            </IconButton>
-            {showVolume && audioUrl && (
-              <Box
-                position="absolute"
-                bottom="100%"
-                left="50%"
-                transform="translateX(-50%)"
-                // Padding bridges the gap so the cursor never "leaves" the hover zone.
-                pb={3}
-                pt={1}
-                px={1}
-                zIndex={2}
-                data-testid="audio-volume-bridge"
-              >
-                <Box
-                  bg="white"
-                  boxShadow="lg"
-                  borderRadius="lg"
-                  px={3}
-                  py={3}
-                  data-testid="audio-volume-panel"
-                >
-                  <Slider.Root
-                    height="28"
-                    orientation="vertical"
-                    min={0}
-                    max={100}
-                    value={[Math.round((muted ? 0 : volume) * 100)]}
-                    onValueChange={({ value }) => {
-                      const next = (value[0] ?? 0) / 100
-                      setVolume(next)
-                      setMuted(next === 0)
-                    }}
-                    onValueChangeEnd={() => focusPlayerChrome()}
-                  >
-                    <Slider.Control>
-                      <Slider.Track>
-                        <Slider.Range bg="brand.primary" />
-                      </Slider.Track>
-                      <Slider.Thumbs borderColor="brand.primary" />
-                    </Slider.Control>
-                  </Slider.Root>
-                </Box>
-              </Box>
+            {muted || volume === 0 ? (
+              <VolumeX size={22} />
+            ) : (
+              <Volume2 size={22} />
             )}
-          </Box>
+          </IconButton>
+          {showVolume && audioUrl && (
+            <Box
+              position="absolute"
+              bottom="100%"
+              left="50%"
+              transform="translateX(-50%)"
+              // Padding bridges the gap so the cursor never "leaves" the hover zone.
+              pb={3}
+              pt={1}
+              px={1}
+              zIndex={2}
+              data-testid="audio-volume-bridge"
+            >
+              <Box
+                bg="white"
+                boxShadow="lg"
+                borderRadius="lg"
+                px={3}
+                py={3}
+                data-testid="audio-volume-panel"
+              >
+                <Slider.Root
+                  height="28"
+                  orientation="vertical"
+                  min={0}
+                  max={100}
+                  value={[Math.round((muted ? 0 : volume) * 100)]}
+                  onValueChange={({ value }) => {
+                    const next = (value[0] ?? 0) / 100
+                    setVolume(next)
+                    setMuted(next === 0)
+                  }}
+                  onValueChangeEnd={() => focusPlayerChrome()}
+                >
+                  <Slider.Control>
+                    <Slider.Track>
+                      <Slider.Range bg="brand.primary" />
+                    </Slider.Track>
+                    <Slider.Thumbs borderColor="brand.primary" />
+                  </Slider.Control>
+                </Slider.Root>
+              </Box>
+            </Box>
+          )}
+        </Box>
 
+        <Box gridArea="help" display={{ base: "none", md: "block" }}>
           <PlayerShortcutsHelp
             open={shortcutsOpen}
             onOpenChange={setShortcutsOpen}
           />
-        </Flex>
-      </Flex>
+        </Box>
+      </Box>
     </Box>
   )
 }

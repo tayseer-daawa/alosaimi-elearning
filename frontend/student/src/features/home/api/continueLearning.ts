@@ -1,4 +1,5 @@
 import { booksRepo } from "@/features/books/api/booksRepo"
+import { loadLastLearningPath } from "@/features/course/lib/lessonProgress"
 import { phasesRepo } from "@/features/phases/api/phasesRepo"
 
 export type ContinueLearningTarget = {
@@ -9,10 +10,27 @@ export type ContinueLearningTarget = {
 }
 
 /**
- * Resolve the first program → phase → book → lesson path for "continue learning".
- * Returns null when any level is empty.
+ * Prefer the last course opened on this device (localStorage).
+ * Fall back to the first program → phase → book → lesson leaf.
  */
 export async function resolveContinueLearning(
+  fallbackProgramId: string,
+): Promise<ContinueLearningTarget | null> {
+  const last = loadLastLearningPath()
+  if (last) {
+    return {
+      programId: last.programId,
+      phaseId: last.phaseId,
+      bookId: last.bookId,
+      courseId: last.courseId,
+    }
+  }
+
+  return resolveFirstLessonInProgram(fallbackProgramId)
+}
+
+/** First catalog leaf — used when the student has never opened a lesson here. */
+export async function resolveFirstLessonInProgram(
   programId: string,
 ): Promise<ContinueLearningTarget | null> {
   const phases = await phasesRepo.byProgram(programId, { limit: 1 })

@@ -4,6 +4,8 @@ const PLAYBACK_PREFIX = "lesson_playback:"
 const COMPLETED_PREFIX = "lesson_completed:"
 /** Global across lessons — device preference, not per-lesson. */
 const VOLUME_PREFS_KEY = "audio_player_volume"
+/** Last opened course path for home «متابعة التعلم». */
+const LAST_LEARNING_PATH_KEY = "continue_learning_path"
 
 /** Mark complete when the listener reaches this fraction of duration. */
 export const COMPLETE_RATIO = 0.9
@@ -19,12 +21,25 @@ export type VolumePrefs = {
   muted: boolean
 }
 
+/** Route params for the last lesson the student opened on this device. */
+export type LastLearningPath = {
+  programId: string
+  phaseId: string
+  bookId: string
+  courseId: string
+  updatedAt: number
+}
+
 function playbackKey(lessonId: string) {
   return `${PLAYBACK_PREFIX}${lessonId}`
 }
 
 function completedKey(lessonId: string) {
   return `${COMPLETED_PREFIX}${lessonId}`
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0
 }
 
 export function loadPlayback(lessonId: string): LessonPlaybackState | null {
@@ -157,6 +172,63 @@ export function saveVolumePrefs(volume: number, muted: boolean): void {
   }
   try {
     localStorage.setItem(VOLUME_PREFS_KEY, JSON.stringify(payload))
+  } catch {
+    // ignore
+  }
+}
+
+export function loadLastLearningPath(): LastLearningPath | null {
+  try {
+    const raw = localStorage.getItem(LAST_LEARNING_PATH_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as LastLearningPath
+    if (
+      !isNonEmptyString(parsed.programId) ||
+      !isNonEmptyString(parsed.phaseId) ||
+      !isNonEmptyString(parsed.bookId) ||
+      !isNonEmptyString(parsed.courseId)
+    ) {
+      return null
+    }
+    return {
+      programId: parsed.programId,
+      phaseId: parsed.phaseId,
+      bookId: parsed.bookId,
+      courseId: parsed.courseId,
+      updatedAt:
+        typeof parsed.updatedAt === "number" &&
+        Number.isFinite(parsed.updatedAt)
+          ? parsed.updatedAt
+          : 0,
+    }
+  } catch {
+    return null
+  }
+}
+
+export function saveLastLearningPath(path: {
+  programId: string
+  phaseId: string
+  bookId: string
+  courseId: string
+}): void {
+  if (
+    !isNonEmptyString(path.programId) ||
+    !isNonEmptyString(path.phaseId) ||
+    !isNonEmptyString(path.bookId) ||
+    !isNonEmptyString(path.courseId)
+  ) {
+    return
+  }
+  const payload: LastLearningPath = {
+    programId: path.programId,
+    phaseId: path.phaseId,
+    bookId: path.bookId,
+    courseId: path.courseId,
+    updatedAt: Date.now(),
+  }
+  try {
+    localStorage.setItem(LAST_LEARNING_PATH_KEY, JSON.stringify(payload))
   } catch {
     // ignore
   }
