@@ -125,7 +125,7 @@ export const BooksItem = ({ book }: BooksItemProps) => {
 
           {book.lessons.length === 0 ? (
             <Text color="brand.secondary" fontSize="md">
-              لا توجد دروس لهذا الكتاب بعد.
+              لا توجد مقررات لهذا الكتاب بعد.
             </Text>
           ) : (
             <Box
@@ -167,7 +167,7 @@ export const BooksItem = ({ book }: BooksItemProps) => {
                           })
                         }
                       >
-                        {`الدرس ${lesson.order + 1}`}
+                        {`المقرر ${lesson.order + 1}`}
                       </Text>
                       <LessonStatusBadge status={status} />
                     </Flex>

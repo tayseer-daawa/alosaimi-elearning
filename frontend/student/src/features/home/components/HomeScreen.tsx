@@ -35,7 +35,7 @@ export default function HomeScreen() {
     cards[0]?.title ??
     ""
   const continueSubtitle = lastLessonQuery.data
-    ? `الدرس ${(lastLessonQuery.data.order ?? 0) + 1}`
+    ? `المقرر ${(lastLessonQuery.data.order ?? 0) + 1}`
     : (cards[0]?.subtitle ?? "")
 
   const handleContinueLearning = async () => {

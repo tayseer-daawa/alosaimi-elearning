@@ -34,7 +34,7 @@ export const BooksList = () => {
     return (
       <VStack gap={4} py={10}>
         <Text color="red.500" textAlign="center">
-          تعذر تحميل دروس الكتاب.
+          تعذر تحميل مقررات الكتاب.
         </Text>
         <Button
           loading={lessonsQuery.isFetching}
