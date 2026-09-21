@@ -99,12 +99,8 @@ SEED_BOOK_MEDIA: dict[str, SeedBookMedia] = {
         lesson_pdf=_pdf("ih_books/single_02/ar-sharah-thlatht-alusul-1436.pdf"),
     ),
     "القواعد الأربع": SeedBookMedia(
-        audio=_audios(
-            "ih_sounds/single_02/ar-shar7-qawa3d-4-osaime-1440.mp3"
-        )[0],
-        lesson_audios=_audios(
-            "ih_sounds/single_02/ar-shar7-qawa3d-4-osaime-1440.mp3"
-        ),
+        audio=_audios("ih_sounds/single_02/ar-shar7-qawa3d-4-osaime-1440.mp3")[0],
+        lesson_audios=_audios("ih_sounds/single_02/ar-shar7-qawa3d-4-osaime-1440.mp3"),
     ),
     "الأربعون النووية": SeedBookMedia(
         audio=_audios(
@@ -177,9 +173,7 @@ SEED_BOOK_MEDIA: dict[str, SeedBookMedia] = {
         ),
     ),
     "كشف الشبهات": SeedBookMedia(
-        audio=_audios(
-            "ih_sounds/single_02/ar-shar7-kashf-shobohat-osaime-1440.mp3"
-        )[0],
+        audio=_audios("ih_sounds/single_02/ar-shar7-kashf-shobohat-osaime-1440.mp3")[0],
         lesson_audios=_audios(
             "ih_sounds/single_02/ar-shar7-kashf-shobohat-osaime-1440.mp3"
         ),
