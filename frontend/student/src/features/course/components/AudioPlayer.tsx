@@ -189,6 +189,8 @@ export default function AudioPlayer({
   const playingRef = useRef(isPlaying)
   const mutedRef = useRef(muted)
   const volumeRef = useRef(volume)
+  /** Last non-zero level — restore when unmuting after volume was dragged to 0. */
+  const lastAudibleVolumeRef = useRef(volume > 0 ? volume : 1)
   const rateRef = useRef(rate)
   const lessonIdRef = useRef(lessonId)
   const lastSavedAtRef = useRef(0)
@@ -325,6 +327,7 @@ export default function AudioPlayer({
   }, [muted])
   useEffect(() => {
     volumeRef.current = volume
+    if (volume > 0) lastAudibleVolumeRef.current = volume
   }, [volume])
   useEffect(() => {
     rateRef.current = rate
@@ -698,6 +701,10 @@ export default function AudioPlayer({
   const toggleMute = useCallback(
     (showHud = false) => {
       const nextMuted = !mutedRef.current
+      // Volume was dragged to 0 → mute sticks via effect; unmute must restore level.
+      if (!nextMuted && volumeRef.current <= 0) {
+        setVolume(lastAudibleVolumeRef.current || 1)
+      }
       setMuted(nextMuted)
       if (showHud) {
         flashHud({ kind: nextMuted ? "mute" : "unmute" })
@@ -1299,76 +1306,82 @@ export default function AudioPlayer({
             </IconButton>
           </Flex>
 
-          <Flex
-            align="center"
-            gap={1}
-            position="relative"
-            onMouseEnter={() => setShowVolume(true)}
-            onMouseLeave={() => setShowVolume(false)}
-            data-testid="audio-volume-wrap"
-          >
-            <IconButton
-              {...chromeIconProps}
-              aria-label={
-                muted || volume === 0 ? "إلغاء كتم الصوت" : "كتم الصوت"
-              }
-              disabled={!audioUrl}
-              onClick={() => {
-                toggleMute(true)
-                focusPlayerChrome()
-              }}
-              data-testid="audio-mute"
+          <Flex align="center" gap={1}>
+            <Box
+              position="relative"
+              onMouseEnter={() => setShowVolume(true)}
+              onMouseLeave={() => setShowVolume(false)}
+              data-testid="audio-volume-wrap"
             >
-              {muted || volume === 0 ? (
-                <VolumeX size={22} />
-              ) : (
-                <Volume2 size={22} />
-              )}
-            </IconButton>
-            {showVolume && audioUrl && (
-              <Box
-                position="absolute"
-                bottom="100%"
-                left="50%"
-                transform="translateX(-50%)"
-                // Padding bridges the gap so the cursor never "leaves" the hover zone.
-                pb={3}
-                pt={1}
-                px={1}
-                zIndex={2}
-                data-testid="audio-volume-bridge"
+              <IconButton
+                {...chromeIconProps}
+                aria-label={
+                  muted || volume === 0 ? "إلغاء كتم الصوت" : "كتم الصوت"
+                }
+                disabled={!audioUrl}
+                onClick={() => {
+                  toggleMute(true)
+                  focusPlayerChrome()
+                }}
+                data-testid="audio-mute"
               >
+                {muted || volume === 0 ? (
+                  <VolumeX size={22} />
+                ) : (
+                  <Volume2 size={22} />
+                )}
+              </IconButton>
+              {showVolume && audioUrl && (
                 <Box
-                  bg="white"
-                  boxShadow="lg"
-                  borderRadius="lg"
-                  px={3}
-                  py={3}
-                  data-testid="audio-volume-panel"
+                  position="absolute"
+                  bottom="100%"
+                  left="50%"
+                  transform="translateX(-50%)"
+                  // Small bridge so hover stays open without floating the panel away.
+                  pb={1}
+                  pt={0}
+                  px={1}
+                  zIndex={2}
+                  data-testid="audio-volume-bridge"
                 >
-                  <Slider.Root
-                    height="28"
-                    orientation="vertical"
-                    min={0}
-                    max={100}
-                    value={[Math.round((muted ? 0 : volume) * 100)]}
-                    onValueChange={({ value }) => {
-                      const next = (value[0] ?? 0) / 100
-                      setVolume(next)
-                      setMuted(next === 0)
-                    }}
-                    onValueChangeEnd={() => focusPlayerChrome()}
+                  <Box
+                    bg="white"
+                    boxShadow="lg"
+                    borderRadius="lg"
+                    px={2}
+                    py={2}
+                    mb={0}
+                    data-testid="audio-volume-panel"
                   >
-                    <Slider.Control>
-                      <Slider.Track>
-                        <Slider.Range bg="brand.primary" />
-                      </Slider.Track>
-                      <Slider.Thumbs borderColor="brand.primary" />
-                    </Slider.Control>
-                  </Slider.Root>
+                    <Slider.Root
+                      height="28"
+                      orientation="vertical"
+                      min={0}
+                      max={100}
+                      value={[Math.round((muted ? 0 : volume) * 100)]}
+                      onValueChange={({ value }) => {
+                        const next = (value[0] ?? 0) / 100
+                        setVolume(next)
+                        setMuted(next === 0)
+                        flashHud({
+                          kind: next === 0 ? "mute" : "volume",
+                          detail:
+                            next === 0 ? undefined : volumeHudDetail(next),
+                        })
+                      }}
+                      onValueChangeEnd={() => focusPlayerChrome()}
+                    >
+                      <Slider.Control>
+                        <Slider.Track>
+                          <Slider.Range bg="brand.primary" />
+                        </Slider.Track>
+                        <Slider.Thumbs borderColor="brand.primary" />
+                      </Slider.Control>
+                    </Slider.Root>
+                  </Box>
                 </Box>
-              </Box>
-            )}
+              )}
+            </Box>
             <Box display={{ base: "none", md: "block" }}>
               <PlayerShortcutsHelp
                 open={shortcutsOpen}
