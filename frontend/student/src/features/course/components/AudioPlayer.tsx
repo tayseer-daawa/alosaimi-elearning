@@ -895,7 +895,7 @@ export default function AudioPlayer({
         />
       ) : null}
 
-      <Flex align="center" justify="center" gap={1} mb={2}>
+      <Flex align="center" justify="center" gap={1} mb={{ base: 1, md: 2 }}>
         <IconButton
           {...chromeIconProps}
           color="brand.primary"
@@ -914,7 +914,7 @@ export default function AudioPlayer({
           py={1}
           borderRadius="md"
           color="brand.primary"
-          maxW={{ base: "60%", md: "md" }}
+          maxW={{ base: "72%", md: "md" }}
           onClick={onOpenLessonList}
           disabled={!onOpenLessonList}
           aria-label={`قائمة الدروس — ${title}`}
