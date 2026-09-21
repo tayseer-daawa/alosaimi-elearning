@@ -63,36 +63,54 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
         !iframeRef.current.contains(event.target) &&
         event.target !== iframeRef.current
       ) {
+        if (document.activeElement === iframeRef.current) {
+          iframeRef.current.blur()
+        }
         onFocusChangeRef.current?.(false)
       }
     }
 
     window.addEventListener("blur", onWindowBlur)
     document.addEventListener("focusin", onFocusIn)
-    document.addEventListener("pointerdown", onPointerDown)
+    document.addEventListener("pointerdown", onPointerDown, true)
     return () => {
       window.removeEventListener("blur", onWindowBlur)
       document.removeEventListener("focusin", onFocusIn)
-      document.removeEventListener("pointerdown", onPointerDown)
+      document.removeEventListener("pointerdown", onPointerDown, true)
       onFocusChangeRef.current?.(false)
     }
   }, [href])
 
   if (!href) {
     return (
-      <Box textAlign="center" py={10} px={4} data-testid="pdf-reader-empty">
-        <Text color="brand.secondary" mb={2}>
-          لا يتوفر ملف PDF لهذا الدرس.
+      <Box
+        borderWidth="1px"
+        borderColor="gray.200"
+        borderRadius="md"
+        bg="gray.50"
+        minH={{ base: "280px", md: "420px" }}
+        px={6}
+        py={10}
+        textAlign="center"
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        gap={2}
+        data-testid="pdf-reader-empty"
+      >
+        <Text color="brand.primary" fontWeight="medium">
+          لا يتوفر ملف PDF لهذا الدرس
         </Text>
-        <Text fontSize="sm" color="gray.500">
-          إن وُجد رابط للكتاب لاحقاً سيظهر هنا للقراءة داخل الصفحة.
+        <Text fontSize="sm" color="brand.secondary" maxW="md">
+          يمكنك متابعة الشرح الصوتي والملاحظات. سيظهر الملف هنا عند إضافة رابط
+          للكتاب أو للدرس.
         </Text>
       </Box>
     )
   }
 
   const retry = () => {
-    setStatus("loading")
     setReloadKey((k) => k + 1)
   }
 

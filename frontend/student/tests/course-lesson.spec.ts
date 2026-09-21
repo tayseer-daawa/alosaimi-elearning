@@ -152,6 +152,35 @@ test.describe("course lesson player", () => {
     }
   })
 
+  test("collapses and expands the notes pane on desktop", async ({ page }) => {
+    await openFirstLesson(page)
+
+    await expect(page.getByTestId("tab-panel-notes")).toBeVisible()
+    await expect(page.getByTestId("notes-pane-collapse")).toBeVisible()
+
+    await page.getByTestId("notes-pane-collapse").click()
+    await expect(page.getByTestId("tab-panel-notes")).toBeHidden()
+    await expect(page.getByTestId("notes-pane-expand")).toBeVisible()
+    await expect(page.getByTestId("course-split")).toHaveAttribute(
+      "data-notes-open",
+      "false",
+    )
+
+    // Collapsed preference persists across reload.
+    await page.reload()
+    await expect(page.getByTestId("course-screen")).toBeVisible()
+    await expect(page.getByTestId("tab-panel-notes")).toBeHidden()
+    await expect(page.getByTestId("notes-pane-expand")).toBeVisible()
+
+    await page.getByTestId("notes-pane-expand").click()
+    await expect(page.getByTestId("tab-panel-notes")).toBeVisible()
+    await expect(page.getByTestId("lesson-notes-input")).toBeVisible()
+    await expect(page.getByTestId("course-split")).toHaveAttribute(
+      "data-notes-open",
+      "true",
+    )
+  })
+
   test("uses tabs for PDF and notes on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await openFirstLesson(page)
@@ -164,6 +193,48 @@ test.describe("course lesson player", () => {
     await page.getByTestId("tab-notes").click()
     await expect(page.getByTestId("lesson-notes-input")).toBeVisible()
     await expect(page.getByTestId("pdf-reader")).toBeHidden()
+  })
+
+  test("shows PDF timeout panel with retry and open-in-tab", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      ;(
+        window as Window & { __COURSE_PDF_TIMEOUT_MS__?: number }
+      ).__COURSE_PDF_TIMEOUT_MS__ = 1
+    })
+    await openFirstLesson(page)
+
+    await expect(page.getByTestId("pdf-reader-timeout")).toBeVisible({
+      timeout: 10_000,
+    })
+    await expect(page.getByTestId("pdf-reader-retry-panel")).toBeVisible()
+    await expect(page.getByTestId("pdf-reader-open-tab-panel")).toBeVisible()
+    await expect(page.getByTestId("pdf-reader-open-tab")).toBeVisible()
+  })
+
+  test("keeps long teacher explanation collapsed so my notes stay visible", async ({
+    page,
+  }) => {
+    await openFirstLesson(page)
+
+    const toggle = page.getByTestId("lesson-explanation-toggle")
+    if ((await toggle.count()) === 0) {
+      test.skip()
+      return
+    }
+
+    const expanded = await toggle.getAttribute("aria-expanded")
+    if (expanded === "true") {
+      // Short explanation opens by default on desktop.
+      await expect(page.getByTestId("lesson-explanation")).toBeVisible()
+      return
+    }
+
+    await expect(page.getByTestId("lesson-notes-input")).toBeVisible()
+    await expect(page.getByTestId("lesson-explanation")).toBeHidden()
+    await toggle.click()
+    await expect(page.getByTestId("lesson-explanation")).toBeVisible()
   })
 
   test("UI controls: play, mute, rate, and seek", async ({ page }) => {
