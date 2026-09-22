@@ -4,7 +4,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     commit-message:
       prefix: "chore(ci):"
     groups:
@@ -14,7 +14,7 @@ updates:
   - package-ecosystem: uv
     directory: /backend
     schedule:
-      interval: weekly
+      interval: monthly
     commit-message:
       prefix: "chore(backend):"
     groups:
@@ -24,7 +24,7 @@ updates:
   - package-ecosystem: npm
     directory: "/frontend/admin"
     schedule:
-      interval: weekly
+      interval: monthly
     commit-message:
       prefix: "chore(frontend/admin):"
     ignore:
@@ -41,7 +41,7 @@ updates:
   - package-ecosystem: npm
     directory: "/frontend/student"
     schedule:
-      interval: weekly
+      interval: monthly
     commit-message:
       prefix: "chore(frontend/student):"
     ignore:
@@ -61,7 +61,7 @@ updates:
       - "/frontend/admin"
       - "/frontend/student"
     schedule:
-      interval: weekly
+      interval: monthly
     commit-message:
       prefix: "chore(tools/docker):"
     ignore:
@@ -78,6 +78,6 @@ updates:
   - package-ecosystem: docker-compose
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     commit-message:
       prefix: "chore(tools/docker):"
