@@ -135,6 +135,20 @@ def test_add_student_to_session_not_admin(
     assert response.status_code == 403
 
 
+def test_self_enrollment_to_session(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    session = create_random_session(db)
+    user = create_random_user(db)
+    response = client.post(
+        f"{settings.API_V1_STR}/sessions/{session.id}/enroll",
+        headers=normal_user_token_headers,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["id"] == str(session.id)
+
+
 def test_remove_student_from_session(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
