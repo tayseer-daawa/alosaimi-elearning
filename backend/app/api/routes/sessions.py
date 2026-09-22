@@ -6,6 +6,7 @@ from sqlmodel import func, select
 
 from app import crud
 from app.api.deps import (
+    CurrentUser,
     SessionDep,
     get_current_admin_or_superuser,
     get_current_teacher_or_admin,
@@ -156,12 +157,31 @@ def add_student_to_session(
     user_id: uuid.UUID,
 ) -> ProgramSession:
     """
-    Add a student to a session.
-
-    Only admins can enroll students.
+    Add a student to a session (admin endpoint).
     """
     db_session = crud.add_student_to_session(
         session=session, session_id=session_id, user_id=user_id
+    )
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session or User not found")
+
+    return db_session
+
+
+@router.post(
+    "/{session_id}/enroll",
+    response_model=ProgramSessionPublic,
+)
+def enroll_to_session(
+    session: SessionDep,
+    session_id: uuid.UUID,
+    current_user: CurrentUser,
+) -> ProgramSession:
+    """
+    Self enroll to session.
+    """
+    db_session = crud.add_student_to_session(
+        session=session, session_id=session_id, user_id=current_user.id
     )
     if not db_session:
         raise HTTPException(status_code=404, detail="Session or User not found")

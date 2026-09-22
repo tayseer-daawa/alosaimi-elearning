@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { BooksReadBooksData, BooksReadBooksResponse, BooksCreateBookData, BooksCreateBookResponse, BooksReadBookData, BooksReadBookResponse, BooksUpdateBookData, BooksUpdateBookResponse, BooksDeleteBookData, BooksDeleteBookResponse, ExamsReadExamsBySessionData, ExamsReadExamsBySessionResponse, ExamsReadExamData, ExamsReadExamResponse, ExamsUpdateExamData, ExamsUpdateExamResponse, ExamsDeleteExamData, ExamsDeleteExamResponse, ExamsCreateExamData, ExamsCreateExamResponse, ExamsReadStudentExamAttemptsData, ExamsReadStudentExamAttemptsResponse, ExamsReadMyExamAttemptsData, ExamsReadMyExamAttemptsResponse, ExamsCreateExamAttemptData, ExamsCreateExamAttemptResponse, ExamsUpdateExamAttemptData, ExamsUpdateExamAttemptResponse, LessonsReadLessonsByBookData, LessonsReadLessonsByBookResponse, LessonsReadLessonData, LessonsReadLessonResponse, LessonsUpdateLessonData, LessonsUpdateLessonResponse, LessonsDeleteLessonData, LessonsDeleteLessonResponse, LessonsCreateLessonData, LessonsCreateLessonResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PhasesReadPhasesData, PhasesReadPhasesResponse, PhasesCreatePhaseData, PhasesCreatePhaseResponse, PhasesReadPhasesByProgramData, PhasesReadPhasesByProgramResponse, PhasesReadPhaseData, PhasesReadPhaseResponse, PhasesUpdatePhaseData, PhasesUpdatePhaseResponse, PhasesDeletePhaseData, PhasesDeletePhaseResponse, PhasesAddBookToPhaseData, PhasesAddBookToPhaseResponse, PhasesRemoveBookFromPhaseData, PhasesRemoveBookFromPhaseResponse, PrivateCreateUserData, PrivateCreateUserResponse, ProgramsReadProgramsData, ProgramsReadProgramsResponse, ProgramsCreateProgramData, ProgramsCreateProgramResponse, ProgramsReadProgramData, ProgramsReadProgramResponse, ProgramsUpdateProgramData, ProgramsUpdateProgramResponse, ProgramsDeleteProgramData, ProgramsDeleteProgramResponse, QuestionsReadQuestionsData, QuestionsReadQuestionsResponse, QuestionsCreateQuestionData, QuestionsCreateQuestionResponse, QuestionsReadQuestionsByLessonData, QuestionsReadQuestionsByLessonResponse, QuestionsReadQuestionData, QuestionsReadQuestionResponse, QuestionsUpdateQuestionData, QuestionsUpdateQuestionResponse, QuestionsDeleteQuestionData, QuestionsDeleteQuestionResponse, SessionsReadSessionsData, SessionsReadSessionsResponse, SessionsCreateSessionData, SessionsCreateSessionResponse, SessionsReadSessionsByProgramData, SessionsReadSessionsByProgramResponse, SessionsReadSessionData, SessionsReadSessionResponse, SessionsUpdateSessionData, SessionsUpdateSessionResponse, SessionsDeleteSessionData, SessionsDeleteSessionResponse, SessionsAddStudentToSessionData, SessionsAddStudentToSessionResponse, SessionsRemoveStudentFromSessionData, SessionsRemoveStudentFromSessionResponse, SessionsAddTeacherToSessionData, SessionsAddTeacherToSessionResponse, SessionsRemoveTeacherFromSessionData, SessionsRemoveTeacherFromSessionResponse, SessionsReadSessionEventsData, SessionsReadSessionEventsResponse, SessionsCreateSessionEventData, SessionsCreateSessionEventResponse, SessionsReadSessionLessonsData, SessionsReadSessionLessonsResponse, SessionsReadSessionBreaksData, SessionsReadSessionBreaksResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { BooksReadBooksData, BooksReadBooksResponse, BooksCreateBookData, BooksCreateBookResponse, BooksReadBookData, BooksReadBookResponse, BooksUpdateBookData, BooksUpdateBookResponse, BooksDeleteBookData, BooksDeleteBookResponse, ExamsReadExamsBySessionData, ExamsReadExamsBySessionResponse, ExamsReadExamData, ExamsReadExamResponse, ExamsUpdateExamData, ExamsUpdateExamResponse, ExamsDeleteExamData, ExamsDeleteExamResponse, ExamsCreateExamData, ExamsCreateExamResponse, ExamsReadStudentExamAttemptsData, ExamsReadStudentExamAttemptsResponse, ExamsReadMyExamAttemptsData, ExamsReadMyExamAttemptsResponse, ExamsCreateExamAttemptData, ExamsCreateExamAttemptResponse, ExamsUpdateExamAttemptData, ExamsUpdateExamAttemptResponse, LessonsReadLessonsByBookData, LessonsReadLessonsByBookResponse, LessonsReadLessonData, LessonsReadLessonResponse, LessonsUpdateLessonData, LessonsUpdateLessonResponse, LessonsDeleteLessonData, LessonsDeleteLessonResponse, LessonsCreateLessonData, LessonsCreateLessonResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PhasesReadPhasesData, PhasesReadPhasesResponse, PhasesCreatePhaseData, PhasesCreatePhaseResponse, PhasesReadPhasesByProgramData, PhasesReadPhasesByProgramResponse, PhasesReadPhaseData, PhasesReadPhaseResponse, PhasesUpdatePhaseData, PhasesUpdatePhaseResponse, PhasesDeletePhaseData, PhasesDeletePhaseResponse, PhasesAddBookToPhaseData, PhasesAddBookToPhaseResponse, PhasesRemoveBookFromPhaseData, PhasesRemoveBookFromPhaseResponse, PrivateCreateUserData, PrivateCreateUserResponse, ProgramsReadProgramsData, ProgramsReadProgramsResponse, ProgramsCreateProgramData, ProgramsCreateProgramResponse, ProgramsReadProgramData, ProgramsReadProgramResponse, ProgramsUpdateProgramData, ProgramsUpdateProgramResponse, ProgramsDeleteProgramData, ProgramsDeleteProgramResponse, QuestionsReadQuestionsData, QuestionsReadQuestionsResponse, QuestionsCreateQuestionData, QuestionsCreateQuestionResponse, QuestionsReadQuestionsByLessonData, QuestionsReadQuestionsByLessonResponse, QuestionsReadQuestionData, QuestionsReadQuestionResponse, QuestionsUpdateQuestionData, QuestionsUpdateQuestionResponse, QuestionsDeleteQuestionData, QuestionsDeleteQuestionResponse, SessionsReadSessionsData, SessionsReadSessionsResponse, SessionsCreateSessionData, SessionsCreateSessionResponse, SessionsReadSessionsByProgramData, SessionsReadSessionsByProgramResponse, SessionsReadSessionData, SessionsReadSessionResponse, SessionsUpdateSessionData, SessionsUpdateSessionResponse, SessionsDeleteSessionData, SessionsDeleteSessionResponse, SessionsAddStudentToSessionData, SessionsAddStudentToSessionResponse, SessionsRemoveStudentFromSessionData, SessionsRemoveStudentFromSessionResponse, SessionsEnrollToSessionData, SessionsEnrollToSessionResponse, SessionsAddTeacherToSessionData, SessionsAddTeacherToSessionResponse, SessionsRemoveTeacherFromSessionData, SessionsRemoveTeacherFromSessionResponse, SessionsReadSessionEventsData, SessionsReadSessionEventsResponse, SessionsCreateSessionEventData, SessionsCreateSessionEventResponse, SessionsReadSessionLessonsData, SessionsReadSessionLessonsResponse, SessionsReadSessionBreaksData, SessionsReadSessionBreaksResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class BooksService {
     /**
@@ -1191,9 +1191,7 @@ export class SessionsService {
     
     /**
      * Add Student To Session
-     * Add a student to a session.
-     *
-     * Only admins can enroll students.
+     * Add a student to a session (admin endpoint).
      * @param data The data for the request.
      * @param data.sessionId
      * @param data.userId
@@ -1232,6 +1230,27 @@ export class SessionsService {
             path: {
                 session_id: data.sessionId,
                 user_id: data.userId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Enroll To Session
+     * Self enroll to session.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @returns ProgramSessionPublic Successful Response
+     * @throws ApiError
+     */
+    public static enrollToSession(data: SessionsEnrollToSessionData): CancelablePromise<SessionsEnrollToSessionResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/sessions/{session_id}/enroll',
+            path: {
+                session_id: data.sessionId
             },
             errors: {
                 422: 'Validation Error'
