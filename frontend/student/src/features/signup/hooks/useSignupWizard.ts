@@ -1,7 +1,13 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
-import { ApiError, UsersService } from "@/client"
+import { ApiError, LoginService, UsersService } from "@/client"
 import { apiErrorMessage } from "@/shared/lib/apiErrorMessage"
+import {
+  ACCESS_TOKEN_KEY,
+  clearAuthSession,
+  setStudentProfile,
+} from "@/shared/lib/authSession"
+import { emailIssue, emailIssueMessage } from "../lib/emailRules"
 
 type Step = "name" | "email" | "gender" | "password"
 
@@ -18,6 +24,8 @@ type SignupErrors = {
   form: string | null
 }
 
+type SignupField = Exclude<keyof SignupErrors, "form">
+
 const emptyErrors = (): SignupErrors => ({
   firstName: null,
   fatherName: null,
@@ -28,6 +36,43 @@ const emptyErrors = (): SignupErrors => ({
   confirmPassword: null,
   form: null,
 })
+
+const fieldStep: Record<SignupField, Step> = {
+  firstName: "name",
+  fatherName: "name",
+  familyName: "name",
+  email: "email",
+  gender: "gender",
+  password: "password",
+  confirmPassword: "password",
+}
+
+const apiFieldToSignupField: Record<string, SignupField> = {
+  first_name: "firstName",
+  father_name: "fatherName",
+  family_name: "familyName",
+  email: "email",
+  is_male: "gender",
+  password: "password",
+}
+
+function signupFieldFromApiError(body: unknown): SignupField | null {
+  const detail = (body as { detail?: unknown } | null | undefined)?.detail
+
+  if (typeof detail === "string") {
+    return /already exists/i.test(detail) ? "email" : null
+  }
+
+  if (Array.isArray(detail) && detail.length > 0) {
+    const loc = (detail[0] as { loc?: unknown[] })?.loc
+    const apiField = Array.isArray(loc) ? loc[loc.length - 1] : undefined
+    if (typeof apiField === "string") {
+      return apiFieldToSignupField[apiField] ?? null
+    }
+  }
+
+  return null
+}
 
 const isFilledName = (value: string) => value.trim().length > 1
 const NAME_MAX = 30
@@ -63,7 +108,7 @@ export function useSignupWizard() {
           familyName.trim().length <= NAME_MAX
         )
       case "email":
-        return /\S+@\S+\.\S+/.test(email.trim())
+        return emailIssue(email) === null
       case "gender":
         return isMale !== null
       case "password":
@@ -110,7 +155,7 @@ export function useSignupWizard() {
         }
         break
       case "email":
-        nextErrors.email = "الرجاء إدخال بريد إلكتروني صحيح"
+        nextErrors.email = emailIssueMessage(emailIssue(email) ?? "format")
         break
       case "gender":
         nextErrors.gender = "الرجاء تحديد الجنس"
@@ -135,48 +180,87 @@ export function useSignupWizard() {
     return false
   }
 
+  const showErrorOnStep = (field: SignupField | null, message: string) => {
+    if (!field) {
+      setError({ ...emptyErrors(), form: message })
+      return
+    }
+    setError({ ...emptyErrors(), [field]: message })
+    setStepIndex(steps.indexOf(fieldStep[field]))
+  }
+
+  const signInAfterSignup = async () => {
+    try {
+      const response = await LoginService.loginAccessToken({
+        formData: { username: email.trim(), password },
+      })
+      localStorage.setItem(ACCESS_TOKEN_KEY, response.access_token)
+      const profile = await UsersService.readUserMe()
+      setStudentProfile({
+        email: profile.email,
+        first_name: profile.first_name,
+      })
+      await navigate({ to: "/" })
+    } catch {
+      clearAuthSession()
+      await navigate({ to: "/login" })
+    }
+  }
+
+  const submit = async () => {
+    setIsSubmitting(true)
+    try {
+      await UsersService.registerUser({
+        requestBody: {
+          first_name: firstName.trim(),
+          father_name: fatherName.trim(),
+          family_name: familyName.trim(),
+          email: email.trim(),
+          is_male: isMale as boolean,
+          password: password,
+        },
+      })
+      await signInAfterSignup()
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        showErrorOnStep(
+          signupFieldFromApiError(err.body),
+          apiErrorMessage(err.body),
+        )
+      } else {
+        showErrorOnStep(null, "تعذر إنشاء الحساب، يرجى المحاولة لاحقاً")
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const next = async () => {
+    if (isSubmitting) return
     setError(emptyErrors())
 
     if (!validateCurrentStep()) return
 
     if (step === "password") {
-      setIsSubmitting(true)
-      try {
-        await UsersService.registerUser({
-          requestBody: {
-            first_name: firstName.trim(),
-            father_name: fatherName.trim(),
-            family_name: familyName.trim(),
-            email: email.trim(),
-            is_male: isMale as boolean,
-            password: password,
-          },
-        })
-        await navigate({ to: "/login" })
-      } catch (err: unknown) {
-        if (err instanceof ApiError) {
-          setError({
-            ...emptyErrors(),
-            form: apiErrorMessage(err.body),
-          })
-        } else {
-          setError({
-            ...emptyErrors(),
-            form: "تعذر إنشاء الحساب، يرجى المحاولة لاحقاً",
-          })
-        }
-      } finally {
-        setIsSubmitting(false)
-      }
+      await submit()
       return
     }
 
     setStepIndex((i) => Math.min(i + 1, steps.length - 1))
   }
 
+  const back = () => {
+    if (isSubmitting) return
+    setError(emptyErrors())
+    setStepIndex((i) => Math.max(i - 1, 0))
+  }
+
   return {
     step,
+    stepNumber: stepIndex + 1,
+    stepCount: steps.length,
+    canGoBack: stepIndex > 0,
+    isLastStep: step === "password",
     title,
     error,
     isSubmitting,
@@ -195,5 +279,6 @@ export function useSignupWizard() {
     confirmPassword,
     setConfirmPassword,
     next,
+    back,
   }
 }

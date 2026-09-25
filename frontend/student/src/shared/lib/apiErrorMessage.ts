@@ -18,6 +18,10 @@ const CONTAINS: Array<{ match: RegExp; message: string }> = [
     message: "كلمة السر يجب أن تكون 8 أحرف على الأقل",
   },
   {
+    match: /special-use or reserved/i,
+    message: "هذا البريد غير مقبول، الرجاء استخدام بريدك الإلكتروني الحقيقي",
+  },
+  {
     match: /not a valid email/i,
     message: "الرجاء إدخال بريد إلكتروني صحيح",
   },

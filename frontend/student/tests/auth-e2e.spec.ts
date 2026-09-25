@@ -39,20 +39,29 @@ async function completeSignupWizard(
   await expect(passwordInputs).toHaveCount(2)
   await passwordInputs.nth(0).fill(opts.password)
   await passwordInputs.nth(1).fill(opts.password)
-  await page.getByRole("button", { name: "مواصلة" }).click()
+  await page.getByRole("button", { name: "إنشاء الحساب" }).click()
 }
 
 test.describe("auth E2E UI", () => {
   test.describe.configure({ timeout: 60_000 })
 
-  test("signup → login → home → logout → welcome", async ({ page }) => {
+  test("signup signs in → home → logout → login → home", async ({ page }) => {
     const email = `ui.signup.${stamp}@example.com`
     const password = "Password1!"
 
     await completeSignupWizard(page, { email, password })
-    await page.waitForURL("/login", { timeout: 15000 })
-    await expect(page.getByText("أدخل معلومات الحساب")).toBeVisible()
+    await page.waitForURL("/", { timeout: 15000 })
+    await expect(page).toHaveURL("/")
+    expect(
+      await page.evaluate(() => localStorage.getItem("access_token")),
+    ).toBeTruthy()
 
+    await page.getByRole("button", { name: "القائمة الرئيسية" }).click()
+    await page.getByText("تسجيل الخروج").click()
+    await page.waitForURL("/welcome", { timeout: 10000 })
+
+    await page.goto("/login")
+    await expect(page.getByText("أدخل معلومات الحساب")).toBeVisible()
     await page.getByLabel("البريد الإلكتروني").fill(email)
     await page.getByLabel("كلمة السر").fill(password)
     await page.getByRole("button", { name: "مواصلة" }).click()
@@ -73,20 +82,35 @@ test.describe("auth E2E UI", () => {
     expect(profile).toBeNull()
   })
 
-  test("signup rejects duplicate email with API error", async ({ page }) => {
+  test("signup duplicate email returns to the email step with API error", async ({
+    page,
+    request,
+  }) => {
     const email = `ui.dup.${stamp}@example.com`
     const password = "Password1!"
 
-    await completeSignupWizard(page, { email, password })
-    await page.waitForURL("/login", { timeout: 15000 })
+    const seeded = await request.post(`${API}/api/v1/users/signup`, {
+      data: {
+        email,
+        password,
+        first_name: "أحمد",
+        father_name: "محمد",
+        family_name: "العصيمي",
+        is_male: true,
+      },
+    })
+    expect(seeded.ok()).toBeTruthy()
 
     await completeSignupWizard(page, { email, password })
-    // should stay on signup password step with Arabic API error
     await expect(
       page.getByText("يوجد حساب مسجل بهذا البريد الإلكتروني"),
     ).toBeVisible({
       timeout: 10000,
     })
+    await expect(page.getByLabel("البريد الإلكتروني")).toHaveValue(email)
+    await expect(page.getByTestId("signup-step-indicator")).toHaveText(
+      "الخطوة 2 من 4",
+    )
   })
 
   test("signup UI rejects passwords shorter than 8 chars", async ({ page }) => {
