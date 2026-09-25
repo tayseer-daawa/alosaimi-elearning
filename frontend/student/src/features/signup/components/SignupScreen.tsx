@@ -1,5 +1,6 @@
-import { Field, Text, VStack } from "@chakra-ui/react"
+import { Button, Field, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@tanstack/react-router"
+import { ArrowRight } from "lucide-react"
 import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import AuthLayout from "@/shared/components/AuthLayout"
 import { CustomField, ErrorText } from "@/shared/components/CustomField"
@@ -9,6 +10,10 @@ import { GenderToggle } from "./GenderToggle"
 export default function SignupScreen() {
   const {
     step,
+    stepNumber,
+    stepCount,
+    canGoBack,
+    isLastStep,
     title,
     error,
     isSubmitting,
@@ -27,6 +32,7 @@ export default function SignupScreen() {
     confirmPassword,
     setConfirmPassword,
     next,
+    back,
   } = useSignupWizard()
 
   const handleKeyDownEnter = (e: React.KeyboardEvent) => {
@@ -45,6 +51,15 @@ export default function SignupScreen() {
           lineHeight={{ base: "short", md: "shorter" }}
         >
           {title}
+        </Text>
+        <Text
+          color="text.muted"
+          fontSize={{ base: "sm", md: "lg" }}
+          fontWeight={500}
+          textAlign="center"
+          data-testid="signup-step-indicator"
+        >
+          {`الخطوة ${stepNumber} من ${stepCount}`}
         </Text>
       </VStack>
 
@@ -132,9 +147,21 @@ export default function SignupScreen() {
               type="password"
               autoComplete="new-password"
               handleKeyDownEnter={handleKeyDownEnter}
-              error={error.confirmPassword ?? error.form}
+              error={error.confirmPassword}
             />
           </VStack>
+        )}
+
+        {error.form && (
+          <Text
+            role="alert"
+            color="red.500"
+            fontSize={{ base: "sm", md: "xl" }}
+            textAlign="center"
+            w="100%"
+          >
+            {error.form}
+          </Text>
         )}
       </VStack>
 
@@ -144,8 +171,22 @@ export default function SignupScreen() {
           loading={isSubmitting}
           disabled={isSubmitting}
         >
-          مواصلة
+          {isLastStep ? "إنشاء الحساب" : "مواصلة"}
         </AuthCtaBtn>
+        {canGoBack && (
+          <Button
+            variant="ghost"
+            size={{ base: "sm", md: "md" }}
+            w={{ base: "80%", md: "60%", lg: "50%" }}
+            alignSelf="center"
+            color="text.default"
+            onClick={back}
+            disabled={isSubmitting}
+          >
+            <ArrowRight aria-hidden />
+            رجوع
+          </Button>
+        )}
         <Text
           color="text.muted"
           fontSize={{ base: "sm", md: "md" }}

@@ -28,6 +28,7 @@ const CustomField = ({
         fontSize={{ base: "xl", md: "xl", lg: "xl" }}
         fontWeight={600}
         variant="flushed"
+        value={state}
         onChange={(e) => stateSetter(e.target.value)}
         onKeyDown={handleKeyDownEnter}
         placeholder=""
