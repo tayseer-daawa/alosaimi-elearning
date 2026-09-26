@@ -1,7 +1,16 @@
-# Full Stack FastAPI Template
+# AlOsaimi E-Learning
 
-<a href="https://github.com/fastapi/full-stack-fastapi-template/actions?query=workflow%3ATest" target="_blank"><img src="https://github.com/fastapi/full-stack-fastapi-template/workflows/Test/badge.svg" alt="Test"></a>
-<a href="https://coverage-badge.samuelcolvin.workers.dev/redirect/fastapi/full-stack-fastapi-template" target="_blank"><img src="https://coverage-badge.samuelcolvin.workers.dev/fastapi/full-stack-fastapi-template.svg" alt="Coverage"></a>
+Arabic e-learning platform for **برنامج مهمات العلم** (Muhimmat al-Ilm) — Sheikh صالح بن عبدالله العصيمي’s foundational **15 متون** curriculum (aqidah, fiqh, hadith, usul, tafsir principles, Arabic grammar), with cohort sessions, lessons, and exams.
+
+**Audience (student app):** most learners are **not** power users — older adults, parents, and mothers studying Sharia. Prefer **large visible controls** over keyboard-only or hidden gestures. Shortcuts may exist as a bonus; never as the only way to do something (e.g. audio ±seek must be on-screen on desktop and mobile).
+
+- **Student app** (`frontend/student`, :5174) — Arabic RTL SPA for browsing program → phase → matn → lessons  
+- **Admin app** (`frontend/admin`, :5173) — English LTR dashboard for content and users  
+- **Backend** (`backend`, :8000) — FastAPI + PostgreSQL  
+
+Product / curriculum notes for seed and UI copy: [backend/app/seed/README.md](./backend/app/seed/README.md) (15 متون → phases). Local agent conventions live in `AGENTS.md` / `.claude/skills/muhimmat-al-ilm/` when present on your machine.
+
+Built on [`fastapi/full-stack-fastapi-template`](https://github.com/fastapi/full-stack-fastapi-template); some template docs below still describe the upstream sample app.
 
 ## Technology Stack and Features
 
@@ -92,6 +101,16 @@ Copy the content and use that as password / secret key. And run that again to ge
 
 Backend docs: [backend/README.md](./backend/README.md).
 
+### Development seed (local عصيمي program fixtures)
+
+Prestart only creates `FIRST_SUPERUSER` from `.env`. For demo users and multiple real programs (**مهمات العلم**, **أصول العلم**, **تمكين**, **أساس العلم**, **جمل العلم**, seasonal أحكام…), run:
+
+```bash
+cd backend && uv run python -m app.seed --clean --verbose
+```
+
+Curriculum map: [backend/app/seed/README.md](./backend/app/seed/README.md).
+
 ## Frontend Development
 
 Frontend Admin docs: [frontend/admin/README.md](./frontend/admin/README.md).
@@ -105,6 +124,8 @@ Deployment is handled outside this repository. See [docs/staging.md](./docs/stag
 General development docs: [development.md](./development.md).
 
 This includes using Docker Compose, custom local domains, `.env` configurations, etc.
+
+Student course player roadmap (beta baseline, deferred PDF work, feature catalog, best practices): [docs/student-learning-experience.md](./docs/student-learning-experience.md).
 
 ## License
 

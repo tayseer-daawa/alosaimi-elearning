@@ -3,7 +3,7 @@ import uuid
 from sqlmodel import Session, col, func, select
 
 from app.crud.utils import validate_update_model
-from app.models import Phase, PhaseBook, PhaseCreate, PhaseUpdate
+from app.models import Book, Phase, PhaseBook, PhaseCreate, PhaseUpdate
 
 
 def create_phase(*, session: Session, phase_in: PhaseCreate) -> Phase:
@@ -97,3 +97,18 @@ def remove_book_from_phase(
         session.commit()
         return True
     return False
+
+
+def get_books_by_phase(
+    *, session: Session, phase_id: uuid.UUID, skip: int = 0, limit: int = 100
+) -> list[Book]:
+    """Get books for a specific phase, ordered by PhaseBook.order."""
+    statement = (
+        select(Book)
+        .join(PhaseBook)
+        .where(PhaseBook.phase_id == phase_id)
+        .order_by(col(PhaseBook.order))
+        .offset(skip)
+        .limit(limit)
+    )
+    return list(session.exec(statement).all())

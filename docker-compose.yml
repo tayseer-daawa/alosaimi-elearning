@@ -186,6 +186,7 @@ services:
       context: ./frontend/student
       args:
         - VITE_API_URL=https://api.${DOMAIN?Variable not set}
+        - VITE_NOTES_FEATURE_ENABLED=${VITE_NOTES_FEATURE_ENABLED:-false}
         - NODE_ENV=production
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]

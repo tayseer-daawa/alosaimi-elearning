@@ -58,7 +58,7 @@ export default function ForgetPasswordScreen() {
             تم إرسال البريد الإلكتروني بنجاح. يرجى التحقق من بريدك الإلكتروني.
           </Text>
         )}
-        <AuthInlineBtn onClick={() => navigate({ to: "/" })}>
+        <AuthInlineBtn onClick={() => navigate({ to: "/login" })}>
           العودة إلى تسجيل الدخول
         </AuthInlineBtn>
       </VStack>
