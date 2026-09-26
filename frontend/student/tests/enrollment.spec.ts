@@ -128,7 +128,7 @@ test.describe("program self-enrollment", () => {
     await expect(card.getByTestId("enroll-button").first()).toBeEnabled()
   })
 
-  test("tells the student when a program has no sessions to join", async ({
+  test("hides the enrollment card when a program has no sessions", async ({
     page,
     request,
   }) => {
@@ -136,13 +136,14 @@ test.describe("program self-enrollment", () => {
     test.skip(!program, "every program has a session in this database")
 
     await signUpAndLogIn(page, request)
-    await page.goto(`/programs/${program!.id}/phases`)
-
-    const card = page.getByTestId("enrollment-card")
-    await expect(card).toHaveAttribute("data-state", "none")
-    await expect(card).toContainText(
-      "لا توجد دورات مفتوحة للتسجيل في هذا البرنامج حالياً.",
+    const sessionsLoaded = page.waitForResponse((res) =>
+      res.url().includes(`/api/v1/sessions/program/${program!.id}`),
     )
+    await page.goto(`/programs/${program!.id}/phases`)
+    await sessionsLoaded
+
+    await expect(page.getByText("مرحلة 1", { exact: true })).toBeVisible()
+    await expect(page.getByTestId("enrollment-card")).toHaveCount(0)
     await expect(page.getByTestId("enroll-button")).toHaveCount(0)
   })
 })

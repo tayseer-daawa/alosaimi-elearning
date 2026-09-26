@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Skeleton, Stack, Text } from "@chakra-ui/react"
+import { Box, Button, Flex, Stack, Text } from "@chakra-ui/react"
 import { CalendarDays, CircleCheck } from "lucide-react"
 import type { ReactNode } from "react"
 import type { ProgramSessionPublic } from "@/client"
@@ -19,15 +19,9 @@ export function EnrollmentCard({ programId }: EnrollmentCardProps) {
   const programSessions = useProgramSessions(programId)
   const mySessions = useMySessions()
 
-  if (programSessions.isLoading || mySessions.isLoading) {
-    return (
-      <Skeleton
-        h={{ base: "40", lg: "28" }}
-        borderRadius="4px"
-        data-testid="enrollment-card-loading"
-      />
-    )
-  }
+  // No skeleton: most programs have no sessions, so a placeholder would
+  // flash and then disappear.
+  if (programSessions.isLoading || mySessions.isLoading) return null
 
   if (programSessions.isError || mySessions.isError) {
     const retry = () => {
@@ -84,15 +78,7 @@ function EnrollmentStateView({ state }: { state: EnrollmentState }) {
     )
   }
 
-  if (state.kind === "none") {
-    return (
-      <CardShell state="none">
-        <Text color="brand.secondary" fontSize={{ base: "md", lg: "lg" }}>
-          لا توجد دورات مفتوحة للتسجيل في هذا البرنامج حالياً.
-        </Text>
-      </CardShell>
-    )
-  }
+  if (state.kind === "none") return null
 
   return <OpenSessions sessions={state.sessions} />
 }
@@ -107,6 +93,7 @@ function OpenSessions({ sessions }: { sessions: ProgramSessionPublic[] }) {
       borderRadius="4px"
       boxShadow="lg"
       p={{ base: 6, lg: 8 }}
+      mb={8}
       data-testid="enrollment-card"
       data-state="open"
     >
@@ -170,7 +157,7 @@ function OpenSessions({ sessions }: { sessions: ProgramSessionPublic[] }) {
 }
 
 type CardShellProps = {
-  state: "enrolled" | "none" | "error"
+  state: "enrolled" | "error"
   bg?: string
   children: ReactNode
 }
@@ -182,6 +169,7 @@ function CardShell({ state, bg = "white", children }: CardShellProps) {
       borderRadius="4px"
       boxShadow="lg"
       p={{ base: 6, lg: 8 }}
+      mb={8}
       direction={{ base: "column", md: "row" }}
       align={{ base: "stretch", md: "center" }}
       justify="space-between"

@@ -56,9 +56,7 @@ export default function PhasesScreen() {
           </Heading>
         ) : (
           <>
-            <Box mb={8}>
-              <EnrollmentCard programId={programId} />
-            </Box>
+            <EnrollmentCard programId={programId} />
             <PhasesList />
           </>
         )}
