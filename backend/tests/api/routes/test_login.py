@@ -67,14 +67,64 @@ def test_recovery_password_user_not_exits(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     email = "jVgQr@example.com"
-    r = client.post(
-        f"{settings.API_V1_STR}/password-recovery/{email}",
-        headers=normal_user_token_headers,
-    )
+    with patch("app.api.routes.login.send_email") as send_email:
+        r = client.post(
+            f"{settings.API_V1_STR}/password-recovery/{email}",
+            headers=normal_user_token_headers,
+        )
     assert r.status_code == 200
     assert r.json() == {
         "message": "If a user with this email exists, a recovery email will be sent"
     }
+    send_email.assert_not_called()
+
+
+def test_recovery_password_sends_email_to_active_user(
+    client: TestClient, db: Session
+) -> None:
+    email = random_email()
+    user_create = UserCreate(
+        email=email,
+        first_name="Active",
+        father_name="",
+        family_name="User",
+        password=random_lower_string(),
+        is_active=True,
+        is_superuser=False,
+        is_male=True,
+    )
+    create_user(session=db, user_create=user_create)
+
+    with patch("app.api.routes.login.send_email") as send_email:
+        r = client.post(f"{settings.API_V1_STR}/password-recovery/{email}")
+    assert r.status_code == 200
+    send_email.assert_called_once()
+    assert send_email.call_args.kwargs["email_to"] == email
+
+
+def test_recovery_password_inactive_user_sends_no_email(
+    client: TestClient, db: Session
+) -> None:
+    email = random_email()
+    user_create = UserCreate(
+        email=email,
+        first_name="Inactive",
+        father_name="",
+        family_name="User",
+        password=random_lower_string(),
+        is_active=False,
+        is_superuser=False,
+        is_male=True,
+    )
+    create_user(session=db, user_create=user_create)
+
+    with patch("app.api.routes.login.send_email") as send_email:
+        r = client.post(f"{settings.API_V1_STR}/password-recovery/{email}")
+    assert r.status_code == 200
+    assert r.json() == {
+        "message": "If a user with this email exists, a recovery email will be sent"
+    }
+    send_email.assert_not_called()
 
 
 def test_reset_password(client: TestClient, db: Session) -> None:
