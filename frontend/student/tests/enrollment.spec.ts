@@ -1,6 +1,7 @@
 import {
   type APIRequestContext,
   expect,
+  type Locator,
   type Page,
   test,
 } from "@playwright/test"
@@ -8,6 +9,7 @@ import {
 const API = process.env.VITE_API_URL ?? "http://localhost:8000"
 
 type Program = { id: string; title: string }
+type ProgramWithSession = Program & { sessionId: string }
 
 async function signUpAndLogIn(page: Page, request: APIRequestContext) {
   const stamp = `${Date.now()}.${Math.random().toString(36).slice(2, 8)}`
@@ -46,53 +48,88 @@ async function signUpAndLogIn(page: Page, request: APIRequestContext) {
   return access_token
 }
 
-async function findProgram(
-  request: APIRequestContext,
-  withSessions: boolean,
-): Promise<Program | undefined> {
+async function listPrograms(request: APIRequestContext): Promise<Program[]> {
   const res = await request.get(`${API}/api/v1/programs/?limit=100`)
   expect(res.ok()).toBeTruthy()
-  const programs = (await res.json()).data as Program[]
-  for (const program of programs) {
-    const sessions = await request.get(
+  return (await res.json()).data as Program[]
+}
+
+async function findProgramWithSession(
+  request: APIRequestContext,
+): Promise<ProgramWithSession | undefined> {
+  for (const program of await listPrograms(request)) {
+    const res = await request.get(
       `${API}/api/v1/sessions/program/${program.id}`,
     )
-    expect(sessions.ok()).toBeTruthy()
-    const { count } = (await sessions.json()) as { count: number }
-    if (count > 0 === withSessions) return program
+    const sessions = (await res.json()).data as { id: string }[]
+    if (sessions.length) return { ...program, sessionId: sessions[0].id }
   }
   return undefined
 }
 
+async function findProgramWithoutSession(
+  request: APIRequestContext,
+): Promise<Program | undefined> {
+  for (const program of await listPrograms(request)) {
+    const res = await request.get(
+      `${API}/api/v1/sessions/program/${program.id}`,
+    )
+    if ((await res.json()).count === 0) return program
+  }
+  return undefined
+}
+
+/** Exact title match: "تمكين مهمات العلم" also contains "مهمات العلم". */
+function programCard(scope: Page | Locator, title: string) {
+  const page = "page" in scope ? scope.page() : scope
+  return scope.getByTestId("program-card").filter({
+    has: page.getByRole("heading", { name: title, exact: true }),
+  })
+}
+
+async function mySessionCount(request: APIRequestContext, token: string) {
+  const res = await request.get(`${API}/api/v1/users/me/sessions`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  expect(res.ok()).toBeTruthy()
+  return (await res.json()).count as number
+}
+
 test.describe("program self-enrollment", () => {
-  test("a new student enrolls from the program page and stays enrolled after reload", async ({
+  test("enrolling shows up on the program page, the programs list and home", async ({
     page,
     request,
   }) => {
-    const program = await findProgram(request, true)
+    const program = await findProgramWithSession(request)
     test.skip(!program, "no program with a session in this database")
 
     const token = await signUpAndLogIn(page, request)
-    await page.goto(`/programs/${program!.id}/phases`)
 
+    await page.goto("/programs")
+    const openBadge = programCard(page, program!.title).getByTestId(
+      "program-enrollment-badge",
+    )
+    await expect(openBadge).toHaveAttribute("data-status", "open")
+    await expect(openBadge).toHaveText("التسجيل مفتوح")
+    await expect(page.getByTestId("my-programs")).toHaveCount(0)
+
+    await page.goto(`/programs/${program!.id}/phases`)
     const card = page.getByTestId("enrollment-card")
     await expect(card).toHaveAttribute("data-state", "open")
-    await expect(card.getByText("التسجيل في الدورة")).toBeVisible()
-    const enroll = card.getByTestId("enroll-button").first()
-    await expect(enroll).toHaveText("سجّل في الدورة")
+    await card.getByTestId("enroll-button").first().click()
 
-    await enroll.click()
+    const dialog = page.getByTestId("enroll-confirm-dialog")
+    await expect(dialog).toBeVisible()
+    await expect(dialog).toContainText(program!.title)
+    await expect(dialog).toContainText(/(تبدأ|بدأت) في/)
+    await dialog.getByTestId("enroll-confirm").click()
+
+    await expect(dialog).toBeHidden()
     await expect(card).toHaveAttribute("data-state", "enrolled")
     await expect(page.getByTestId("enrollment-status")).toHaveText(
       "أنت مسجّل في هذه الدورة",
     )
-    await expect(card).toContainText(/(تبدأ|بدأت) في/)
-
-    const mine = await request.get(`${API}/api/v1/users/me/sessions`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    expect(mine.ok()).toBeTruthy()
-    expect((await mine.json()).count).toBe(1)
+    expect(await mySessionCount(request, token)).toBe(1)
 
     await page.reload()
     await expect(page.getByTestId("enrollment-card")).toHaveAttribute(
@@ -100,13 +137,49 @@ test.describe("program self-enrollment", () => {
       "enrolled",
     )
     await expect(page.getByTestId("enroll-button")).toHaveCount(0)
+
+    await page.goto("/programs")
+    const mine = page.getByTestId("my-programs")
+    await expect(mine.getByRole("heading", { name: "برامجي" })).toBeVisible()
+    await expect(
+      programCard(mine, program!.title).getByTestId("program-enrollment-badge"),
+    ).toHaveText("مسجّل")
+    await expect(
+      programCard(page.getByTestId("other-programs"), program!.title),
+    ).toHaveCount(0)
+
+    await page.goto("/")
+    await expect(page.getByText("برنامجك", { exact: true })).toBeVisible()
+    await expect(page.getByText(/أنت مسجّل · (تبدأ|بدأت) في/)).toBeVisible()
   })
 
-  test("shows an Arabic error and keeps the button when enrollment fails", async ({
+  test("cancelling the confirmation does not enroll", async ({
     page,
     request,
   }) => {
-    const program = await findProgram(request, true)
+    const program = await findProgramWithSession(request)
+    test.skip(!program, "no program with a session in this database")
+
+    const token = await signUpAndLogIn(page, request)
+    await page.goto(`/programs/${program!.id}/phases`)
+
+    await page.getByTestId("enroll-button").first().click()
+    const dialog = page.getByTestId("enroll-confirm-dialog")
+    await dialog.getByTestId("enroll-cancel").click()
+
+    await expect(dialog).toBeHidden()
+    await expect(page.getByTestId("enrollment-card")).toHaveAttribute(
+      "data-state",
+      "open",
+    )
+    expect(await mySessionCount(request, token)).toBe(0)
+  })
+
+  test("explains when the session is no longer available", async ({
+    page,
+    request,
+  }) => {
+    const program = await findProgramWithSession(request)
     test.skip(!program, "no program with a session in this database")
 
     await signUpAndLogIn(page, request)
@@ -119,20 +192,50 @@ test.describe("program self-enrollment", () => {
     )
     await page.goto(`/programs/${program!.id}/phases`)
 
-    const card = page.getByTestId("enrollment-card")
-    await card.getByTestId("enroll-button").first().click()
-    await expect(page.getByTestId("enrollment-error")).toHaveText(
-      "تعذر إتمام التسجيل. حاول مرة أخرى.",
+    await page.getByTestId("enroll-button").first().click()
+    const dialog = page.getByTestId("enroll-confirm-dialog")
+    await dialog.getByTestId("enroll-confirm").click()
+
+    await expect(dialog.getByTestId("enrollment-error")).toHaveText(
+      "هذه الدورة لم تعد متاحة للتسجيل.",
     )
-    await expect(card).toHaveAttribute("data-state", "open")
-    await expect(card.getByTestId("enroll-button").first()).toBeEnabled()
+    await expect(dialog.getByTestId("enroll-confirm")).toBeEnabled()
+    await expect(page.getByTestId("enrollment-card")).toHaveAttribute(
+      "data-state",
+      "open",
+    )
+  })
+
+  test("shows the session calendar on request", async ({ page, request }) => {
+    const program = await findProgramWithSession(request)
+    test.skip(!program, "no program with a session in this database")
+
+    const events = await request.get(
+      `${API}/api/v1/sessions/${program!.sessionId}/events`,
+    )
+    const eventCount = (await events.json()).count as number
+    test.skip(eventCount === 0, "the session has no calendar events")
+
+    await signUpAndLogIn(page, request)
+    await page.goto(`/programs/${program!.id}/phases`)
+
+    const toggle = page.getByTestId("session-schedule-toggle").first()
+    await expect(toggle).toHaveText(/عرض جدول الدورة/)
+    await expect(toggle).toHaveAttribute("aria-expanded", "false")
+    await toggle.click()
+
+    await expect(toggle).toHaveAttribute("aria-expanded", "true")
+    await expect(toggle).toHaveText(/إخفاء جدول الدورة/)
+    await expect(page.getByTestId("session-schedule-row")).toHaveCount(
+      eventCount,
+    )
   })
 
   test("hides the enrollment card when a program has no sessions", async ({
     page,
     request,
   }) => {
-    const program = await findProgram(request, false)
+    const program = await findProgramWithoutSession(request)
     test.skip(!program, "every program has a session in this database")
 
     await signUpAndLogIn(page, request)
@@ -145,5 +248,11 @@ test.describe("program self-enrollment", () => {
     await expect(page.getByText("مرحلة 1", { exact: true })).toBeVisible()
     await expect(page.getByTestId("enrollment-card")).toHaveCount(0)
     await expect(page.getByTestId("enroll-button")).toHaveCount(0)
+
+    await page.goto("/programs")
+    await expect(programCard(page, program!.title)).toHaveCount(1)
+    await expect(
+      programCard(page, program!.title).getByTestId("program-enrollment-badge"),
+    ).toHaveCount(0)
   })
 })

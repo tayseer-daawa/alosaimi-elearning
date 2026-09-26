@@ -1,19 +1,37 @@
 import { Text } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
+import type { ProgramPublic } from "@/client"
 import { useBook } from "@/features/books/api/useBook"
 import { useLesson } from "@/features/books/api/useLesson"
 import { loadLastLearningPath } from "@/features/course/lib/lessonProgress"
+import { useEnrollmentByProgram } from "@/features/enrollment/api/useEnrollmentByProgram"
+import type { ProgramEnrollment } from "@/features/enrollment/lib/enrollmentState"
 import { useProgram } from "@/features/programs/api/useProgram"
 import { usePrograms } from "@/features/programs/api/usePrograms"
 import { HomeSkeleton } from "@/shared/components/PageSkeletons"
 import { formatStudyDays } from "@/shared/lib/studyDays"
 import { resolveContinueLearning } from "../api/continueLearning"
 import { useCurrentUser } from "../api/useCurrentUser"
+import { resolveFeaturedCard } from "../lib/featuredCard"
 import HomeScreenComponents from "./HomeScreenComponents"
+
+function findEnrolledProgram(
+  programs: ProgramPublic[],
+  byProgram: Map<string, ProgramEnrollment> | undefined,
+) {
+  for (const program of programs) {
+    const entry = byProgram?.get(program.id)
+    if (entry?.status === "enrolled") {
+      return { program, session: entry.session }
+    }
+  }
+  return null
+}
 
 export default function HomeScreen() {
   const navigate = useNavigate()
   const programsQuery = usePrograms()
+  const enrollment = useEnrollmentByProgram()
   const userQuery = useCurrentUser()
   const lastPath = loadLastLearningPath()
 
@@ -28,18 +46,23 @@ export default function HomeScreen() {
     subtitle: formatStudyDays(program.days_of_study),
   }))
 
-  const hasContinue = Boolean(lastPath)
-  const continueTitle =
-    lastBookQuery.data?.title ??
-    lastProgramQuery.data?.title ??
-    cards[0]?.title ??
-    ""
-  const continueSubtitle = lastLessonQuery.data
-    ? `المقرر ${(lastLessonQuery.data.order ?? 0) + 1}`
-    : (cards[0]?.subtitle ?? "")
+  const enrolled = findEnrolledProgram(programs, enrollment.byProgram)
+  const featuredProgram = enrolled?.program ?? programs[0]
+
+  const featured = resolveFeaturedCard({
+    lastLesson: lastPath
+      ? {
+          bookTitle: lastBookQuery.data?.title,
+          programTitle: lastProgramQuery.data?.title,
+          lessonOrder: lastLessonQuery.data?.order,
+        }
+      : null,
+    enrolled,
+    fallbackProgram: featuredProgram,
+  })
 
   const handleContinueLearning = async () => {
-    const first = programs[0]
+    const first = featuredProgram
     if (!first) return
 
     const target = await resolveContinueLearning(first.id)
@@ -61,7 +84,7 @@ export default function HomeScreen() {
     navigate({ to: "/programs" })
   }
 
-  if (programsQuery.isLoading) {
+  if (programsQuery.isLoading || enrollment.isLoading) {
     return <HomeSkeleton />
   }
 
@@ -77,9 +100,10 @@ export default function HomeScreen() {
     <HomeScreenComponents
       allPrograms={cards}
       userName={userQuery.data?.first_name ?? "الطالب"}
-      continueMode={hasContinue}
-      continueTitle={continueTitle || cards[0]?.title}
-      continueSubtitle={continueSubtitle || cards[0]?.subtitle}
+      continueMode={Boolean(lastPath)}
+      eyebrow={featured.eyebrow}
+      continueTitle={featured.title || cards[0]?.title}
+      continueSubtitle={featured.subtitle}
       onContinueLearning={handleContinueLearning}
       onViewAllPrograms={handleViewAllPrograms}
     />

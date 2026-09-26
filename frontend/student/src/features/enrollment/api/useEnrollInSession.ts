@@ -1,7 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { ProgramSessionsPublic } from "@/client"
+import { ApiError, type ProgramSessionsPublic } from "@/client"
 import { queryKeys } from "@/shared/lib/queryKeys"
 import { enrollmentRepo } from "./enrollmentRepo"
+
+export function isSessionGoneError(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404
+}
 
 export function useEnrollInSession() {
   const queryClient = useQueryClient()
@@ -20,6 +24,10 @@ export function useEnrollInSession() {
       return queryClient.invalidateQueries({
         queryKey: queryKeys.sessions.mine(),
       })
+    },
+    onError: (error) => {
+      if (!isSessionGoneError(error)) return
+      return queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all })
     },
   })
 }

@@ -56,7 +56,10 @@ export default function PhasesScreen() {
           </Heading>
         ) : (
           <>
-            <EnrollmentCard programId={programId} />
+            <EnrollmentCard
+              programId={programId}
+              programTitle={programQuery.data?.title}
+            />
             <PhasesList />
           </>
         )}

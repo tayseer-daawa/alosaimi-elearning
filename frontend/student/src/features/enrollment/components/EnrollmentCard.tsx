@@ -1,21 +1,29 @@
 import { Box, Button, Flex, Stack, Text } from "@chakra-ui/react"
 import { CalendarDays, CircleCheck } from "lucide-react"
-import type { ReactNode } from "react"
+import { type ReactNode, useState } from "react"
 import type { ProgramSessionPublic } from "@/client"
-import { useEnrollInSession } from "../api/useEnrollInSession"
+import {
+  isSessionGoneError,
+  useEnrollInSession,
+} from "../api/useEnrollInSession"
 import { useMySessions } from "../api/useMySessions"
 import { useProgramSessions } from "../api/useProgramSessions"
 import {
-  type EnrollmentState,
   resolveEnrollmentState,
   sessionStartLabel,
 } from "../lib/enrollmentState"
+import { EnrollConfirmDialog } from "./EnrollConfirmDialog"
+import { SessionSchedule } from "./SessionSchedule"
 
 type EnrollmentCardProps = {
   programId: string | undefined
+  programTitle: string | undefined
 }
 
-export function EnrollmentCard({ programId }: EnrollmentCardProps) {
+export function EnrollmentCard({
+  programId,
+  programTitle,
+}: EnrollmentCardProps) {
   const programSessions = useProgramSessions(programId)
   const mySessions = useMySessions()
 
@@ -30,16 +38,27 @@ export function EnrollmentCard({ programId }: EnrollmentCardProps) {
     }
     return (
       <CardShell state="error">
-        <Text color="red.600" fontSize={{ base: "md", lg: "lg" }} role="alert">
-          تعذر تحميل مواعيد الدورات.
-        </Text>
-        <Button
-          flexShrink={0}
-          loading={programSessions.isFetching || mySessions.isFetching}
-          onClick={retry}
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          align={{ base: "stretch", md: "center" }}
+          justify="space-between"
+          gap={4}
         >
-          إعادة المحاولة
-        </Button>
+          <Text
+            color="red.600"
+            fontSize={{ base: "md", lg: "lg" }}
+            role="alert"
+          >
+            تعذر تحميل مواعيد الدورات.
+          </Text>
+          <Button
+            flexShrink={0}
+            loading={programSessions.isFetching || mySessions.isFetching}
+            onClick={retry}
+          >
+            إعادة المحاولة
+          </Button>
+        </Flex>
       </CardShell>
     )
   }
@@ -49,54 +68,68 @@ export function EnrollmentCard({ programId }: EnrollmentCardProps) {
     mySessions.data?.data ?? [],
   )
 
-  return <EnrollmentStateView state={state} />
-}
-
-function EnrollmentStateView({ state }: { state: EnrollmentState }) {
-  if (state.kind === "enrolled") {
-    return (
-      <CardShell state="enrolled" bg="brand.lightTeal">
-        <Flex align="center" gap={4}>
-          <Box color="brand.primary" flexShrink={0} aria-hidden>
-            <CircleCheck size={36} strokeWidth={2} />
-          </Box>
-          <Box>
-            <Text
-              fontSize={{ base: "xl", lg: "2xl" }}
-              fontWeight="bold"
-              color="brand.primary"
-              data-testid="enrollment-status"
-            >
-              أنت مسجّل في هذه الدورة
-            </Text>
-            <Text fontSize={{ base: "md", lg: "lg" }} color="text.default">
-              {sessionStartLabel(state.session)}
-            </Text>
-          </Box>
-        </Flex>
-      </CardShell>
-    )
-  }
-
   if (state.kind === "none") return null
 
-  return <OpenSessions sessions={state.sessions} />
+  if (state.kind === "enrolled") {
+    return <EnrolledView session={state.session} />
+  }
+
+  return <OpenSessions sessions={state.sessions} programTitle={programTitle} />
 }
 
-function OpenSessions({ sessions }: { sessions: ProgramSessionPublic[] }) {
+function EnrolledView({ session }: { session: ProgramSessionPublic }) {
+  return (
+    <CardShell state="enrolled" bg="brand.lightTeal">
+      <Flex align="center" gap={4}>
+        <Box color="brand.primary" flexShrink={0} aria-hidden>
+          <CircleCheck size={40} strokeWidth={2} />
+        </Box>
+        <Box>
+          <Text
+            fontSize={{ base: "xl", lg: "2xl" }}
+            fontWeight="bold"
+            color="brand.primary"
+            data-testid="enrollment-status"
+          >
+            أنت مسجّل في هذه الدورة
+          </Text>
+          <Text fontSize={{ base: "md", lg: "lg" }} color="text.default">
+            {sessionStartLabel(session)}
+          </Text>
+        </Box>
+      </Flex>
+      <Box mt={4}>
+        <SessionSchedule sessionId={session.id} tone="teal" />
+      </Box>
+    </CardShell>
+  )
+}
+
+function enrollErrorMessage(error: unknown): string {
+  return isSessionGoneError(error)
+    ? "هذه الدورة لم تعد متاحة للتسجيل."
+    : "تعذر إتمام التسجيل. تحقق من اتصالك وحاول مرة أخرى."
+}
+
+function OpenSessions({
+  sessions,
+  programTitle,
+}: {
+  sessions: ProgramSessionPublic[]
+  programTitle: string | undefined
+}) {
   const enroll = useEnrollInSession()
-  const pendingId = enroll.isPending ? enroll.variables : undefined
+  const [confirming, setConfirming] = useState<ProgramSessionPublic | null>(
+    null,
+  )
+
+  const openConfirm = (session: ProgramSessionPublic) => {
+    enroll.reset()
+    setConfirming(session)
+  }
 
   return (
-    <Box
-      bg="white"
-      borderRadius="4px"
-      boxShadow="lg"
-      p={{ base: 6, lg: 8 }}
-      mb={8}
-      data-testid="enrollment-card"
-      data-state="open"
-    >
+    <CardShell state="open">
       <Text
         fontSize={{ base: "xl", lg: "2xl" }}
         fontWeight="bold"
@@ -106,78 +139,74 @@ function OpenSessions({ sessions }: { sessions: ProgramSessionPublic[] }) {
         التسجيل في الدورة
       </Text>
       <Text fontSize={{ base: "md", lg: "lg" }} color="brand.secondary" mb={5}>
-        سجّل لتنضم إلى طلاب الدورة وتتابع دروسها.
+        سجّل لتنضم إلى طلاب الدورة، وتظهر لك في «برامجي».
       </Text>
 
-      <Stack gap={4}>
+      <Stack gap={6}>
         {sessions.map((session) => (
-          <Flex
-            key={session.id}
-            direction={{ base: "column", md: "row" }}
-            align={{ base: "stretch", md: "center" }}
-            justify="space-between"
-            gap={4}
-            data-testid="enrollment-session"
-          >
-            <Flex align="center" gap={3} color="text.default">
-              <Box color="brand.secondary" flexShrink={0} aria-hidden>
-                <CalendarDays size={24} />
-              </Box>
-              <Text fontSize={{ base: "lg", lg: "xl" }} fontWeight="semibold">
-                {sessionStartLabel(session)}
-              </Text>
-            </Flex>
-            <Button
-              flexShrink={0}
-              minW={{ md: "56" }}
-              loading={pendingId === session.id}
-              disabled={enroll.isPending}
-              onClick={() => enroll.mutate(session.id)}
-              data-testid="enroll-button"
+          <Box key={session.id} data-testid="enrollment-session">
+            <Flex
+              direction={{ base: "column", md: "row" }}
+              align={{ base: "stretch", md: "center" }}
+              justify="space-between"
+              gap={4}
             >
-              سجّل في الدورة
-            </Button>
-          </Flex>
+              <Flex align="center" gap={3} color="text.default">
+                <Box color="brand.secondary" flexShrink={0} aria-hidden>
+                  <CalendarDays size={24} />
+                </Box>
+                <Text fontSize={{ base: "lg", lg: "xl" }} fontWeight="semibold">
+                  {sessionStartLabel(session)}
+                </Text>
+              </Flex>
+              <Button
+                flexShrink={0}
+                minW={{ md: "56" }}
+                onClick={() => openConfirm(session)}
+                data-testid="enroll-button"
+              >
+                سجّل في الدورة
+              </Button>
+            </Flex>
+            <Box mt={3}>
+              <SessionSchedule sessionId={session.id} />
+            </Box>
+          </Box>
         ))}
       </Stack>
 
-      {enroll.isError ? (
-        <Text
-          mt={4}
-          color="red.600"
-          fontSize={{ base: "md", lg: "lg" }}
-          role="alert"
-          data-testid="enrollment-error"
-        >
-          تعذر إتمام التسجيل. حاول مرة أخرى.
-        </Text>
-      ) : null}
-    </Box>
+      <EnrollConfirmDialog
+        session={confirming}
+        programTitle={programTitle}
+        isPending={enroll.isPending}
+        errorMessage={enroll.isError ? enrollErrorMessage(enroll.error) : null}
+        onConfirm={(sessionId) =>
+          enroll.mutate(sessionId, { onSuccess: () => setConfirming(null) })
+        }
+        onClose={() => setConfirming(null)}
+      />
+    </CardShell>
   )
 }
 
 type CardShellProps = {
-  state: "enrolled" | "error"
+  state: "enrolled" | "open" | "error"
   bg?: string
   children: ReactNode
 }
 
 function CardShell({ state, bg = "white", children }: CardShellProps) {
   return (
-    <Flex
+    <Box
       bg={bg}
       borderRadius="4px"
       boxShadow="lg"
       p={{ base: 6, lg: 8 }}
       mb={8}
-      direction={{ base: "column", md: "row" }}
-      align={{ base: "stretch", md: "center" }}
-      justify="space-between"
-      gap={4}
       data-testid="enrollment-card"
       data-state={state}
     >
       {children}
-    </Flex>
+    </Box>
   )
 }
