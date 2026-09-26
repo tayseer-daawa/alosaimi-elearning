@@ -1,3 +1,11 @@
+> ### 📖 Project documentation lives in [`docs/`](./docs/README.md)
+>
+> Start there for the domain model, local setup, conventions and per-application guides.
+> **The page below is the upstream template's readme**, kept for reference — it does not
+> describe this project.
+
+---
+
 # Full Stack FastAPI Template
 
 <a href="https://github.com/fastapi/full-stack-fastapi-template/actions?query=workflow%3ATest" target="_blank"><img src="https://github.com/fastapi/full-stack-fastapi-template/workflows/Test/badge.svg" alt="Test"></a>
