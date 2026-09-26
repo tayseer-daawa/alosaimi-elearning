@@ -59,6 +59,36 @@ def test_add_student_to_session(db: Session) -> None:
     assert len(updated_session.students) == 1
 
 
+def test_get_sessions_by_student(db: Session) -> None:
+    program = create_random_program(db)
+    later = crud.create_session(
+        session=db,
+        session_in=ProgramSessionCreate(
+            start_date=date.today() + timedelta(days=30), program_id=program.id
+        ),
+    )
+    earlier = crud.create_session(
+        session=db,
+        session_in=ProgramSessionCreate(start_date=date.today(), program_id=program.id),
+    )
+    other = crud.create_session(
+        session=db,
+        session_in=ProgramSessionCreate(start_date=date.today(), program_id=program.id),
+    )
+    user = create_random_user(db)
+    crud.add_student_to_session(session=db, session_id=later.id, user_id=user.id)
+    crud.add_student_to_session(session=db, session_id=earlier.id, user_id=user.id)
+    crud.add_teacher_to_session(session=db, session_id=other.id, user_id=user.id)
+
+    sessions = crud.get_sessions_by_student(session=db, user_id=user.id)
+    assert [s.id for s in sessions] == [earlier.id, later.id]
+
+
+def test_get_sessions_by_student_none(db: Session) -> None:
+    user = create_random_user(db)
+    assert crud.get_sessions_by_student(session=db, user_id=user.id) == []
+
+
 def test_remove_student_from_session(db: Session) -> None:
     program = create_random_program(db)
     start_date = date.today()
