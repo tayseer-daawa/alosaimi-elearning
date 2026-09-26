@@ -52,4 +52,13 @@ export const queryKeys = {
       return [...this.all, "me"] as const
     },
   },
+  sessions: {
+    all: ["sessions"] as const,
+    byProgram(programId: string) {
+      return [...this.all, "program", programId] as const
+    },
+    mine() {
+      return [...this.all, "mine"] as const
+    },
+  },
 }

@@ -1,5 +1,6 @@
 import { Box, Flex, Heading } from "@chakra-ui/react"
 import { useParams } from "@tanstack/react-router"
+import { EnrollmentCard } from "@/features/enrollment/components/EnrollmentCard"
 import { useProgram } from "@/features/programs/api/useProgram"
 import { AppMenu } from "@/shared/components/AppMenu"
 import { Breadcrumbs } from "@/shared/components/BreadcrumbsNavigation"
@@ -54,7 +55,12 @@ export default function PhasesScreen() {
             تعذر تحميل البرنامج.
           </Heading>
         ) : (
-          <PhasesList />
+          <>
+            <Box mb={8}>
+              <EnrollmentCard programId={programId} />
+            </Box>
+            <PhasesList />
+          </>
         )}
       </Box>
     </Box>
