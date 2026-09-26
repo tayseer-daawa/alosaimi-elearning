@@ -692,6 +692,12 @@ export type SessionsRemoveStudentFromSessionData = {
 
 export type SessionsRemoveStudentFromSessionResponse = (ProgramSessionPublic);
 
+export type SessionsEnrollToSessionData = {
+    sessionId: string;
+};
+
+export type SessionsEnrollToSessionResponse = (ProgramSessionPublic);
+
 export type SessionsAddTeacherToSessionData = {
     sessionId: string;
     userId: string;

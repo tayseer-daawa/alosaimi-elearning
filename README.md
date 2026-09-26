@@ -83,7 +83,7 @@ Before deploying it, make sure you change at least the values for:
 
 You can (and should) pass these as environment variables from secrets.
 
-Read the [deployment.md](./deployment.md) docs for more details.
+Deployment is not configured from this repository — see [docs/staging.md](./docs/staging.md).
 
 ### Generate Secret Keys
 
@@ -117,7 +117,7 @@ Frontend Admin docs: [frontend/admin/README.md](./frontend/admin/README.md).
 
 ## Deployment
 
-Deployment docs: [deployment.md](./deployment.md).
+Deployment is handled outside this repository. See [docs/staging.md](./docs/staging.md).
 
 ## Development
 

@@ -74,7 +74,7 @@ When you start the Docker Compose stack, it uses `localhost` by default, with di
 
 When you deploy it to production (or staging), it will deploy each service in a different subdomain, like `api.example.com` for the backend and `dashboard.example.com` for the frontend.
 
-In the guide about [deployment](deployment.md) you can read about Traefik, the configured proxy. That's the component in charge of transmitting traffic to each service based on the subdomain.
+Traefik, the proxy included in `docker-compose.override.yml`, is the component in charge of transmitting traffic to each service based on the subdomain. For the deployed environment, see [docs/staging.md](docs/staging.md).
 
 If you want to test that it's all working locally, you can edit the local `.env` file, and change:
 
@@ -111,6 +111,28 @@ After changing variables, make sure you restart the stack:
 ```bash
 docker compose watch
 ```
+
+## Building what staging builds
+
+`docker compose watch` builds the frontends with the arguments the dev override supplies —
+`VITE_API_URL=http://localhost:8000` and `NODE_ENV=development`. Staging builds the same
+Dockerfiles with production values instead, so a build can pass locally and still fail
+there.
+
+To build exactly what staging builds, use the production compose file on its own:
+
+```bash
+docker compose -f docker-compose.yml build
+```
+
+This is a **build check**, not a way to run the stack: it catches build-time failures —
+type errors, a missing env var, a broken Dockerfile stage — before a merge to `main`
+deploys them. Run it before merging anything that touches a Dockerfile, a build script or
+the frontend build config.
+
+To *run* the stack, use `docker compose watch` as above. `docker-compose.yml` on its own
+publishes no ports and expects the proxy to be supplied from outside, which is what the
+server does. Locally the override provides both the ports and a Traefik.
 
 ## The .env file
 

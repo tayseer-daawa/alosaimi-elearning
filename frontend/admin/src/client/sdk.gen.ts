@@ -1228,9 +1228,7 @@ export class SessionsService {
     
     /**
      * Add Student To Session
-     * Add a student to a session.
-     *
-     * Only admins can enroll students.
+     * Add a student to a session (admin endpoint).
      * @param data The data for the request.
      * @param data.sessionId
      * @param data.userId
@@ -1269,6 +1267,27 @@ export class SessionsService {
             path: {
                 session_id: data.sessionId,
                 user_id: data.userId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Enroll To Session
+     * Self enroll to session.
+     * @param data The data for the request.
+     * @param data.sessionId
+     * @returns ProgramSessionPublic Successful Response
+     * @throws ApiError
+     */
+    public static enrollToSession(data: SessionsEnrollToSessionData): CancelablePromise<SessionsEnrollToSessionResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/sessions/{session_id}/enroll',
+            path: {
+                session_id: data.sessionId
             },
             errors: {
                 422: 'Validation Error'
