@@ -39,6 +39,7 @@ function RecoverPassword() {
   const recoverPassword = async (data: FormData) => {
     await LoginService.recoverPassword({
       email: data.email,
+      app: "admin",
     })
   }
 

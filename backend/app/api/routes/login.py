@@ -1,7 +1,7 @@
 from datetime import timedelta
-from typing import Annotated
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -19,6 +19,14 @@ from app.utils import (
 )
 
 router = APIRouter(tags=["login"])
+
+FrontendApp = Literal["admin", "student"]
+
+
+def _frontend_host_for(app: FrontendApp) -> str:
+    if app == "admin":
+        return settings.FRONTEND_ADMIN_HOST
+    return settings.FRONTEND_STUDENT_HOST
 
 
 @router.post("/login/access-token")
@@ -52,7 +60,14 @@ def test_token(current_user: CurrentUser) -> User:
 
 
 @router.post("/password-recovery/{email}")
-def recover_password(email: str, session: SessionDep) -> Message:
+def recover_password(
+    email: str,
+    session: SessionDep,
+    app: FrontendApp = Query(
+        default="student",
+        description="Which frontend the reset link should open (admin or student).",
+    ),
+) -> Message:
     """
     Password Recovery
     """
@@ -60,7 +75,10 @@ def recover_password(email: str, session: SessionDep) -> Message:
     if user:
         password_reset_token = generate_password_reset_token(email=email)
         email_data = generate_reset_password_email(
-            email_to=user.email, email=email, token=password_reset_token
+            email_to=user.email,
+            email=email,
+            token=password_reset_token,
+            frontend_host=_frontend_host_for(app),
         )
         send_email(
             email_to=user.email,
@@ -100,7 +118,14 @@ def reset_password(session: SessionDep, body: NewPassword) -> Message:
     dependencies=[Depends(get_current_active_superuser)],
     response_class=HTMLResponse,
 )
-def recover_password_html_content(email: str, session: SessionDep) -> HTMLResponse:
+def recover_password_html_content(
+    email: str,
+    session: SessionDep,
+    app: FrontendApp = Query(
+        default="student",
+        description="Which frontend the reset link should open (admin or student).",
+    ),
+) -> HTMLResponse:
     """
     HTML Content for Password Recovery
     """
@@ -113,7 +138,10 @@ def recover_password_html_content(email: str, session: SessionDep) -> HTMLRespon
         )
     password_reset_token = generate_password_reset_token(email=email)
     email_data = generate_reset_password_email(
-        email_to=user.email, email=email, token=password_reset_token
+        email_to=user.email,
+        email=email,
+        token=password_reset_token,
+        frontend_host=_frontend_host_for(app),
     )
 
     return HTMLResponse(

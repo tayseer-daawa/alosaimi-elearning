@@ -1,15 +1,19 @@
-import { Field, Text, VStack } from "@chakra-ui/react"
+import { Button, Field, Text, VStack } from "@chakra-ui/react"
 import { Link } from "@tanstack/react-router"
+import { ArrowRight } from "lucide-react"
 import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import AuthLayout from "@/shared/components/AuthLayout"
 import { CustomField, ErrorText } from "@/shared/components/CustomField"
 import { useSignupWizard } from "../hooks/useSignupWizard"
 import { GenderToggle } from "./GenderToggle"
-import { YesNoToggle } from "./YesNoToggle"
 
 export default function SignupScreen() {
   const {
     step,
+    stepNumber,
+    stepCount,
+    canGoBack,
+    isLastStep,
     title,
     error,
     isSubmitting,
@@ -23,13 +27,12 @@ export default function SignupScreen() {
     setEmail,
     isMale,
     setIsMale,
-    wantsNotifications,
-    setWantsNotifications,
     password,
     setPassword,
     confirmPassword,
     setConfirmPassword,
     next,
+    back,
   } = useSignupWizard()
 
   const handleKeyDownEnter = (e: React.KeyboardEvent) => {
@@ -49,6 +52,15 @@ export default function SignupScreen() {
         >
           {title}
         </Text>
+        <Text
+          color="text.muted"
+          fontSize={{ base: "sm", md: "lg" }}
+          fontWeight={500}
+          textAlign="center"
+          data-testid="signup-step-indicator"
+        >
+          {`الخطوة ${stepNumber} من ${stepCount}`}
+        </Text>
       </VStack>
 
       <VStack
@@ -66,14 +78,14 @@ export default function SignupScreen() {
               stateSetter={setFirstName}
               autoComplete="given-name"
               handleKeyDownEnter={handleKeyDownEnter}
-              error={!firstName.trim().length ? error : null}
+              error={error.firstName}
             />
             <CustomField
               label="اسم الأب"
               state={fatherName}
               stateSetter={setFatherName}
               handleKeyDownEnter={handleKeyDownEnter}
-              error={!fatherName.trim().length ? error : null}
+              error={error.fatherName}
             />
             <CustomField
               label="الاسم العائلي"
@@ -81,7 +93,7 @@ export default function SignupScreen() {
               stateSetter={setFamilyName}
               autoComplete="family-name"
               handleKeyDownEnter={handleKeyDownEnter}
-              error={!familyName.trim().length ? error : null}
+              error={error.familyName}
             />
           </VStack>
         )}
@@ -94,12 +106,16 @@ export default function SignupScreen() {
             autoComplete="email"
             type="email"
             handleKeyDownEnter={handleKeyDownEnter}
-            error={error}
+            error={error.email}
           />
         )}
 
         {step === "gender" && (
-          <Field.Root invalid={!!error} required gap={{ base: 3, md: 4 }}>
+          <Field.Root
+            invalid={!!error.gender}
+            required
+            gap={{ base: 3, md: 4 }}
+          >
             <Field.Label
               fontSize={{ base: "md", md: "xl", lg: "xl" }}
               color="text.default"
@@ -109,25 +125,7 @@ export default function SignupScreen() {
             </Field.Label>
             <GenderToggle value={isMale} onChange={setIsMale} />
 
-            <ErrorText error={error} />
-          </Field.Root>
-        )}
-
-        {step === "goal" && (
-          <Field.Root invalid={!!error} required gap={{ base: 3, md: 4 }}>
-            <Field.Label
-              fontSize={{ base: "md", md: "xl", lg: "xl" }}
-              color="text.default"
-            >
-              {"هل تريد تلقي بعض الاشعارات على البريد الالكتروني؟"}
-              <Field.RequiredIndicator />
-            </Field.Label>
-            <YesNoToggle
-              value={wantsNotifications}
-              onChange={setWantsNotifications}
-            />
-
-            <ErrorText error={error} />
+            <ErrorText error={error.gender} />
           </Field.Root>
         )}
 
@@ -140,6 +138,7 @@ export default function SignupScreen() {
               type="password"
               autoComplete="new-password"
               handleKeyDownEnter={handleKeyDownEnter}
+              error={error.password}
             />
             <CustomField
               label="تأكيد كلمة السر"
@@ -148,9 +147,21 @@ export default function SignupScreen() {
               type="password"
               autoComplete="new-password"
               handleKeyDownEnter={handleKeyDownEnter}
-              error={error}
+              error={error.confirmPassword}
             />
           </VStack>
+        )}
+
+        {error.form && (
+          <Text
+            role="alert"
+            color="red.500"
+            fontSize={{ base: "sm", md: "xl" }}
+            textAlign="center"
+            w="100%"
+          >
+            {error.form}
+          </Text>
         )}
       </VStack>
 
@@ -160,8 +171,22 @@ export default function SignupScreen() {
           loading={isSubmitting}
           disabled={isSubmitting}
         >
-          مواصلة
+          {isLastStep ? "إنشاء الحساب" : "مواصلة"}
         </AuthCtaBtn>
+        {canGoBack && (
+          <Button
+            variant="ghost"
+            size={{ base: "sm", md: "md" }}
+            w={{ base: "80%", md: "60%", lg: "50%" }}
+            alignSelf="center"
+            color="text.default"
+            onClick={back}
+            disabled={isSubmitting}
+          >
+            <ArrowRight aria-hidden />
+            رجوع
+          </Button>
+        )}
         <Text
           color="text.muted"
           fontSize={{ base: "sm", md: "md" }}

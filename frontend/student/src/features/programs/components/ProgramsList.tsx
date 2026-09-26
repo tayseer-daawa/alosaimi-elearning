@@ -1,54 +1,77 @@
-import { Flex, SimpleGrid } from "@chakra-ui/react"
+import { Button, Flex, Grid, Text, VStack } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
-import { lessons } from "@/shared/api/mockData"
-import { ActiveProgramCard } from "./ActiveProgramCard"
+import { ProgramsListSkeleton } from "@/shared/components/PageSkeletons"
+import { formatStudyDays } from "@/shared/lib/studyDays"
+import { usePrograms } from "../api/usePrograms"
 import { ProgramCard } from "./ProgramCard"
 
 export const ProgramsList = () => {
   const navigate = useNavigate()
+  const { data, isLoading, isError, refetch, isFetching } = usePrograms()
+  const programs = data?.data ?? []
 
-  const renderCard = (lesson: (typeof lessons)[0]) => {
-    if (lesson.isActive) {
-      return (
-        <ActiveProgramCard
-          status={lesson.status ?? ""}
-          title={lesson.title}
-          subtitle={lesson.subtitle ?? ""}
-          description={lesson.description ?? ""}
-          progress={lesson.progress}
-          onPlay={() =>
-            navigate({
-              to: "/programs/$programId/phases",
-              params: { programId: lesson.id.toString() },
-            })
-          }
-        />
-      )
-    }
+  if (isLoading) {
+    return <ProgramsListSkeleton />
+  }
 
+  if (isError) {
     return (
-      <ProgramCard
-        title={lesson.title}
-        subtitle={lesson.subtitle ?? ""}
-        showComingSoon={lesson.status === "قريبًا"}
-        onClick={() => console.log(lesson.id)}
-      />
+      <VStack gap={4} py={10}>
+        <Text color="red.500" textAlign="center">
+          تعذر تحميل البرامج.
+        </Text>
+        <Button loading={isFetching} onClick={() => void refetch()}>
+          إعادة المحاولة
+        </Button>
+      </VStack>
+    )
+  }
+
+  if (!programs.length) {
+    return (
+      <Text color="brand.secondary" textAlign="center" py={10}>
+        لا توجد برامج حالياً.
+      </Text>
     )
   }
 
   return (
-    <SimpleGrid flex="1" w={"full"} columns={{ base: 1, lg: 3 }}>
-      {lessons.map((lesson, index) => (
-        <Flex
-          key={lesson.id}
-          justify={{
-            base: index % 2 !== 0 ? "flex-end" : "flex-start",
-            lg: "center",
-          }}
-        >
-          {renderCard(lesson)}
-        </Flex>
-      ))}
-    </SimpleGrid>
+    <Grid
+      w="full"
+      templateColumns={{ base: "1fr", lg: "repeat(3, minmax(0, 1fr))" }}
+      columnGap={{ base: 4, lg: 8 }}
+      rowGap={{ base: 10, lg: 12 }}
+      alignItems="start"
+      alignContent="start"
+      pb={10}
+      pt={6}
+    >
+      {programs.map((program, index) => {
+        const subtitle = formatStudyDays(program.days_of_study)
+
+        return (
+          <Flex
+            key={program.id}
+            justify={{
+              base: index % 2 !== 0 ? "flex-end" : "flex-start",
+              lg: "center",
+            }}
+            w="full"
+            minH="0"
+          >
+            <ProgramCard
+              title={program.title}
+              subtitle={subtitle}
+              onClick={() =>
+                navigate({
+                  to: "/programs/$programId/phases",
+                  params: { programId: program.id },
+                })
+              }
+            />
+          </Flex>
+        )
+      })}
+    </Grid>
   )
 }
