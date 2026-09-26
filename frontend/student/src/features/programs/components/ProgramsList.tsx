@@ -1,16 +1,28 @@
-import { Button, Flex, Grid, Text, VStack } from "@chakra-ui/react"
+import {
+  Box,
+  Button,
+  Flex,
+  Grid,
+  Heading,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
+import type { ProgramPublic } from "@/client"
+import { useEnrollmentByProgram } from "@/features/enrollment/api/useEnrollmentByProgram"
+import { EnrollmentBadge } from "@/features/enrollment/components/EnrollmentBadge"
+import type { ProgramEnrollment } from "@/features/enrollment/lib/enrollmentState"
 import { ProgramsListSkeleton } from "@/shared/components/PageSkeletons"
 import { formatStudyDays } from "@/shared/lib/studyDays"
 import { usePrograms } from "../api/usePrograms"
 import { ProgramCard } from "./ProgramCard"
 
 export const ProgramsList = () => {
-  const navigate = useNavigate()
   const { data, isLoading, isError, refetch, isFetching } = usePrograms()
+  const enrollment = useEnrollmentByProgram()
   const programs = data?.data ?? []
 
-  if (isLoading) {
+  if (isLoading || enrollment.isLoading) {
     return <ProgramsListSkeleton />
   }
 
@@ -35,6 +47,66 @@ export const ProgramsList = () => {
     )
   }
 
+  const byProgram = enrollment.byProgram
+  const mine = programs.filter(
+    (p) => byProgram?.get(p.id)?.status === "enrolled",
+  )
+  const others = programs.filter(
+    (p) => byProgram?.get(p.id)?.status !== "enrolled",
+  )
+
+  if (!mine.length) {
+    return <ProgramGrid programs={programs} byProgram={byProgram} />
+  }
+
+  return (
+    <Box pt={2}>
+      <ProgramSection
+        title="برامجي"
+        testId="my-programs"
+        programs={mine}
+        byProgram={byProgram}
+      />
+      {others.length ? (
+        <ProgramSection
+          title="برامج أخرى"
+          testId="other-programs"
+          programs={others}
+          byProgram={byProgram}
+        />
+      ) : null}
+    </Box>
+  )
+}
+
+type GridProps = {
+  programs: ProgramPublic[]
+  byProgram: Map<string, ProgramEnrollment> | undefined
+}
+
+function ProgramSection({
+  title,
+  testId,
+  ...grid
+}: GridProps & { title: string; testId: string }) {
+  return (
+    <Box as="section" data-testid={testId} mb={4}>
+      <Heading
+        as="h2"
+        size={{ base: "lg", lg: "2xl" }}
+        color="brand.primary"
+        mt={4}
+      >
+        {title}
+      </Heading>
+      <ProgramGrid {...grid} />
+    </Box>
+  )
+}
+
+function ProgramGrid({ programs, byProgram }: GridProps) {
+  const navigate = useNavigate()
+
   return (
     <Grid
       w="full"
@@ -47,8 +119,7 @@ export const ProgramsList = () => {
       pt={6}
     >
       {programs.map((program, index) => {
-        const subtitle = formatStudyDays(program.days_of_study)
-
+        const status = byProgram?.get(program.id)?.status
         return (
           <Flex
             key={program.id}
@@ -61,7 +132,9 @@ export const ProgramsList = () => {
           >
             <ProgramCard
               title={program.title}
-              subtitle={subtitle}
+              subtitle={formatStudyDays(program.days_of_study)}
+              badge={status ? <EnrollmentBadge status={status} /> : undefined}
+              highlighted={status === "enrolled"}
               onClick={() =>
                 navigate({
                   to: "/programs/$programId/phases",

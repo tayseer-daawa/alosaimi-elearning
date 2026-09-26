@@ -8,7 +8,8 @@ from app import crud
 from app.core.config import settings
 from app.core.security import verify_password
 from app.models import User
-from tests.utils.user import create_user_with_details
+from tests.utils.session import create_random_session
+from tests.utils.user import create_user_with_details, user_authentication_headers
 from tests.utils.utils import random_email, random_gender_is_male, random_lower_string
 
 
@@ -32,6 +33,36 @@ def test_get_users_normal_user_me(
     assert current_user["is_active"] is True
     assert current_user["is_superuser"] is False
     assert current_user["email"] == settings.EMAIL_TEST_USER
+
+
+def test_read_user_me_sessions(client: TestClient, db: Session) -> None:
+    email = random_email()
+    password = random_lower_string()
+    create_user_with_details(db, email=email, password=password)
+    headers = user_authentication_headers(client=client, email=email, password=password)
+
+    r = client.get(f"{settings.API_V1_STR}/users/me/sessions", headers=headers)
+    assert r.status_code == 200
+    assert r.json() == {"data": [], "count": 0}
+
+    enrolled = create_random_session(db)
+    create_random_session(db)
+    r = client.post(
+        f"{settings.API_V1_STR}/sessions/{enrolled.id}/enroll", headers=headers
+    )
+    assert r.status_code == 200
+
+    r = client.get(f"{settings.API_V1_STR}/users/me/sessions", headers=headers)
+    assert r.status_code == 200
+    content = r.json()
+    assert content["count"] == 1
+    assert [s["id"] for s in content["data"]] == [str(enrolled.id)]
+    assert content["data"][0]["program_id"] == str(enrolled.program_id)
+
+
+def test_read_user_me_sessions_unauthenticated(client: TestClient) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me/sessions")
+    assert r.status_code == 401
 
 
 def test_create_user_new_email(

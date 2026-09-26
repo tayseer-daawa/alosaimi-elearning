@@ -52,4 +52,19 @@ export const queryKeys = {
       return [...this.all, "me"] as const
     },
   },
+  sessions: {
+    all: ["sessions"] as const,
+    lists() {
+      return [...this.all, "list"] as const
+    },
+    events(sessionId: string) {
+      return [...this.all, "events", sessionId] as const
+    },
+    byProgram(programId: string) {
+      return [...this.all, "program", programId] as const
+    },
+    mine() {
+      return [...this.all, "mine"] as const
+    },
+  },
 }

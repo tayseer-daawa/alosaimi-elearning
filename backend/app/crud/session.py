@@ -1,9 +1,15 @@
 import uuid
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.crud.utils import validate_update_model
-from app.models import ProgramSession, ProgramSessionCreate, ProgramSessionUpdate, User
+from app.models import (
+    ProgramSession,
+    ProgramSessionCreate,
+    ProgramSessionUpdate,
+    User,
+    UserSessionStudent,
+)
 
 
 def create_session(
@@ -37,6 +43,21 @@ def get_sessions_by_program(
     statement = (
         select(ProgramSession)
         .where(ProgramSession.program_id == program_id)
+        .offset(skip)
+        .limit(limit)
+    )
+    return list(session.exec(statement).all())
+
+
+def get_sessions_by_student(
+    *, session: Session, user_id: uuid.UUID, skip: int = 0, limit: int = 100
+) -> list[ProgramSession]:
+    """Get sessions a user is enrolled in as a student"""
+    statement = (
+        select(ProgramSession)
+        .join(UserSessionStudent)
+        .where(UserSessionStudent.user_id == user_id)
+        .order_by(col(ProgramSession.start_date))
         .offset(skip)
         .limit(limit)
     )
