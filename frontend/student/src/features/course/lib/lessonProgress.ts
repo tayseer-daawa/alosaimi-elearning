@@ -78,26 +78,6 @@ export function savePlayback(
   }
 }
 
-/**
- * Persist playback without clobbering a real resume point with a transient 0
- * (React Strict Mode remount / reload before metadata).
- */
-export function savePlaybackSafe(
-  lessonId: string,
-  position: number,
-  rate: number,
-): void {
-  if (!Number.isFinite(position) || position < 0) return
-  if (position < 5) {
-    const existing = loadPlayback(lessonId)
-    if (existing && existing.position >= 5) {
-      savePlayback(lessonId, existing.position, rate)
-      return
-    }
-  }
-  savePlayback(lessonId, position, rate)
-}
-
 export function isLessonCompleted(lessonId: string): boolean {
   try {
     return localStorage.getItem(completedKey(lessonId)) != null
