@@ -486,6 +486,36 @@ test.describe("course lesson player", () => {
       .toBeLessThan(55)
   })
 
+  test("going back to the start is remembered after reload", async ({
+    page,
+  }) => {
+    const { lessonId } = await openFirstLesson(page)
+    await waitForAudioReady(page)
+
+    const seekAndPause = (seconds: number) =>
+      page.evaluate((to) => {
+        const audio = document.querySelector("audio")!
+        audio.currentTime = to
+        audio.dispatchEvent(new Event("pause"))
+      }, seconds)
+    const savedPosition = () =>
+      page.evaluate((id) => {
+        const raw = localStorage.getItem(`lesson_playback:${id}`)
+        return raw ? (JSON.parse(raw) as { position: number }).position : null
+      }, lessonId)
+
+    await seekAndPause(45)
+    await expect.poll(savedPosition).toBeGreaterThanOrEqual(44)
+
+    await seekAndPause(0)
+    await expect.poll(savedPosition).toBeLessThan(2)
+
+    await page.reload()
+    await expect(page.getByTestId("course-screen")).toBeVisible()
+    await waitForAudioReady(page)
+    expect((await audioState(page))?.currentTime ?? 999).toBeLessThan(2)
+  })
+
   test("persists volume and mute globally across reload", async ({ page }) => {
     await openFirstLesson(page)
     await waitForAudioReady(page)
