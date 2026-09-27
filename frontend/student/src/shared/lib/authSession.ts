@@ -8,13 +8,33 @@ export type StudentProfile = {
   first_name?: string
 }
 
+/**
+ * Sign out on this device: wipe everything the app stored for the user
+ * (token, profile, lesson progress, notes, player prefs), not only the token.
+ */
 export function clearAuthSession(): void {
-  localStorage.removeItem(ACCESS_TOKEN_KEY)
-  localStorage.removeItem(STUDENT_PROFILE_KEY)
+  try {
+    localStorage.clear()
+    sessionStorage.clear()
+  } catch {
+    // storage disabled — nothing to clear
+  }
 }
 
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY)
+}
+
+/**
+ * Per-user data is only written while signed in, so pagehide/unmount flushes
+ * during logout's hard navigation can't restore what clearAuthSession wiped.
+ */
+export function canStoreUserData(): boolean {
+  try {
+    return getAccessToken() != null
+  } catch {
+    return false
+  }
 }
 
 export function getStudentProfile(): StudentProfile | null {

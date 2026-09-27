@@ -1,5 +1,7 @@
 /** Client-side lesson / player prefs (localStorage). Survives reload on this browser/device. */
 
+import { canStoreUserData } from "@/shared/lib/authSession"
+
 const PLAYBACK_PREFIX = "lesson_playback:"
 const COMPLETED_PREFIX = "lesson_completed:"
 /** Global across lessons — device preference, not per-lesson. */
@@ -66,6 +68,7 @@ export function savePlayback(
   rate: number,
 ): void {
   if (!Number.isFinite(position) || position < 0) return
+  if (!canStoreUserData()) return
   const payload: LessonPlaybackState = {
     position,
     rate,
@@ -99,6 +102,7 @@ export function getLessonProgressStatus(
 }
 
 export function markLessonCompleted(lessonId: string): void {
+  if (!canStoreUserData()) return
   try {
     localStorage.setItem(
       completedKey(lessonId),
@@ -157,7 +161,7 @@ export function loadVolumePrefs(): VolumePrefs | null {
 }
 
 export function saveVolumePrefs(volume: number, muted: boolean): void {
-  if (!Number.isFinite(volume)) return
+  if (!Number.isFinite(volume) || !canStoreUserData()) return
   const payload: VolumePrefs = {
     volume: Math.min(1, Math.max(0, volume)),
     muted,
@@ -204,6 +208,7 @@ export function saveLastLearningPath(path: {
   bookId: string
   courseId: string
 }): void {
+  if (!canStoreUserData()) return
   if (
     !isNonEmptyString(path.programId) ||
     !isNonEmptyString(path.phaseId) ||

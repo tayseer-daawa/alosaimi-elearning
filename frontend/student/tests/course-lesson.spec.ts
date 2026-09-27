@@ -516,6 +516,35 @@ test.describe("course lesson player", () => {
     expect((await audioState(page))?.currentTime ?? 999).toBeLessThan(2)
   })
 
+  test("logging out from a lesson leaves no user data in the browser", async ({
+    page,
+  }) => {
+    await openFirstLesson(page)
+    await waitForAudioReady(page)
+    await page.evaluate(() => {
+      const audio = document.querySelector("audio")!
+      audio.currentTime = 30
+      audio.dispatchEvent(new Event("pause"))
+    })
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          Object.keys(localStorage).some((k) =>
+            k.startsWith("lesson_playback:"),
+          ),
+        ),
+      )
+      .toBe(true)
+
+    await page.getByRole("button", { name: "القائمة الرئيسية" }).click()
+    await page.getByText("تسجيل الخروج").click()
+    await page.waitForURL("/welcome")
+
+    // pagehide flushes from the player must not write progress back.
+    expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([])
+    expect(await page.evaluate(() => Object.keys(sessionStorage))).toEqual([])
+  })
+
   test("persists volume and mute globally across reload", async ({ page }) => {
     await openFirstLesson(page)
     await waitForAudioReady(page)
