@@ -6,7 +6,10 @@ import { QueryProvider } from "./providers/query"
 import { queryClient } from "./providers/queryClient"
 import { ThemeProvider } from "./providers/theme"
 import { router } from "./routes/router"
-import { clearAuthSession } from "./shared/lib/authSession"
+import {
+  clearAuthSession,
+  isDeadSessionResponse,
+} from "./shared/lib/authSession"
 
 const apiUrl = import.meta.env.VITE_API_URL
 if (!apiUrl) {
@@ -38,10 +41,11 @@ OpenAPI.interceptors.request.use((request) => {
   return request
 })
 
-// Clear session on auth failures from the generated client (login uses this path,
-// not only React Query). Stay on public auth pages so login can show its own error.
+// Clear session when the token/account is dead (login uses this path, not only
+// React Query). Permission 403s stay normal errors. Stay on public auth pages so
+// login can show its own error.
 OpenAPI.interceptors.response.use((response) => {
-  if ([401, 403].includes(response.status)) {
+  if (isDeadSessionResponse(response.status, response.data)) {
     clearAuthSession()
     queryClient.clear()
     const path = window.location.pathname
