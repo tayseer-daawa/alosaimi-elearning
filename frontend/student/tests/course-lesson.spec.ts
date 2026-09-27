@@ -719,6 +719,54 @@ test.describe("course lesson player", () => {
     })
   })
 
+  test("only remembers the continue path for deep links the API confirms", async ({
+    page,
+  }) => {
+    const readSavedPath = () =>
+      page.evaluate(() => {
+        const raw = localStorage.getItem("continue_learning_path")
+        return raw ? (JSON.parse(raw) as Record<string, string>) : null
+      })
+
+    const first = await openFirstLesson(page)
+    await expect.poll(readSavedPath).toMatchObject({
+      programId: first.programId,
+      phaseId: first.phaseId,
+      bookId: first.bookId,
+      courseId: first.lessonId,
+    })
+
+    const unknownLessonId = "00000000-0000-4000-8000-000000000000"
+    await page.goto(
+      `/programs/${first.programId}/phases/${first.phaseId}/books/${first.bookId}/courses/${unknownLessonId}`,
+    )
+    // React Query retries the 404 three times before surfacing the error.
+    await expect(page.getByText("تعذر تحميل المقرر.")).toBeVisible({
+      timeout: 15_000,
+    })
+    expect((await readSavedPath())?.courseId).toBe(first.lessonId)
+
+    const books = await page.request.get(
+      `${API}/api/v1/phases/${first.phaseId}/books?limit=50`,
+    )
+    const otherBook = ((await books.json()).data as { id: string }[]).find(
+      (book) => book.id !== first.bookId,
+    )
+    expect(otherBook).toBeTruthy()
+    const phaseLoaded = page.waitForResponse((res) =>
+      res.url().includes(`/api/v1/phases/${first.phaseId}`),
+    )
+    await page.goto(
+      `/programs/${first.programId}/phases/${first.phaseId}/books/${otherBook!.id}/courses/${first.lessonId}`,
+    )
+    await phaseLoaded
+    await expect(page.getByTestId("course-screen")).toBeVisible()
+    expect(await readSavedPath()).toMatchObject({
+      bookId: first.bookId,
+      courseId: first.lessonId,
+    })
+  })
+
   test("back to book returns to the book lessons page", async ({ page }) => {
     const { programId, phaseId, bookId } = await openFirstLesson(page)
     await expect(page.getByTestId("course-screen")).toBeVisible()
