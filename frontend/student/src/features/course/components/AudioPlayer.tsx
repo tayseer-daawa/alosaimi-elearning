@@ -29,7 +29,7 @@ import {
   loadVolumePrefs,
   markLessonCompleted,
   resumePosition,
-  savePlaybackSafe,
+  savePlayback,
   saveVolumePrefs,
 } from "../lib/lessonProgress"
 import { releasePdfFocus } from "../lib/releasePdfFocus"
@@ -310,11 +310,13 @@ export default function AudioPlayer({
   const persistPlayback = useCallback(
     (position: number, playbackRate: number, force = false) => {
       const id = lessonIdRef.current
-      if (!id) return
+      // Before the saved position is restored, currentTime is a transient 0
+      // (Strict Mode remount, reload before metadata) and must not overwrite it.
+      if (!id || !didResumeRef.current) return
       const now = Date.now()
       if (!force && now - lastSavedAtRef.current < 2500) return
       lastSavedAtRef.current = now
-      savePlaybackSafe(id, position, playbackRate)
+      savePlayback(id, position, playbackRate)
     },
     [],
   )
@@ -417,8 +419,10 @@ export default function AudioPlayer({
       audio.playbackRate = rateRef.current
       markReady()
       syncBufferedRanges()
-      if (didResumeRef.current || !saved) return
-      const resume = resumePosition(saved.position, audio.duration)
+      if (didResumeRef.current) return
+      const resume = saved
+        ? resumePosition(saved.position, audio.duration)
+        : null
       if (resume != null) {
         markBufferingSoon()
         audio.currentTime = resume
@@ -517,9 +521,8 @@ export default function AudioPlayer({
   useEffect(() => {
     const flush = () => {
       const audio = audioRef.current
-      const id = lessonIdRef.current
-      if (id && audio && Number.isFinite(audio.currentTime)) {
-        savePlaybackSafe(id, audio.currentTime, rateRef.current)
+      if (audio && Number.isFinite(audio.currentTime)) {
+        persistPlayback(audio.currentTime, rateRef.current, true)
       }
       saveVolumePrefs(volumeRef.current, mutedRef.current)
     }
@@ -532,7 +535,7 @@ export default function AudioPlayer({
       window.removeEventListener("pagehide", flush)
       document.removeEventListener("visibilitychange", onVisibility)
     }
-  }, [])
+  }, [persistPlayback])
 
   const retryAudioLoad = () => {
     setError(null)
