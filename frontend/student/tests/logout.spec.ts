@@ -25,12 +25,7 @@ test.describe("logout", () => {
     await page.getByText("تسجيل الخروج").click()
     await page.waitForURL("/welcome", { timeout: 10000 })
 
-    expect(
-      await page.evaluate(() => localStorage.getItem("access_token")),
-    ).toBeNull()
-    expect(
-      await page.evaluate(() => localStorage.getItem("student_profile")),
-    ).toBeNull()
+    expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([])
 
     await page.goto("/")
     await page.waitForURL("/welcome", { timeout: 10000 })
