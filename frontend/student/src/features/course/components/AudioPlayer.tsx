@@ -177,7 +177,7 @@ export default function AudioPlayer({
   const [bufferedRanges, setBufferedRanges] = useState<
     { start: number; end: number }[]
   >([])
-  const [_reloadKey, setReloadKey] = useState(0)
+  const [reloadKey, setReloadKey] = useState(0)
   const [showVolume, setShowVolume] = useState(false)
   const [hudPayload, setHudPayload] = useState<PlayerHudPayload | null>(null)
   const [hudFlashId, setHudFlashId] = useState(0)
@@ -347,6 +347,7 @@ export default function AudioPlayer({
     hasNextRef.current = hasNextLesson
   }, [onPrevLesson, onNextLesson, hasPrevLesson, hasNextLesson])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reloadKey is unread on purpose; bumping it re-runs the load on retry
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -510,6 +511,7 @@ export default function AudioPlayer({
   }, [
     audioUrl,
     lessonId,
+    reloadKey,
     persistPlayback,
     clearBufferTimers,
     clearBuffering,
@@ -538,8 +540,6 @@ export default function AudioPlayer({
   }, [persistPlayback])
 
   const retryAudioLoad = () => {
-    setError(null)
-    setMediaLoading(true)
     setReloadKey((k) => k + 1)
   }
 

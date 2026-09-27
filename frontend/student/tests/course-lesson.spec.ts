@@ -177,6 +177,26 @@ test.describe("course lesson player", () => {
     await expect(page.getByTestId("pdf-reader-open-tab")).toBeVisible()
   })
 
+  test("retry reloads the audio after it failed to load", async ({ page }) => {
+    let failAudio = true
+    await page.route("**/*", (route) =>
+      failAudio && route.request().resourceType() === "media"
+        ? route.abort()
+        : route.fallback(),
+    )
+    await openFirstLesson(page)
+
+    const retry = page.getByTestId("audio-player-retry")
+    await expect(retry).toBeVisible({ timeout: 15_000 })
+
+    failAudio = false
+    await retry.click()
+
+    await waitForAudioReady(page)
+    await expect(page.getByTestId("audio-player-loading")).toHaveCount(0)
+    await expect(retry).toHaveCount(0)
+  })
+
   test("UI controls: play, mute, rate, and seek", async ({ page }) => {
     await openFirstLesson(page)
     await waitForAudioReady(page)
