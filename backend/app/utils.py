@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -14,6 +16,8 @@ from app.core.config import settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+PASSWORD_RESET_TOKEN_PURPOSE = "password-reset"
 
 
 @dataclass
@@ -107,24 +111,50 @@ def generate_new_account_email(
     return EmailData(html_content=html_content, subject=subject)
 
 
-def generate_password_reset_token(email: str) -> str:
+def password_fingerprint(hashed_password: str) -> str:
+    """
+    Fingerprint of a password hash, embedded in reset tokens so that a token stops
+    working once the password changes. HMAC-keyed: the raw hash must never appear in a
+    token, because anyone holding the link can read its payload.
+    """
+    return hmac.new(
+        settings.SECRET_KEY.encode(), hashed_password.encode(), hashlib.sha256
+    ).hexdigest()
+
+
+def generate_password_reset_token(email: str, hashed_password: str) -> str:
     delta = timedelta(hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS)
     now = datetime.now(UTC)
     expires = now + delta
     exp = expires.timestamp()
     encoded_jwt = jwt.encode(
-        {"exp": exp, "nbf": now, "sub": email},
+        {
+            "exp": exp,
+            "nbf": now,
+            "sub": email,
+            "purpose": PASSWORD_RESET_TOKEN_PURPOSE,
+            "fp": password_fingerprint(hashed_password),
+        },
         settings.SECRET_KEY,
         algorithm=security.ALGORITHM,
     )
     return encoded_jwt
 
 
-def verify_password_reset_token(token: str) -> str | None:
+def verify_password_reset_token(token: str) -> tuple[str, str] | None:
+    """Return (email, password fingerprint) for a valid reset token, else None."""
     try:
         decoded_token = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
-        return str(decoded_token["sub"])
     except InvalidTokenError:
         return None
+    email = decoded_token.get("sub")
+    fingerprint = decoded_token.get("fp")
+    if (
+        decoded_token.get("purpose") != PASSWORD_RESET_TOKEN_PURPOSE
+        or not isinstance(email, str)
+        or not isinstance(fingerprint, str)
+    ):
+        return None
+    return email, fingerprint
