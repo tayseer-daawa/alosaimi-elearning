@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 import { ApiError, LoginService, UsersService } from "@/client"
+import { apiErrorMessage } from "@/shared/lib/apiErrorMessage"
 import { clearAuthSession, setStudentProfile } from "@/shared/lib/authSession"
 
 export function useLoginWizard() {
@@ -65,10 +66,7 @@ export function useLoginWizard() {
     } catch (err: unknown) {
       clearAuthSession()
       if (err instanceof ApiError) {
-        setError({
-          email: "البريد الإلكتروني أو كلمة السر غير صحيحة",
-          password: null,
-        })
+        setError({ email: apiErrorMessage(err.body), password: null })
       } else {
         setError({ email: "حدث خطأ غير متوقع للاتصال بالخادم", password: null })
       }
