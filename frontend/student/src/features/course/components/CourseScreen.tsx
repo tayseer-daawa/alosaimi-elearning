@@ -44,11 +44,6 @@ export default function CourseScreen() {
     strict: false,
   })
 
-  useEffect(() => {
-    if (!programId || !phaseId || !bookId || !courseId) return
-    saveLastLearningPath({ programId, phaseId, bookId, courseId })
-  }, [programId, phaseId, bookId, courseId])
-
   const setNotesOpen = (open: boolean) => {
     setNotesPaneOpen(open)
     writeNotesPaneOpen(open)
@@ -58,6 +53,23 @@ export default function CourseScreen() {
   const bookQuery = useBook(bookId)
   const lessonQuery = useLesson(courseId)
   const lessonsQuery = useLessonsByBook(bookId)
+
+  // Only remember the path once the API confirms the deep link is coherent.
+  const loadedLessonBookId = lessonQuery.data?.book_id
+  const loadedPhaseProgramId = phaseQuery.data?.program_id
+  useEffect(() => {
+    if (!programId || !phaseId || !bookId || !courseId) return
+    if (loadedLessonBookId !== bookId) return
+    if (loadedPhaseProgramId !== programId) return
+    saveLastLearningPath({ programId, phaseId, bookId, courseId })
+  }, [
+    programId,
+    phaseId,
+    bookId,
+    courseId,
+    loadedLessonBookId,
+    loadedPhaseProgramId,
+  ])
 
   const lessons = useMemo(() => {
     const data = lessonsQuery.data?.data ?? []
