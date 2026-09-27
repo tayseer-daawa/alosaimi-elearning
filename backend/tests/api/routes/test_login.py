@@ -1,13 +1,17 @@
+from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 from unittest.mock import patch
 
+import jwt
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
+from app.core import security
 from app.core.config import settings
-from app.core.security import verify_password
+from app.core.security import create_access_token, get_password_hash, verify_password
 from app.crud import create_user
-from app.models import UserCreate
-from app.utils import generate_password_reset_token
+from app.models import User, UserCreate
+from app.utils import generate_password_reset_token, password_fingerprint
 from tests.utils.user import user_authentication_headers
 from tests.utils.utils import random_email, random_lower_string
 
@@ -187,7 +191,9 @@ def test_reset_password(client: TestClient, db: Session) -> None:
         is_male=True,
     )
     user = create_user(session=db, user_create=user_create)
-    token = generate_password_reset_token(email=email)
+    token = generate_password_reset_token(
+        email=email, hashed_password=user.hashed_password
+    )
     headers = user_authentication_headers(client=client, email=email, password=password)
     data = {"new_password": new_password, "token": token}
 
@@ -250,7 +256,7 @@ def test_reset_password_user_not_found(client: TestClient) -> None:
     """Test reset password with valid token but user doesn't exist anymore."""
     email = random_email()
     # Generate token for a non-existent user
-    token = generate_password_reset_token(email=email)
+    token = generate_password_reset_token(email=email, hashed_password="unused")
 
     data = {"new_password": random_lower_string(), "token": token}
     r = client.post(
@@ -276,9 +282,11 @@ def test_reset_password_inactive_user(client: TestClient, db: Session) -> None:
         is_superuser=False,
         is_male=True,
     )
-    create_user(session=db, user_create=user_create)
+    user = create_user(session=db, user_create=user_create)
 
-    token = generate_password_reset_token(email=email)
+    token = generate_password_reset_token(
+        email=email, hashed_password=user.hashed_password
+    )
     data = {"new_password": random_lower_string(), "token": token}
 
     r = client.post(
@@ -355,3 +363,158 @@ def test_password_recovery_html_content_not_superuser(
         headers=normal_user_token_headers,
     )
     assert r.status_code == 403
+
+
+def _create_active_user(db: Session) -> tuple[User, str]:
+    password = random_lower_string()
+    user = create_user(
+        session=db,
+        user_create=UserCreate(
+            email=random_email(),
+            first_name="Test",
+            father_name="",
+            family_name="User",
+            password=password,
+            is_active=True,
+            is_superuser=False,
+            is_male=True,
+        ),
+    )
+    return user, password
+
+
+def test_reset_password_token_cannot_be_reused(client: TestClient, db: Session) -> None:
+    user, _ = _create_active_user(db)
+    token = generate_password_reset_token(
+        email=user.email, hashed_password=user.hashed_password
+    )
+    first_password = random_lower_string()
+
+    r = client.post(
+        f"{settings.API_V1_STR}/reset-password/",
+        json={"new_password": first_password, "token": token},
+    )
+    assert r.status_code == 200
+
+    r = client.post(
+        f"{settings.API_V1_STR}/reset-password/",
+        json={"new_password": random_lower_string(), "token": token},
+    )
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Invalid token"
+    db.refresh(user)
+    assert verify_password(first_password, user.hashed_password)
+
+
+def test_reset_password_invalidates_other_outstanding_tokens(
+    client: TestClient, db: Session
+) -> None:
+    user, _ = _create_active_user(db)
+    first_token = generate_password_reset_token(
+        email=user.email, hashed_password=user.hashed_password
+    )
+    second_token = generate_password_reset_token(
+        email=user.email, hashed_password=user.hashed_password
+    )
+
+    r = client.post(
+        f"{settings.API_V1_STR}/reset-password/",
+        json={"new_password": random_lower_string(), "token": first_token},
+    )
+    assert r.status_code == 200
+
+    r = client.post(
+        f"{settings.API_V1_STR}/reset-password/",
+        json={"new_password": random_lower_string(), "token": second_token},
+    )
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Invalid token"
+
+
+def test_reset_password_token_invalid_after_password_change(
+    client: TestClient, db: Session
+) -> None:
+    user, password = _create_active_user(db)
+    token = generate_password_reset_token(
+        email=user.email, hashed_password=user.hashed_password
+    )
+    headers = user_authentication_headers(
+        client=client, email=user.email, password=password
+    )
+    r = client.patch(
+        f"{settings.API_V1_STR}/users/me/password",
+        headers=headers,
+        json={"current_password": password, "new_password": random_lower_string()},
+    )
+    assert r.status_code == 200
+
+    r = client.post(
+        f"{settings.API_V1_STR}/reset-password/",
+        json={"new_password": random_lower_string(), "token": token},
+    )
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Invalid token"
+
+
+def test_reset_password_rejects_access_token(client: TestClient, db: Session) -> None:
+    user, _ = _create_active_user(db)
+    access_token = create_access_token(user.id, expires_delta=timedelta(minutes=5))
+
+    r = client.post(
+        f"{settings.API_V1_STR}/reset-password/",
+        json={"new_password": random_lower_string(), "token": access_token},
+    )
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Invalid token"
+
+
+def test_reset_password_rejects_token_without_reset_purpose(
+    client: TestClient, db: Session
+) -> None:
+    """A correctly signed token with a valid email and fingerprint, but no purpose."""
+    user, _ = _create_active_user(db)
+    token = jwt.encode(
+        {
+            "exp": datetime.now(UTC) + timedelta(minutes=5),
+            "sub": user.email,
+            "fp": password_fingerprint(user.hashed_password),
+        },
+        settings.SECRET_KEY,
+        algorithm=security.ALGORITHM,
+    )
+
+    r = client.post(
+        f"{settings.API_V1_STR}/reset-password/",
+        json={"new_password": random_lower_string(), "token": token},
+    )
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Invalid token"
+
+
+def test_reset_password_rejects_concurrent_password_change(
+    client: TestClient, db: Session
+) -> None:
+    """The password changes between the token check and the write."""
+    user, _ = _create_active_user(db)
+    token = generate_password_reset_token(
+        email=user.email, hashed_password=user.hashed_password
+    )
+    # What the request reads: the user as it was when the token was issued.
+    stale_user = SimpleNamespace(
+        id=user.id, hashed_password=user.hashed_password, is_active=True
+    )
+    # Meanwhile, a concurrent request changes the password.
+    concurrent_password = random_lower_string()
+    user.hashed_password = get_password_hash(concurrent_password)
+    db.add(user)
+    db.commit()
+
+    with patch("app.api.routes.login.crud.get_user_by_email", return_value=stale_user):
+        r = client.post(
+            f"{settings.API_V1_STR}/reset-password/",
+            json={"new_password": random_lower_string(), "token": token},
+        )
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Invalid token"
+    db.refresh(user)
+    assert verify_password(concurrent_password, user.hashed_password)
