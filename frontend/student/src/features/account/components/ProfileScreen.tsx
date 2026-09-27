@@ -1,7 +1,16 @@
-import { Box, Button, Flex, Text } from "@chakra-ui/react"
+import { Box, Button, Flex, Skeleton, Text } from "@chakra-ui/react"
 import { useState } from "react"
+import type { UserPublic } from "@/client"
+import { useCurrentUser } from "@/features/home/api/useCurrentUser"
 import { getStudentProfile } from "@/shared/lib/authSession"
 import { AccountPageShell } from "./AccountPageShell"
+
+function fullName(user: UserPublic): string {
+  return [user.first_name, user.father_name, user.family_name]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(" ")
+}
 
 const NOTIFY_KEY = "student_email_notifications"
 
@@ -14,7 +23,11 @@ function loadNotifyPref(): boolean {
 }
 
 export default function ProfileScreen() {
-  const profile = getStudentProfile()
+  const userQuery = useCurrentUser()
+  const user = userQuery.data
+  const cached = getStudentProfile()
+  const name = user ? fullName(user) : cached?.first_name
+  const email = user?.email ?? cached?.email
   const [notifyEmail, setNotifyEmail] = useState(loadNotifyPref)
 
   const setNotify = (value: boolean) => {
@@ -33,15 +46,19 @@ export default function ProfileScreen() {
           <Text fontSize="sm" color="gray.500" mb={1} textAlign="right">
             الاسم الكامل
           </Text>
-          <Text
-            fontSize="lg"
-            color="brand.primary"
-            fontWeight="medium"
-            textAlign="right"
-            data-testid="profile-name"
-          >
-            {profile?.first_name?.trim() || "—"}
-          </Text>
+          {userQuery.isPending ? (
+            <Skeleton h="7" w="60%" ms="auto" />
+          ) : (
+            <Text
+              fontSize="lg"
+              color="brand.primary"
+              fontWeight="medium"
+              textAlign="right"
+              data-testid="profile-name"
+            >
+              {name || "—"}
+            </Text>
+          )}
         </Box>
 
         <Box>
@@ -56,7 +73,7 @@ export default function ProfileScreen() {
             dir="ltr"
             data-testid="profile-email"
           >
-            {profile?.email || "—"}
+            {email || "—"}
           </Text>
         </Box>
 
