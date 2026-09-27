@@ -21,6 +21,28 @@ export function clearAuthSession(): void {
   }
 }
 
+/**
+ * Responses from the backend's get_current_user that mean the token or the
+ * account is no longer usable. The invalid-token case is a 403 there, while
+ * other 403s are per-resource permission errors that must not sign out.
+ */
+const DEAD_SESSION_RESPONSES: ReadonlyArray<readonly [number, string]> = [
+  [403, "Could not validate credentials"],
+  [404, "User not found"],
+  [400, "Inactive user"],
+]
+
+export function isDeadSessionResponse(status: number, body: unknown): boolean {
+  if (status === 401) return true
+  const detail =
+    typeof body === "object" && body !== null && "detail" in body
+      ? (body as { detail: unknown }).detail
+      : undefined
+  return DEAD_SESSION_RESPONSES.some(
+    ([code, message]) => code === status && detail === message,
+  )
+}
+
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY)
 }
