@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test"
 
+const API = process.env.VITE_API_URL ?? "http://localhost:8000"
+
 test.describe("auth redirects", () => {
   test("unauthenticated user hitting / is sent to /welcome", async ({
     page,
@@ -17,10 +19,9 @@ test.describe("auth redirects", () => {
     await expect(page).toHaveURL("/welcome")
   })
 
-  test("invalid token + authenticated API 401/403 clears session and goes to /welcome", async ({
+  test("an invalid token signs the student out and goes to /welcome", async ({
     page,
   }) => {
-    // Land on a protected shell so a later 401 redirects off public auth pages
     await page.goto("/welcome")
     await page.evaluate(() => {
       localStorage.setItem("access_token", "invalid_token")
@@ -29,31 +30,47 @@ test.describe("auth redirects", () => {
         JSON.stringify({ email: "x@example.com" }),
       )
     })
-    // Token presence bounces /welcome → /
-    await page.goto("/welcome")
-    await page.waitForURL("/")
 
-    // Call through the app OpenAPI client so the response interceptor runs
-    await Promise.all([
-      page.waitForURL("/welcome", { timeout: 15000 }),
-      page.evaluate(async () => {
-        const { UsersService } = await import("/src/client/index.ts")
-        try {
-          await UsersService.readUserMe()
-        } catch {
-          // expected — interceptor should clear + redirect
-        }
+    // Home calls GET /users/me, which answers 403 "Could not validate credentials".
+    await page.goto("/")
+    await page.waitForURL("/welcome", { timeout: 15000 })
+
+    expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([])
+  })
+
+  test("a permission 403 on one resource keeps the student signed in", async ({
+    page,
+  }) => {
+    const login = await page.request.post(`${API}/api/v1/login/access-token`, {
+      form: { username: "student@example.com", password: "Student123!" },
+    })
+    expect(login.ok()).toBeTruthy()
+    const { access_token } = (await login.json()) as { access_token: string }
+
+    await page.route(/\/api\/v1\/programs\/\?/, (route) =>
+      route.fulfill({
+        status: 403,
+        contentType: "application/json",
+        body: JSON.stringify({
+          detail: "The user doesn't have enough privileges",
+        }),
       }),
-    ])
+    )
 
-    await expect(page).toHaveURL("/welcome")
-    const token = await page.evaluate(() =>
-      localStorage.getItem("access_token"),
+    await page.goto("/welcome")
+    await page.evaluate(
+      (token) => localStorage.setItem("access_token", token),
+      access_token,
     )
-    const profile = await page.evaluate(() =>
-      localStorage.getItem("student_profile"),
-    )
-    expect(token).toBeNull()
-    expect(profile).toBeNull()
+    await page.goto("/programs")
+
+    // React Query retries three times before surfacing the error.
+    await expect(page.getByText("تعذر تحميل البرامج.")).toBeVisible({
+      timeout: 15_000,
+    })
+    await expect(page).toHaveURL(/\/programs\/?$/)
+    expect(
+      await page.evaluate(() => localStorage.getItem("access_token")),
+    ).toBe(access_token)
   })
 })
