@@ -8,10 +8,16 @@ import {
 } from "@chakra-ui/react"
 import { ChevronDown, Clock } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { canStoreUserData } from "@/shared/lib/authSession"
 import { formatNoteTimestamp, listNoteTimestamps } from "../lib/noteTimestamps"
 import { releasePdfFocus } from "../lib/releasePdfFocus"
 
 const storageKey = (lessonId: string) => `lesson_notes:${lessonId}`
+
+function storeNote(lessonId: string, text: string) {
+  if (!canStoreUserData()) return
+  localStorage.setItem(storageKey(lessonId), text)
+}
 /** Wait for typing to settle before writing + showing «تم الحفظ محلياً». */
 const SAVE_DEBOUNCE_MS = 450
 
@@ -61,7 +67,7 @@ export function LessonNotes({
   const flushSave = useCallback(
     (id: string, text: string) => {
       clearSaveTimer()
-      localStorage.setItem(storageKey(id), text)
+      storeNote(id, text)
       setSavedHint(true)
     },
     [clearSaveTimer],
@@ -73,7 +79,7 @@ export function LessonNotes({
       clearSaveTimer()
       saveTimerRef.current = window.setTimeout(() => {
         saveTimerRef.current = null
-        localStorage.setItem(storageKey(id), text)
+        storeNote(id, text)
         setSavedHint(true)
       }, SAVE_DEBOUNCE_MS)
     },
@@ -95,7 +101,7 @@ export function LessonNotes({
     setSavedHint(saved != null && saved.length > 0)
     return () => {
       clearSaveTimer()
-      localStorage.setItem(storageKey(lessonId), draftRef.current)
+      storeNote(lessonId, draftRef.current)
     }
   }, [lessonId, clearSaveTimer])
 
@@ -107,7 +113,7 @@ export function LessonNotes({
   useEffect(() => {
     const flush = () => {
       clearSaveTimer()
-      localStorage.setItem(storageKey(lessonIdRef.current), draftRef.current)
+      storeNote(lessonIdRef.current, draftRef.current)
     }
     const onVisibility = () => {
       if (document.visibilityState === "hidden") flush()
