@@ -22,6 +22,20 @@ export function usePhasesWithBooks(programId: string | undefined) {
   const isLoading =
     phasesQuery.isLoading || bookQueries.some((q) => q.isLoading)
   const isError = phasesQuery.isError || bookQueries.some((q) => q.isError)
+  const isFetching =
+    phasesQuery.isFetching || bookQueries.some((q) => q.isFetching)
+
+  // Book queries are created once phases succeed, so a phases retry
+  // also covers them; otherwise retry only the book queries that failed.
+  const retry = async () => {
+    if (phasesQuery.isError) {
+      await phasesQuery.refetch()
+      return
+    }
+    await Promise.all(
+      bookQueries.filter((q) => q.isError).map((q) => q.refetch()),
+    )
+  }
 
   const data: PhaseWithBooks[] | undefined = phasesQuery.isSuccess
     ? phases.map((phase, index) => ({
@@ -34,7 +48,8 @@ export function usePhasesWithBooks(programId: string | undefined) {
     data,
     isLoading,
     isError,
+    isFetching,
     error: phasesQuery.error ?? bookQueries.find((q) => q.error)?.error,
-    phasesQuery,
+    retry,
   }
 }

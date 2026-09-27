@@ -12,7 +12,8 @@ export const PhasesList = () => {
     data: stages,
     isLoading,
     isError,
-    phasesQuery,
+    isFetching,
+    retry,
   } = usePhasesWithBooks(programId)
   const [expandedStage, setExpandedStage] = useState<string | null>(null)
   const [didInitExpand, setDidInitExpand] = useState(false)
@@ -45,8 +46,9 @@ export const PhasesList = () => {
           تعذر تحميل المراحل.
         </Text>
         <Button
-          loading={phasesQuery.isFetching}
-          onClick={() => void phasesQuery.refetch()}
+          loading={isFetching}
+          onClick={() => void retry()}
+          data-testid="phases-retry"
         >
           إعادة المحاولة
         </Button>
