@@ -1,7 +1,5 @@
 """Entry point: ``python -m app.seed``."""
 
-from __future__ import annotations
-
 import logging
 import sys
 

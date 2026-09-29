@@ -1,7 +1,5 @@
 """Seed demo users — skip if email already exists (never overwrite passwords)."""
 
-from __future__ import annotations
-
 import logging
 
 from sqlmodel import Session
