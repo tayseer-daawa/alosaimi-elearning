@@ -8,8 +8,6 @@ Curriculum mirrors Sheikh Saleh al-Osaimi's public programs
 `.claude/skills/muhimmat-al-ilm/SKILL.md`.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import TypedDict
 

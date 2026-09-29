@@ -11,8 +11,6 @@ Playable URLs below use the IslamHouse CDN (direct PDF/MP3) so the student
 HTML5 media sources. Nothing is vendored into the repo.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 
 # Tamkeen catalog (human / research) — same graph as Drive folders 01–20
