@@ -1,4 +1,6 @@
 import uuid
+from datetime import date, timedelta
+from typing import Any, cast
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -7,7 +9,8 @@ from sqlmodel import Session, select
 from app import crud
 from app.core.config import settings
 from app.core.security import verify_password
-from app.models import User
+from app.models import ProgramSessionCreate, User
+from tests.utils.program import create_random_program
 from tests.utils.session import create_random_session
 from tests.utils.user import create_user_with_details, user_authentication_headers
 from tests.utils.utils import random_email, random_gender_is_male, random_lower_string
@@ -58,6 +61,41 @@ def test_read_user_me_sessions(client: TestClient, db: Session) -> None:
     assert content["count"] == 1
     assert [s["id"] for s in content["data"]] == [str(enrolled.id)]
     assert content["data"][0]["program_id"] == str(enrolled.program_id)
+
+
+def test_read_user_me_sessions_pagination(client: TestClient, db: Session) -> None:
+    email = random_email()
+    password = random_lower_string()
+    user = create_user_with_details(db, email=email, password=password)
+    headers = user_authentication_headers(client=client, email=email, password=password)
+    program = create_random_program(db)
+    sessions = [
+        crud.create_session(
+            session=db,
+            session_in=ProgramSessionCreate(
+                start_date=date.today() + timedelta(days=days), program_id=program.id
+            ),
+        )
+        for days in (20, 0, 10)
+    ]
+    for s in sessions:
+        crud.add_student_to_session(session=db, session_id=s.id, user_id=user.id)
+    by_start_date = [str(s.id) for s in sorted(sessions, key=lambda s: s.start_date)]
+    url = f"{settings.API_V1_STR}/users/me/sessions"
+
+    def page(skip: int, limit: int) -> dict[str, Any]:
+        r = client.get(url, headers=headers, params={"skip": skip, "limit": limit})
+        assert r.status_code == 200
+        return cast(dict[str, Any], r.json())
+
+    first, second, past_end = page(0, 2), page(2, 2), page(3, 2)
+    assert [s["id"] for s in first["data"]] == by_start_date[:2]
+    assert [s["id"] for s in second["data"]] == by_start_date[2:]
+    assert past_end["data"] == []
+    assert first["count"] == second["count"] == past_end["count"] == 3
+
+    r = client.get(url, headers=headers, params={"limit": 501})
+    assert r.status_code == 422
 
 
 def test_read_user_me_sessions_unauthenticated(client: TestClient) -> None:
