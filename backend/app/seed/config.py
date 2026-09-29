@@ -1,7 +1,5 @@
 """CLI flags for the development seed."""
 
-from __future__ import annotations
-
 import argparse
 from dataclasses import dataclass
 

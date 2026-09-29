@@ -1,7 +1,5 @@
 """Delete only seed-owned rows (demo emails + known program/book titles)."""
 
-from __future__ import annotations
-
 import logging
 
 from sqlmodel import Session

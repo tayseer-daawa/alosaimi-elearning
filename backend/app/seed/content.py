@@ -1,7 +1,5 @@
 """Seed the learning graph: program → phases → books → lessons → session → exam."""
 
-from __future__ import annotations
-
 import logging
 from datetime import date, timedelta
 

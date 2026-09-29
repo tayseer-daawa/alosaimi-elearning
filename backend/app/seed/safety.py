@@ -1,7 +1,5 @@
 """Safety guards — refuse to seed anything that is not clearly local."""
 
-from __future__ import annotations
-
 from urllib.parse import urlparse
 
 from app.core.config import settings
