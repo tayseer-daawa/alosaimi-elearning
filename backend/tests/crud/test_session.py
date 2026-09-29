@@ -84,6 +84,33 @@ def test_get_sessions_by_student(db: Session) -> None:
     assert [s.id for s in sessions] == [earlier.id, later.id]
 
 
+def test_get_sessions_by_student_same_start_date_is_stable(db: Session) -> None:
+    program = create_random_program(db)
+    user = create_random_user(db)
+    same_day = [
+        crud.create_session(
+            session=db,
+            session_in=ProgramSessionCreate(
+                start_date=date.today(), program_id=program.id
+            ),
+        )
+        for _ in range(4)
+    ]
+    for s in same_day:
+        crud.add_student_to_session(session=db, session_id=s.id, user_id=user.id)
+    expected = sorted(s.id for s in same_day)
+
+    everything = crud.get_sessions_by_student(session=db, user_id=user.id)
+    first_page = crud.get_sessions_by_student(
+        session=db, user_id=user.id, skip=0, limit=2
+    )
+    second_page = crud.get_sessions_by_student(
+        session=db, user_id=user.id, skip=2, limit=2
+    )
+    assert [s.id for s in everything] == expected
+    assert [s.id for s in first_page + second_page] == expected
+
+
 def test_get_sessions_by_student_none(db: Session) -> None:
     user = create_random_user(db)
     assert crud.get_sessions_by_student(session=db, user_id=user.id) == []

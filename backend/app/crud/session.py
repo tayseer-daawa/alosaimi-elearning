@@ -57,7 +57,7 @@ def get_sessions_by_student(
         select(ProgramSession)
         .join(UserSessionStudent)
         .where(UserSessionStudent.user_id == user_id)
-        .order_by(col(ProgramSession.start_date))
+        .order_by(col(ProgramSession.start_date), col(ProgramSession.id))
         .offset(skip)
         .limit(limit)
     )
