@@ -14,11 +14,13 @@ from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
 from app.models import (
     Message,
+    ProgramSessionsPublic,
     UpdatePassword,
     User,
     UserCreate,
     UserPublic,
     UserRegister,
+    UserSessionStudent,
     UsersPublic,
     UserUpdate,
     UserUpdateMe,
@@ -124,6 +126,28 @@ def read_user_me(current_user: CurrentUser) -> User:
     Get current user.
     """
     return current_user
+
+
+@router.get("/me/sessions", response_model=ProgramSessionsPublic)
+def read_user_me_sessions(
+    session: SessionDep,
+    current_user: CurrentUser,
+    skip: int = 0,
+    limit: int = Query(default=100, le=500),
+) -> ProgramSessionsPublic:
+    """
+    Retrieve the sessions the current user is enrolled in as a student.
+    """
+    count_statement = (
+        select(func.count())
+        .select_from(UserSessionStudent)
+        .where(UserSessionStudent.user_id == current_user.id)
+    )
+    count = session.exec(count_statement).one()
+    sessions = crud.get_sessions_by_student(
+        session=session, user_id=current_user.id, skip=skip, limit=limit
+    )
+    return ProgramSessionsPublic(data=sessions, count=count)
 
 
 @router.delete("/me", response_model=Message)

@@ -23,6 +23,8 @@ interface HomeScreenProps {
   userName?: string
   /** True when this device has a saved last lesson path. */
   continueMode?: boolean
+  /** Small label above the featured title. */
+  eyebrow?: string
   continueTitle?: string
   continueSubtitle?: string
   onContinueLearning?: () => void
@@ -33,6 +35,7 @@ export default function HomeScreenComponents({
   allPrograms = [],
   userName = "الطالب",
   continueMode = false,
+  eyebrow: eyebrowProp,
   continueTitle,
   continueSubtitle,
   onContinueLearning,
@@ -42,7 +45,8 @@ export default function HomeScreenComponents({
   const totalPrograms = allPrograms.length
   const cardTitle = continueTitle || featured?.title || "لا توجد برامج بعد"
   const cardSubtitle = continueSubtitle || featured?.subtitle
-  const eyebrow = continueMode ? "متابعة التعلم" : "ابدأ من هنا"
+  const eyebrow =
+    eyebrowProp ?? (continueMode ? "متابعة التعلم" : "ابدأ من هنا")
   const ctaLabel = continueMode ? "متابعة المقرر" : "ابدأ التعلم"
 
   return (

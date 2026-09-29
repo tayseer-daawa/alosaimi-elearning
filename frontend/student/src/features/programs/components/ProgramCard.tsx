@@ -1,19 +1,31 @@
 import { Box, Flex, Heading, Image, Text } from "@chakra-ui/react"
+import type { ReactNode } from "react"
 import BooksIcon from "/assets/icomoon-free_books.svg"
 
 type ProgramCardProps = {
   title: string
   subtitle?: string
+  /** Shown above the title, e.g. the enrollment badge. */
+  badge?: ReactNode
+  highlighted?: boolean
   onClick?: () => void
 }
 
 /** Catalog card — only fields the programs API exposes (title + study days). */
-export const ProgramCard = ({ title, subtitle, onClick }: ProgramCardProps) => {
+export const ProgramCard = ({
+  title,
+  subtitle,
+  badge,
+  highlighted = false,
+  onClick,
+}: ProgramCardProps) => {
   return (
     <Box
       bg="white"
       position="relative"
       borderRadius="8px"
+      borderWidth="2px"
+      borderColor={highlighted ? "brand.primary" : "transparent"}
       p={{
         base: 6,
         lg: 10,
@@ -28,9 +40,11 @@ export const ProgramCard = ({ title, subtitle, onClick }: ProgramCardProps) => {
         lg: "90%",
       }}
       onClick={onClick}
+      data-testid="program-card"
     >
       <Flex w="100%" align="center" h="100%" justifyContent="space-between">
         <Box>
+          {badge ? <Box mb={2}>{badge}</Box> : null}
           <Heading
             size={{
               base: "lg",
@@ -71,6 +85,7 @@ export const ProgramCard = ({ title, subtitle, onClick }: ProgramCardProps) => {
         >
           <Image
             src={BooksIcon}
+            alt=""
             boxSize={{ base: 6, lg: 10 }}
             objectFit="contain"
           />

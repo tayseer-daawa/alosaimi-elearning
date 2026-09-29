@@ -772,6 +772,13 @@ export type UsersUpdatePasswordMeData = {
 
 export type UsersUpdatePasswordMeResponse = (Message);
 
+export type UsersReadUserMeSessionsData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type UsersReadUserMeSessionsResponse = (ProgramSessionsPublic);
+
 export type UsersRegisterUserData = {
     requestBody: UserRegister;
 };
