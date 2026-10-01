@@ -89,10 +89,10 @@ requires-dist = [
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.6,<4.0.0" },
     { name = "pydantic", specifier = ">=2.13.5" },
     { name = "pydantic-settings", specifier = ">=2.15.0,<3.0.0" },
-    { name = "pyjwt", specifier = ">=2.14.0,<3.0.0" },
+    { name = "pyjwt", specifier = ">=2.15.0,<3.0.0" },
     { name = "python-multipart", specifier = ">=0.0.32,<1.0.0" },
     { name = "sentry-sdk", extras = ["fastapi"], specifier = ">=2.70.0,<3.0.0" },
-    { name = "sqlmodel", specifier = ">=0.0.42,<1.0.0" },
+    { name = "sqlmodel", specifier = ">=0.0.47,<1.0.0" },
     { name = "tenacity", specifier = ">=8.2.3,<10.0.0" },
 ]
 
@@ -838,11 +838,11 @@ wheels = [
 
 [[package]]
 name = "pyjwt"
-version = "2.14.0"
+version = "2.15.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/af/c3/8a3b59c25070cc61dc517fbdfa5dc0904670c96f605cc69759dc09166b99/pyjwt-2.14.0.tar.gz", hash = "sha256:77283c83fb56ecf566a886c757a714bc83668e38156de2cce8263302f42e0b86", size = 113177, upload-time = "2026-09-11T13:11:54.638Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/02/a5/5197bfd06417837ac079921c66fa6393f1dea3557272a263cebfef69e432/pyjwt-2.15.0.tar.gz", hash = "sha256:b11c5f9791d7bf51c2b39a81ed669f6b2dbbd669df2942f6c60167e9e3d1abe4", size = 120513, upload-time = "2026-09-23T16:56:00.689Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9c/97/672cb32ce0dfea44b740cb7b4f97038463b9cf7c0ead1aacf595572851d6/pyjwt-2.14.0-py3-none-any.whl", hash = "sha256:ad0cef71c756a56e74863c2919cf0985f72decbcfcb550ee2f422e7c62b5eedc", size = 32896, upload-time = "2026-09-11T13:11:53.409Z" },
+    { url = "https://files.pythonhosted.org/packages/e8/55/40e45bf052ee8ee12a4dfd785519660f8effa7b065442b91646ec6828619/pyjwt-2.15.0-py3-none-any.whl", hash = "sha256:7a3742debf6b879e912dbb9819ceec1594be812452b78c5f2e2dfc56564954f8", size = 33680, upload-time = "2026-09-23T16:55:59.241Z" },
 ]
 
 [[package]]
@@ -1068,16 +1068,16 @@ wheels = [
 
 [[package]]
 name = "sqlmodel"
-version = "0.0.42"
+version = "0.0.47"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "sqlalchemy" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ab/50/27188d8cbccabf9968d74d4095765399dbc4f9fcae95e928fda69aa44a21/sqlmodel-0.0.42.tar.gz", hash = "sha256:9ecec2b6aa4c2aa58da39d2572e7bef4373419dcd6ec52973c07de7be2b1c516", size = 91737, upload-time = "2026-08-28T19:42:01.611Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4f/60/aa4cb68f03fa6bd1ca9e9a9ca89c3bc6c67f50981d0abcd9d6364609516d/sqlmodel-0.0.47.tar.gz", hash = "sha256:3606430ea6db7f00c8ae2157458b9766644ea3ad365c601e26a86cf23f5910d5", size = 98136, upload-time = "2026-09-23T17:31:07.921Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/67/37/d7d6b12b9066005c237de3d52b599298a2693ac423bff0e6b97a90b90bf8/sqlmodel-0.0.42-py3-none-any.whl", hash = "sha256:a732dab1a40e5cbd6ac250cf2b12e8d9b1bf1a47edf27c34d612f359e8875c63", size = 29991, upload-time = "2026-08-28T19:42:00.568Z" },
+    { url = "https://files.pythonhosted.org/packages/f7/b3/988928029b0e68de7ac587c2e1ccd379aa18e7c0aa7cc426628145a032fe/sqlmodel-0.0.47-py3-none-any.whl", hash = "sha256:165294386c3e4b25fa02f151ca1abb0cbf5fdb76f6093a38aca33fdc30dfd485", size = 31314, upload-time = "2026-09-23T17:31:06.8Z" },
 ]
 
 [[package]]
