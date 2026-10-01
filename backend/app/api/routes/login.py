@@ -1,9 +1,11 @@
+import hmac
 from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlmodel import col, update
 
 from app import crud
 from app.api.deps import CurrentUser, SessionDep, get_current_active_superuser
@@ -14,6 +16,7 @@ from app.models import Message, NewPassword, Token, User, UserPublic
 from app.utils import (
     generate_password_reset_token,
     generate_reset_password_email,
+    password_fingerprint,
     send_email,
     verify_password_reset_token,
 )
@@ -59,7 +62,9 @@ def recover_password(email: str, session: SessionDep) -> Message:
     user = crud.get_user_by_email(session=session, email=email)
     # Inactive users cannot reset their password, so don't send them a link.
     if user and user.is_active:
-        password_reset_token = generate_password_reset_token(email=email)
+        password_reset_token = generate_password_reset_token(
+            email=email, hashed_password=user.hashed_password
+        )
         email_data = generate_reset_password_email(
             email_to=user.email, email=email, token=password_reset_token
         )
@@ -78,21 +83,35 @@ def reset_password(session: SessionDep, body: NewPassword) -> Message:
     """
     Reset password
     """
-    email = verify_password_reset_token(token=body.token)
-    if not email:
+    token_data = verify_password_reset_token(token=body.token)
+    if not token_data:
         raise HTTPException(status_code=400, detail="Invalid token")
+    email, fingerprint = token_data
     user = crud.get_user_by_email(session=session, email=email)
     if not user:
         raise HTTPException(
             status_code=404,
             detail="The user with this email does not exist in the system.",
         )
-    elif not user.is_active:
+    # The token is only valid for the password it was issued against, so any
+    # password change (including a previous reset) invalidates it.
+    if not hmac.compare_digest(fingerprint, password_fingerprint(user.hashed_password)):
+        raise HTTPException(status_code=400, detail="Invalid token")
+    if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
-    hashed_password = get_password_hash(password=body.new_password)
-    user.hashed_password = hashed_password
-    session.add(user)
+    # Update only if the password is still the one we checked. If a concurrent
+    # reset with the same token got there first, no row matches.
+    result = session.exec(
+        update(User)
+        .where(
+            col(User.id) == user.id,
+            col(User.hashed_password) == user.hashed_password,
+        )
+        .values(hashed_password=get_password_hash(password=body.new_password))
+    )
     session.commit()
+    if result.rowcount != 1:
+        raise HTTPException(status_code=400, detail="Invalid token")
     return Message(message="Password updated successfully")
 
 
@@ -112,7 +131,9 @@ def recover_password_html_content(email: str, session: SessionDep) -> HTMLRespon
             status_code=404,
             detail="The user with this username does not exist in the system.",
         )
-    password_reset_token = generate_password_reset_token(email=email)
+    password_reset_token = generate_password_reset_token(
+        email=email, hashed_password=user.hashed_password
+    )
     email_data = generate_reset_password_email(
         email_to=user.email, email=email, token=password_reset_token
     )
