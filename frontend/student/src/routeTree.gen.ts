@@ -11,12 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
-import { Route as LayoutWelcomeRouteImport } from './routes/_layout/welcome'
-import { Route as LayoutSignupRouteImport } from './routes/_layout/signup'
-import { Route as LayoutResetPasswordRouteImport } from './routes/_layout/reset-password'
-import { Route as LayoutLoginRouteImport } from './routes/_layout/login'
-import { Route as LayoutForgetPasswordRouteImport } from './routes/_layout/forget-password'
+import { Route as LayoutCopyrightRouteImport } from './routes/_layout/copyright'
 import { Route as LayoutExampleRouteImport } from './routes/_layout/example'
+import { Route as LayoutForgetPasswordRouteImport } from './routes/_layout/forget-password'
+import { Route as LayoutHelpRouteImport } from './routes/_layout/help'
+import { Route as LayoutLoginRouteImport } from './routes/_layout/login'
+import { Route as LayoutProfileRouteImport } from './routes/_layout/profile'
+import { Route as LayoutResetPasswordRouteImport } from './routes/_layout/reset-password'
+import { Route as LayoutSignupRouteImport } from './routes/_layout/signup'
+import { Route as LayoutWelcomeRouteImport } from './routes/_layout/welcome'
 import { Route as LayoutProgramsIndexRouteImport } from './routes/_layout/programs/index'
 import { Route as LayoutProgramsProgramIdPhasesIndexRouteImport } from './routes/_layout/programs/$programId/phases/index'
 import { Route as LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRouteImport } from './routes/_layout/programs/$programId/phases/$phaseId/books/$bookId/index'
@@ -31,24 +34,14 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutWelcomeRoute = LayoutWelcomeRouteImport.update({
-  id: '/welcome',
-  path: '/welcome',
+const LayoutCopyrightRoute = LayoutCopyrightRouteImport.update({
+  id: '/copyright',
+  path: '/copyright',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutSignupRoute = LayoutSignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => LayoutRoute,
-} as any)
-const LayoutResetPasswordRoute = LayoutResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => LayoutRoute,
-} as any)
-const LayoutLoginRoute = LayoutLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const LayoutExampleRoute = LayoutExampleRouteImport.update({
+  id: '/example',
+  path: '/example',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutForgetPasswordRoute = LayoutForgetPasswordRouteImport.update({
@@ -56,9 +49,34 @@ const LayoutForgetPasswordRoute = LayoutForgetPasswordRouteImport.update({
   path: '/forget-password',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutExampleRoute = LayoutExampleRouteImport.update({
-  id: '/example',
-  path: '/example',
+const LayoutHelpRoute = LayoutHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutLoginRoute = LayoutLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutProfileRoute = LayoutProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutResetPasswordRoute = LayoutResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutSignupRoute = LayoutSignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutWelcomeRoute = LayoutWelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutProgramsIndexRoute = LayoutProgramsIndexRouteImport.update({
@@ -88,22 +106,28 @@ const LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute =
   )
 
 export interface FileRoutesByFullPath {
+  '/': typeof LayoutIndexRoute
+  '/copyright': typeof LayoutCopyrightRoute
   '/example': typeof LayoutExampleRoute
   '/forget-password': typeof LayoutForgetPasswordRoute
+  '/help': typeof LayoutHelpRoute
   '/login': typeof LayoutLoginRoute
+  '/profile': typeof LayoutProfileRoute
   '/reset-password': typeof LayoutResetPasswordRoute
   '/signup': typeof LayoutSignupRoute
   '/welcome': typeof LayoutWelcomeRoute
-  '/': typeof LayoutIndexRoute
-  '/programs': typeof LayoutProgramsIndexRoute
-  '/programs/$programId/phases': typeof LayoutProgramsProgramIdPhasesIndexRoute
-  '/programs/$programId/phases/$phaseId/books/$bookId': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRoute
-  '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute
+  '/programs/': typeof LayoutProgramsIndexRoute
+  '/programs/$programId/phases/': typeof LayoutProgramsProgramIdPhasesIndexRoute
+  '/programs/$programId/phases/$phaseId/books/$bookId/': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRoute
+  '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/': typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRoute
 }
 export interface FileRoutesByTo {
+  '/copyright': typeof LayoutCopyrightRoute
   '/example': typeof LayoutExampleRoute
   '/forget-password': typeof LayoutForgetPasswordRoute
+  '/help': typeof LayoutHelpRoute
   '/login': typeof LayoutLoginRoute
+  '/profile': typeof LayoutProfileRoute
   '/reset-password': typeof LayoutResetPasswordRoute
   '/signup': typeof LayoutSignupRoute
   '/welcome': typeof LayoutWelcomeRoute
@@ -116,9 +140,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
+  '/_layout/copyright': typeof LayoutCopyrightRoute
   '/_layout/example': typeof LayoutExampleRoute
   '/_layout/forget-password': typeof LayoutForgetPasswordRoute
+  '/_layout/help': typeof LayoutHelpRoute
   '/_layout/login': typeof LayoutLoginRoute
+  '/_layout/profile': typeof LayoutProfileRoute
   '/_layout/reset-password': typeof LayoutResetPasswordRoute
   '/_layout/signup': typeof LayoutSignupRoute
   '/_layout/welcome': typeof LayoutWelcomeRoute
@@ -131,22 +158,28 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
+    | '/copyright'
     | '/example'
     | '/forget-password'
+    | '/help'
     | '/login'
+    | '/profile'
     | '/reset-password'
     | '/signup'
     | '/welcome'
-    | '/'
-    | '/programs'
-    | '/programs/$programId/phases'
-    | '/programs/$programId/phases/$phaseId/books/$bookId'
-    | '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId'
+    | '/programs/'
+    | '/programs/$programId/phases/'
+    | '/programs/$programId/phases/$phaseId/books/$bookId/'
+    | '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/copyright'
     | '/example'
     | '/forget-password'
+    | '/help'
     | '/login'
+    | '/profile'
     | '/reset-password'
     | '/signup'
     | '/welcome'
@@ -158,9 +191,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_layout'
+    | '/_layout/copyright'
     | '/_layout/example'
     | '/_layout/forget-password'
+    | '/_layout/help'
     | '/_layout/login'
+    | '/_layout/profile'
     | '/_layout/reset-password'
     | '/_layout/signup'
     | '/_layout/welcome'
@@ -180,7 +216,7 @@ declare module '@tanstack/react-router' {
     '/_layout': {
       id: '/_layout'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -191,39 +227,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/welcome': {
-      id: '/_layout/welcome'
-      path: '/welcome'
-      fullPath: '/welcome'
-      preLoaderRoute: typeof LayoutWelcomeRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/signup': {
-      id: '/_layout/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof LayoutSignupRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/reset-password': {
-      id: '/_layout/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof LayoutResetPasswordRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/login': {
-      id: '/_layout/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LayoutLoginRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/forget-password': {
-      id: '/_layout/forget-password'
-      path: '/forget-password'
-      fullPath: '/forget-password'
-      preLoaderRoute: typeof LayoutForgetPasswordRouteImport
+    '/_layout/copyright': {
+      id: '/_layout/copyright'
+      path: '/copyright'
+      fullPath: '/copyright'
+      preLoaderRoute: typeof LayoutCopyrightRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/example': {
@@ -233,31 +241,80 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutExampleRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/forget-password': {
+      id: '/_layout/forget-password'
+      path: '/forget-password'
+      fullPath: '/forget-password'
+      preLoaderRoute: typeof LayoutForgetPasswordRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/help': {
+      id: '/_layout/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof LayoutHelpRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/login': {
+      id: '/_layout/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LayoutLoginRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/profile': {
+      id: '/_layout/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof LayoutProfileRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/reset-password': {
+      id: '/_layout/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof LayoutResetPasswordRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/signup': {
+      id: '/_layout/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof LayoutSignupRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/welcome': {
+      id: '/_layout/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof LayoutWelcomeRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/programs/': {
       id: '/_layout/programs/'
       path: '/programs'
-      fullPath: '/programs'
+      fullPath: '/programs/'
       preLoaderRoute: typeof LayoutProgramsIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/programs/$programId/phases/': {
       id: '/_layout/programs/$programId/phases/'
       path: '/programs/$programId/phases'
-      fullPath: '/programs/$programId/phases'
+      fullPath: '/programs/$programId/phases/'
       preLoaderRoute: typeof LayoutProgramsProgramIdPhasesIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/programs/$programId/phases/$phaseId/books/$bookId/': {
       id: '/_layout/programs/$programId/phases/$phaseId/books/$bookId/'
       path: '/programs/$programId/phases/$phaseId/books/$bookId'
-      fullPath: '/programs/$programId/phases/$phaseId/books/$bookId'
+      fullPath: '/programs/$programId/phases/$phaseId/books/$bookId/'
       preLoaderRoute: typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/': {
       id: '/_layout/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/'
       path: '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId'
-      fullPath: '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId'
+      fullPath: '/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId/'
       preLoaderRoute: typeof LayoutProgramsProgramIdPhasesPhaseIdBooksBookIdCoursesCourseIdIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
@@ -265,9 +322,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface LayoutRouteChildren {
+  LayoutCopyrightRoute: typeof LayoutCopyrightRoute
   LayoutExampleRoute: typeof LayoutExampleRoute
   LayoutForgetPasswordRoute: typeof LayoutForgetPasswordRoute
+  LayoutHelpRoute: typeof LayoutHelpRoute
   LayoutLoginRoute: typeof LayoutLoginRoute
+  LayoutProfileRoute: typeof LayoutProfileRoute
   LayoutResetPasswordRoute: typeof LayoutResetPasswordRoute
   LayoutSignupRoute: typeof LayoutSignupRoute
   LayoutWelcomeRoute: typeof LayoutWelcomeRoute
@@ -279,9 +339,12 @@ interface LayoutRouteChildren {
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutCopyrightRoute: LayoutCopyrightRoute,
   LayoutExampleRoute: LayoutExampleRoute,
   LayoutForgetPasswordRoute: LayoutForgetPasswordRoute,
+  LayoutHelpRoute: LayoutHelpRoute,
   LayoutLoginRoute: LayoutLoginRoute,
+  LayoutProfileRoute: LayoutProfileRoute,
   LayoutResetPasswordRoute: LayoutResetPasswordRoute,
   LayoutSignupRoute: LayoutSignupRoute,
   LayoutWelcomeRoute: LayoutWelcomeRoute,

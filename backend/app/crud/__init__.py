@@ -33,6 +33,7 @@ from app.crud.phase import (
     add_book_to_phase,
     create_phase,
     delete_phase,
+    get_books_by_phase,
     get_phase,
     get_phases_by_program,
     remove_book_from_phase,
@@ -100,6 +101,7 @@ __all__ = [
     "delete_phase",
     "add_book_to_phase",
     "remove_book_from_phase",
+    "get_books_by_phase",
     # Book
     "create_book",
     "get_book",

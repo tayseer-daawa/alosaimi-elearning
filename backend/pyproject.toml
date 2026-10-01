@@ -73,10 +73,13 @@ keep-runtime-typing = true
 [tool.coverage.run]
 source = ["app"]
 dynamic_context = "test_function"
+# Local-only `python -m app.seed` CLI — not runtime / not wired into prestart.
+omit = ["app/seed/*"]
 
 [tool.coverage.report]
 show_missing = true
 sort = "-Cover"
+omit = ["app/seed/*"]
 
 [tool.coverage.html]
 show_contexts = true

@@ -1,5 +1,6 @@
 import { Button, Flex, Menu, Text } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
+import { ChevronLeft } from "lucide-react"
 
 type BreadcrumbOption = {
   label: string
@@ -16,9 +17,17 @@ type Breadcrumb = {
 
 type BreadcrumbsProps = {
   breadcrumbs: Breadcrumb[]
+  /**
+   * On narrow screens, keep a single scrollable row instead of wrapping
+   * into a tall stack that pushes content down.
+   */
+  compact?: boolean
 }
 
-export function Breadcrumbs({ breadcrumbs }: BreadcrumbsProps) {
+export function Breadcrumbs({
+  breadcrumbs,
+  compact = false,
+}: BreadcrumbsProps) {
   const navigate = useNavigate()
 
   return (
@@ -30,24 +39,46 @@ export function Breadcrumbs({ breadcrumbs }: BreadcrumbsProps) {
         fontSize="sm"
         color="gray.500"
         gap={1}
-        mt={4}
-        flexWrap="wrap"
+        mt={compact ? 1 : 2}
+        mb={compact ? 0 : 1}
+        flexWrap={compact ? "nowrap" : "wrap"}
+        overflowX={compact ? "auto" : undefined}
+        overflowY="hidden"
+        css={
+          compact
+            ? {
+                scrollbarWidth: "none",
+                "&::-webkit-scrollbar": { display: "none" },
+              }
+            : undefined
+        }
+        maxW="full"
+        pb={1}
       >
         {breadcrumbs.map((crumb, index) => (
-          <Flex key={index} align="center" gap={1}>
+          <Flex
+            key={`${crumb.label}-${index}`}
+            align="center"
+            gap={1}
+            flexShrink={0}
+          >
             {crumb.hasDropdown && crumb.options ? (
               <Menu.Root>
                 <Menu.Trigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
-                    px={0}
+                    px={1}
+                    h="8"
+                    minH="8"
                     fontWeight="medium"
                     color={crumb.isCurrent ? "brand.primary" : "gray.400"}
                     _hover={{ color: "brand.primary", bg: "transparent" }}
                     onClick={() => crumb.url && navigate({ to: crumb.url })}
                   >
-                    {crumb.label}
+                    <Text as="span" lineClamp={1} maxW="9rem">
+                      {crumb.label}
+                    </Text>
                   </Button>
                 </Menu.Trigger>
 
@@ -60,7 +91,7 @@ export function Breadcrumbs({ breadcrumbs }: BreadcrumbsProps) {
                     dir="rtl"
                   >
                     {crumb.options.map((option, i) => (
-                      <Flex key={i} direction="column">
+                      <Flex key={option.url} direction="column">
                         <Menu.Item
                           value={`${index}-${i}`}
                           fontSize="sm"
@@ -84,24 +115,41 @@ export function Breadcrumbs({ breadcrumbs }: BreadcrumbsProps) {
                   </Menu.Content>
                 </Menu.Positioner>
               </Menu.Root>
+            ) : crumb.isCurrent ? (
+              <Text
+                fontSize="sm"
+                fontWeight="medium"
+                color="brand.primary"
+                px={1}
+                lineClamp={1}
+                maxW="9rem"
+              >
+                {crumb.label}
+              </Text>
             ) : (
               <Button
                 variant="ghost"
                 size="sm"
-                px={0}
-                color={crumb.isCurrent ? "brand.primary" : "gray.400"}
+                px={1}
+                h="8"
+                minH="8"
+                color="gray.400"
                 _hover={{ color: "brand.primary", bg: "transparent" }}
                 onClick={() => crumb.url && navigate({ to: crumb.url })}
               >
-                {crumb.label}
+                <Text as="span" lineClamp={1} maxW="9rem">
+                  {crumb.label}
+                </Text>
               </Button>
             )}
 
-            {index < breadcrumbs.length && (
-              <Text color={crumb.isCurrent ? "brand.primary" : "gray.400"}>
-                &gt;
-              </Text>
-            )}
+            {index < breadcrumbs.length - 1 ? (
+              <ChevronLeft
+                size={14}
+                aria-hidden
+                color="var(--chakra-colors-gray-400)"
+              />
+            ) : null}
           </Flex>
         ))}
       </Flex>

@@ -1,58 +1,37 @@
-import { Box, Button, Flex, Heading, Image } from "@chakra-ui/react"
-import MenuIcon from "/assets/menu.svg"
+import { Box, Flex, Heading } from "@chakra-ui/react"
+import { AppMenu } from "@/shared/components/AppMenu"
 import { ProgramsList } from "./ProgramsList"
 
 export default function ProgramsScreen() {
   return (
     <Box
-      minH="100vh"
+      minH="100dvh"
       display="flex"
       flexDirection="column"
       py={4}
       px={6}
       dir="rtl"
     >
-      {/* Header */}
       <Box
-        position={"relative"}
-        h={{
-          lg: "100px",
-        }}
-        w={"full"}
+        position="relative"
+        flexShrink={0}
+        h={{ lg: "100px" }}
+        w="full"
         mt={5}
-        mb={10}
+        mb={{ base: 6, lg: 8 }}
       >
-        <Flex align="center" justify="center" h={"100%"}>
-          <Button
-            position={"absolute"}
-            right={{
-              base: 0,
-              lg: 14,
-            }}
-            variant="ghost"
-            p={2}
-          >
-            <Image
-              src={MenuIcon}
-              boxSize={{ base: 6, lg: 12 }}
-              objectFit="contain"
-            />
-          </Button>
+        <Flex align="center" justify="center" h="100%">
+          <AppMenu />
 
-          <Heading
-            size={{
-              base: "xl",
-              lg: "5xl",
-            }}
-            color="brand.primary"
-          >
+          <Heading size={{ base: "xl", lg: "5xl" }} color="brand.primary">
             البرامج
           </Heading>
         </Flex>
       </Box>
 
-      {/* Main Content */}
-      <ProgramsList />
+      <Box flex="1 1 auto" w="full" minH={0} overflowY="auto">
+        <ProgramsList />
+      </Box>
     </Box>
   )
 }

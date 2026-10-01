@@ -1,6 +1,8 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 import { ApiError, LoginService, UsersService } from "@/client"
+import { apiErrorMessage } from "@/shared/lib/apiErrorMessage"
+import { clearAuthSession, setStudentProfile } from "@/shared/lib/authSession"
 
 export function useLoginWizard() {
   const navigate = useNavigate()
@@ -36,26 +38,35 @@ export function useLoginWizard() {
     try {
       const response = await LoginService.loginAccessToken({
         formData: {
-          username: email,
+          username: email.trim(),
           password: password,
         },
       })
 
+      // Store token only long enough to call /users/me; clear if that fails
+      // so beforeLoad never treats a half-login as authenticated.
       localStorage.setItem("access_token", response.access_token)
 
-      const profile = await UsersService.readUserMe()
-      localStorage.setItem(
-        "student_profile",
-        JSON.stringify({ email: profile.email }),
-      )
-
-      await navigate({ to: "/" })
-    } catch (err: any) {
-      if (err instanceof ApiError) {
+      try {
+        const profile = await UsersService.readUserMe()
+        setStudentProfile({
+          email: profile.email,
+          first_name: profile.first_name,
+        })
+      } catch {
+        clearAuthSession()
         setError({
-          email: "البريد الإلكتروني أو كلمة السر غير صحيحة",
+          email: "تعذر تحميل بيانات الحساب، يرجى المحاولة مرة أخرى",
           password: null,
         })
+        return
+      }
+
+      await navigate({ to: "/" })
+    } catch (err: unknown) {
+      clearAuthSession()
+      if (err instanceof ApiError) {
+        setError({ email: apiErrorMessage(err.body), password: null })
       } else {
         setError({ email: "حدث خطأ غير متوقع للاتصال بالخادم", password: null })
       }

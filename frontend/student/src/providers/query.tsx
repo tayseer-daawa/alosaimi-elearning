@@ -1,10 +1,11 @@
-// React Query global config + QueryClient.
+// React Query global config + QueryClientProvider.
 // This file is infra only, never domain logic.
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-
-const client = new QueryClient()
+import { QueryClientProvider } from "@tanstack/react-query"
+import { queryClient } from "./queryClient"
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  )
 }

@@ -472,6 +472,10 @@ export type LoginLoginAccessTokenResponse = (Token);
 export type LoginTestTokenResponse = (UserPublic);
 
 export type LoginRecoverPasswordData = {
+    /**
+     * Which frontend the reset link should open (admin or student).
+     */
+    app?: 'admin' | 'student';
     email: string;
 };
 
@@ -484,6 +488,10 @@ export type LoginResetPasswordData = {
 export type LoginResetPasswordResponse = (Message);
 
 export type LoginRecoverPasswordHtmlContentData = {
+    /**
+     * Which frontend the reset link should open (admin or student).
+     */
+    app?: 'admin' | 'student';
     email: string;
 };
 
@@ -528,6 +536,14 @@ export type PhasesDeletePhaseData = {
 };
 
 export type PhasesDeletePhaseResponse = (Message);
+
+export type PhasesReadBooksByPhaseData = {
+    limit?: number;
+    phaseId: string;
+    skip?: number;
+};
+
+export type PhasesReadBooksByPhaseResponse = (BooksPublic);
 
 export type PhasesAddBookToPhaseData = {
     bookId: string;
