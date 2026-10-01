@@ -1,0 +1,75 @@
+# Project documentation
+
+Start here. Every other document in this repository is linked from this page.
+
+These docs are **tool-neutral**: plain Markdown, written for humans. Update them with
+whatever you use — your editor, Cursor, Claude Code, Copilot, or nothing at all.
+
+> **Rule of thumb**
+> A fact that changes when the code changes belongs in `docs/`.
+> A rule that may never be broken belongs in [`constitution.md`](./constitution.md).
+> An instruction about *how to work* belongs in [`conventions.md`](./conventions.md) or
+> [`specs/`](../specs/README.md).
+> What a *future* change must achieve belongs in [`specs/`](../specs/README.md).
+> [`AGENTS.md`](../AGENTS.md) and `CLAUDE.md` are **routers — links only, no content**, so
+> any tool and any teammate maintains the same pages.
+
+---
+
+## What this project is
+
+An Arabic, right-to-left e-learning platform for teaching Islamic fundamentals.
+Students enrol in a program (`برنامج`), work through ordered phases, each phase holding
+books, each book holding lessons with audio and PDF material.
+
+One repository, three deployables:
+
+| Part | Path | Stack | Port (local) |
+| --- | --- | --- | --- |
+| Student app | `frontend/student` | React 19, Vite, Chakra UI v3, TanStack Router + Query | 5174 |
+| Admin app | `frontend/admin` | same stack, still the upstream template | 5173 |
+| Backend API | `backend` | FastAPI, SQLModel, PostgreSQL | 8000 |
+
+---
+
+## Core documents
+
+| Document | Read it when |
+| --- | --- |
+| [constitution.md](./constitution.md) | **Before your first change.** The rules every spec and implementation must satisfy |
+| [../specs/](../specs/README.md) | You are starting a change — the specification-first workflow |
+| [domain.md](./domain.md) | You need to know how programs, phases, books and lessons relate |
+| [local-setup.md](./local-setup.md) | You are setting up, or the API is not responding |
+| [conventions.md](./conventions.md) | Before your first commit — commit format, branches, lint, RTL rules |
+| [testing.md](./testing.md) | **Before you report a change as working.** What is covered, what CI proves |
+| [api-map.md](./api-map.md) | You need to know which endpoint exists for what |
+| [adr/](./adr/) | You are wondering *why* something is built the way it is |
+
+## Per-application documents
+
+| Application | Index |
+| --- | --- |
+| Student app | [frontend/student/docs/](../frontend/student/docs/README.md) |
+| Admin app | [frontend/admin/docs/](../frontend/admin/docs/README.md) |
+| Backend | [backend/docs/](../backend/docs/README.md) |
+
+## Upstream template documents
+
+This repository was generated from
+[full-stack-fastapi-template](https://github.com/fastapi/full-stack-fastapi-template).
+Some root-level files still come from it:
+
+- `README.md` — everything below its banner is the **template's** readme, not ours.
+- [`development.md`](../development.md) — genuinely useful: Docker Compose, ports, pre-commit.
+- [`deployment.md`](../deployment.md) — Traefik and production deployment.
+
+---
+
+## Keeping these docs accurate
+
+Docs are part of the change, not a follow-up task. If a pull request changes behaviour,
+routing, data flow or a convention, it updates the matching document in the same PR.
+
+No document here is generated yet. [api-map.md](./api-map.md) is derived from the
+generated client but is maintained by hand — it carries a banner saying so. When a
+generator lands, that banner changes and the file stops being editable by hand.
