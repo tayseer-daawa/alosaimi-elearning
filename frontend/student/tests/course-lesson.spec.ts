@@ -153,7 +153,7 @@ test.describe("course lesson player", () => {
     }
   })
 
-  test("shows PDF full width on mobile without notes tabs", async ({
+  test("phone: a book card with the cover opens the full-width reading mode", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 })
@@ -161,36 +161,42 @@ test.describe("course lesson player", () => {
 
     await expect(page.getByTestId("tab-book")).toHaveCount(0)
     await expect(page.getByTestId("tab-notes")).toHaveCount(0)
-    await expect(page.getByTestId("tab-panel-book")).toBeVisible()
-    await expect(page.getByTestId("pdf-reader")).toBeVisible()
     await expect(page.getByTestId("lesson-notes")).toHaveCount(0)
+    // No scroll-inside-a-scroll on the lesson page: just the card.
+    await expect(page.getByTestId("pdf-reader")).toHaveAttribute(
+      "data-card",
+      "true",
+    )
+    await expect(
+      page.getByTestId("pdf-reader-cover").locator("canvas"),
+    ).toBeVisible({ timeout: 20_000 })
+    await expect(page.getByTestId("pdf-reader-page-1")).toHaveCount(0)
+    await expect(page.getByTestId("pdf-reader-page-label")).toContainText(
+      "صفحة 1 من",
+    )
+
+    await page.getByTestId("pdf-reader-open-reading").click()
     // Mobile browsers without a PDF viewer showed a placeholder in the iframe.
     await expectFirstPdfPageDrawn(page)
     const pageBox = await page.getByTestId("pdf-reader-page-1").boundingBox()
-    expect(pageBox?.width ?? 0).toBeGreaterThan(300)
+    expect(pageBox?.width ?? 0).toBeGreaterThan(340)
   })
 
-  test("phone: slim bar opens a full-screen reading mode with page, zoom and audio controls", async ({
+  test("phone reading mode: compact controls, audio strip, back button closes it", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     const { url } = await openFirstLesson(page)
-    await expectFirstPdfPageDrawn(page)
     const reader = page.getByTestId("pdf-reader")
-
-    // Inline: one slim bar, the rest of the controls wait for reading mode.
-    await expect(page.getByTestId("pdf-reader-open-reading")).toBeVisible()
-    await expect(page.getByTestId("pdf-reader-page-label")).toContainText(
-      "صفحة 1 من",
-    )
-    await expect(page.getByTestId("pdf-reader-zoom-in")).toHaveCount(0)
-    await expect(page.getByTestId("pdf-reader-page-input")).toHaveCount(0)
-
     await page.getByTestId("pdf-reader-open-reading").click()
     await expect(reader).toHaveAttribute("data-reading", "true")
+    await expectFirstPdfPageDrawn(page)
     const box = (await reader.boundingBox())!
     expect(box.y).toBe(0)
     expect(box.height).toBeGreaterThan(800)
+    // The book gets most of the screen; controls stay compact.
+    const pagesBox = (await page.getByTestId("pdf-reader-pages").boundingBox())!
+    expect(pagesBox.height).toBeGreaterThan(box.height * 0.6)
 
     await page.getByTestId("pdf-reader-next-page").click()
     await expect(page.getByTestId("pdf-reader-page-input")).toHaveValue("2")
@@ -221,18 +227,96 @@ test.describe("course lesson player", () => {
       url.replace(/\/$/, ""),
     )
     await expect(page.getByTestId("course-screen")).toBeVisible()
-
-    // «إغلاق» closes it too, and the page reached in reading mode is kept.
-    await page.getByTestId("pdf-reader-open-reading").click()
-    await expect(reader).toHaveAttribute("data-reading", "true")
-    await page.getByTestId("pdf-reader-close-reading").click()
-    await expect(reader).toHaveAttribute("data-reading", "false")
     await expect(page.getByTestId("pdf-reader-page-label")).toContainText(
       "صفحة 2 من",
     )
+
+    // «إغلاق» closes it too; reopening lands on the same page.
+    await page.getByTestId("pdf-reader-open-reading").click()
+    await expect(page.getByTestId("pdf-reader-page-input")).toHaveValue("2")
+    await page.getByTestId("pdf-reader-close-reading").click()
+    await expect(reader).toHaveAttribute("data-reading", "false")
     expect(new URL(page.url()).pathname.replace(/\/$/, "")).toBe(
       url.replace(/\/$/, ""),
     )
+  })
+
+  test("phone reading mode: pinch and double-tap zoom the book, and zoom is remembered", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await openFirstLesson(page)
+    await page.getByTestId("pdf-reader-open-reading").click()
+    await expectFirstPdfPageDrawn(page)
+    const level = page.getByTestId("pdf-reader-zoom-level")
+    const percent = async () =>
+      Number((await level.innerText()).replace(/\D/g, ""))
+    const fitWidth = await percent()
+
+    // Synthetic touches straight on the book (Playwright has no multi-touch).
+    const touch = (
+      type: "touchstart" | "touchmove" | "touchend",
+      points: [number, number][],
+    ) =>
+      page.getByTestId("pdf-reader-pages").evaluate(
+        (el, { type, points }) => {
+          const rect = el.getBoundingClientRect()
+          const touches = points.map(
+            ([x, y], i) =>
+              new Touch({
+                identifier: i,
+                target: el,
+                clientX: rect.left + x,
+                clientY: rect.top + y,
+              }),
+          )
+          const active = type === "touchend" ? [] : touches
+          el.dispatchEvent(
+            new TouchEvent(type, {
+              bubbles: true,
+              cancelable: true,
+              touches: active,
+              targetTouches: active,
+              changedTouches: touches,
+            }),
+          )
+        },
+        { type, points },
+      )
+
+    // Pinch out: fingers move apart from 100px to 200px.
+    await touch("touchstart", [
+      [150, 200],
+      [250, 200],
+    ])
+    await touch("touchmove", [
+      [100, 200],
+      [300, 200],
+    ])
+    await touch("touchend", [
+      [100, 200],
+      [300, 200],
+    ])
+    await expect.poll(percent).toBeGreaterThan(fitWidth * 1.6)
+
+    // Double-tap goes back to fit width, then zooms in again.
+    const doubleTap = async () => {
+      for (let i = 0; i < 2; i++) {
+        await touch("touchstart", [[180, 250]])
+        await touch("touchend", [[180, 250]])
+      }
+    }
+    await doubleTap()
+    await expect.poll(percent).toBe(fitWidth)
+    await doubleTap()
+    await expect.poll(percent).toBeGreaterThan(fitWidth * 1.6)
+    const zoomed = await percent()
+
+    // The chosen zoom comes back after a reload.
+    await page.reload()
+    await page.getByTestId("pdf-reader-open-reading").click()
+    await expectFirstPdfPageDrawn(page)
+    await expect.poll(percent).toBe(zoomed)
   })
 
   test("PDF load failure offers retry and open-in-tab; retry draws the book", async ({
