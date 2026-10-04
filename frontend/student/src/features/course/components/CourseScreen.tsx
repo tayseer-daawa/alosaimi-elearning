@@ -6,6 +6,7 @@ import {
   Heading,
   IconButton,
   Text,
+  VStack,
 } from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { MoveRight, PanelLeftClose, PanelLeftOpen } from "lucide-react"
@@ -126,9 +127,30 @@ export default function CourseScreen() {
 
   if (lessonQuery.isError || !lesson) {
     return (
-      <Text dir="rtl" p={8} color="red.500">
-        تعذر تحميل المقرر.
-      </Text>
+      <VStack dir="rtl" gap={4} py={16} px={6} data-testid="course-load-error">
+        <Text color="red.500" textAlign="center">
+          تعذر تحميل المقرر.
+        </Text>
+        <Flex gap={3} wrap="wrap" justify="center">
+          {lessonQuery.isError && (
+            <Button
+              loading={lessonQuery.isFetching}
+              onClick={() => void lessonQuery.refetch()}
+              data-testid="course-load-retry"
+            >
+              إعادة المحاولة
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            onClick={goToBook}
+            data-testid="course-load-back"
+          >
+            <MoveRight size={18} />
+            العودة إلى الكتاب
+          </Button>
+        </Flex>
+      </VStack>
     )
   }
 
