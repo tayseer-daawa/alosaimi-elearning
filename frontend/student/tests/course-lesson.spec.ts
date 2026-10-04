@@ -846,6 +846,38 @@ test.describe("course lesson player", () => {
     })
   })
 
+  test("lesson load error offers retry and a way back to the book", async ({
+    page,
+  }) => {
+    const { url, programId, phaseId, bookId, lessonId } =
+      await openFirstLesson(page)
+
+    let failLesson = true
+    await page.route(`**/api/v1/lessons/${lessonId}`, (route) =>
+      failLesson ? route.fulfill({ status: 500 }) : route.fallback(),
+    )
+    await page.goto(url)
+    // React Query retries three times before surfacing the error.
+    const retry = page.getByTestId("course-load-retry")
+    await expect(retry).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByTestId("course-load-back")).toBeVisible()
+
+    failLesson = false
+    await retry.click()
+    await expect(page.getByTestId("course-screen")).toBeVisible()
+
+    const unknownLessonId = "00000000-0000-4000-8000-000000000000"
+    await page.goto(
+      `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/${unknownLessonId}`,
+    )
+    const back = page.getByTestId("course-load-back")
+    await expect(back).toBeVisible({ timeout: 15_000 })
+    await back.click()
+    await expect(page).toHaveURL(
+      new RegExp(`/programs/${programId}/phases/${phaseId}/books/${bookId}/?$`),
+    )
+  })
+
   test("back to book returns to the book lessons page", async ({ page }) => {
     const { programId, phaseId, bookId } = await openFirstLesson(page)
     await expect(page.getByTestId("course-screen")).toBeVisible()
