@@ -194,32 +194,105 @@ test.describe("course lesson player", () => {
     await expectFirstPdfPageDrawn(page)
   })
 
-  test("PDF zoom buttons resize the page and the page indicator follows scrolling", async ({
+  test("PDF zoom: buttons step the %, fit modes, and ctrl+wheel", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 })
+    await openFirstLesson(page)
+    await expectFirstPdfPageDrawn(page)
+    const level = page.getByTestId("pdf-reader-zoom-level")
+    const percent = async () =>
+      Number((await level.innerText()).replace(/\D/g, ""))
+    const firstPage = page.getByTestId("pdf-reader-page-1")
+    const width = async () => (await firstPage.boundingBox())?.width ?? 0
+    const reader = page.getByTestId("pdf-reader-pages")
+
+    // Desktop opens on the whole page: it fits the reader's height.
+    await expect(page.getByTestId("pdf-reader-fit-page")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    )
+    const readerBox = (await reader.boundingBox())!
+    expect((await firstPage.boundingBox())!.height).toBeLessThanOrEqual(
+      readerBox.height,
+    )
+
+    // Zoom out goes several steps below the fitted size, not just one.
+    const start = await percent()
+    for (let i = 0; i < 2; i++) {
+      const before = await percent()
+      await page.getByTestId("pdf-reader-zoom-out").click()
+      await expect.poll(percent).toBeLessThan(before)
+    }
+    expect(await percent()).toBeLessThan(start)
+    const zoomedOut = await width()
+    await page.getByTestId("pdf-reader-zoom-in").click()
+    await expect.poll(width).toBeGreaterThan(zoomedOut)
+
+    await page.getByTestId("pdf-reader-fit-width").click()
+    await expect.poll(width).toBeGreaterThan(readerBox.width - 60)
+
+    // Ctrl + wheel over the book zooms the book, not the page.
+    const fitWidthPercent = await percent()
+    await reader.hover()
+    await page.keyboard.down("Control")
+    await page.mouse.wheel(0, 300)
+    await page.keyboard.up("Control")
+    await expect.poll(percent).toBeLessThan(fitWidthPercent)
+  })
+
+  test("PDF page navigation: next, previous, and jump to a page", async ({
     page,
   }) => {
     await openFirstLesson(page)
     await expectFirstPdfPageDrawn(page)
-    const indicator = page.getByTestId("pdf-reader-page-indicator")
-    await expect(indicator).toContainText("صفحة 1 من")
+    const input = page.getByTestId("pdf-reader-page-input")
+    await expect(input).toHaveValue("1")
+    await expect(page.getByTestId("pdf-reader-prev-page")).toBeDisabled()
 
-    const firstPage = page.getByTestId("pdf-reader-page-1")
-    const before = (await firstPage.boundingBox())?.width ?? 0
-    await page.getByTestId("pdf-reader-zoom-in").click()
-    await expect
-      .poll(async () => (await firstPage.boundingBox())?.width ?? 0)
-      .toBeGreaterThan(before * 1.2)
-    await page.getByTestId("pdf-reader-zoom-out").click()
-    await expect
-      .poll(async () => (await firstPage.boundingBox())?.width ?? 0)
-      .toBeCloseTo(before, -1)
+    await page.getByTestId("pdf-reader-next-page").click()
+    await expect(input).toHaveValue("2")
 
+    await input.fill("7")
+    await input.press("Enter")
+    await expect(input).toHaveValue("7")
+    await expect(
+      page.getByTestId("pdf-reader-page-7").locator("canvas"),
+    ).toBeVisible()
+
+    await page.getByTestId("pdf-reader-prev-page").click()
+    await expect(input).toHaveValue("6")
+
+    // Scrolling by hand moves the page number too.
     await page
       .getByTestId("pdf-reader-page-3")
       .evaluate((el) => el.scrollIntoView({ block: "start" }))
-    await expect(indicator).toContainText("صفحة 3 من")
-    await expect(
-      page.getByTestId("pdf-reader-page-3").locator("canvas"),
-    ).toBeVisible()
+    await expect(input).toHaveValue("3")
+  })
+
+  test("PDF full screen shows only the book and exits again", async ({
+    page,
+  }) => {
+    await openFirstLesson(page)
+    await expectFirstPdfPageDrawn(page)
+    const toggle = page.getByTestId("pdf-reader-fullscreen")
+    await toggle.click()
+    await expect(page.getByTestId("pdf-reader")).toHaveAttribute(
+      "data-fullscreen",
+      "true",
+    )
+    expect(
+      await page.evaluate(
+        () => document.fullscreenElement?.getAttribute("data-testid") ?? null,
+      ),
+    ).toBe("pdf-reader")
+    await expect(toggle).toContainText("الخروج من ملء الشاشة")
+
+    await toggle.click()
+    await expect(page.getByTestId("pdf-reader")).toHaveAttribute(
+      "data-fullscreen",
+      "false",
+    )
   })
 
   test("reopens the book on the page the student was reading", async ({
@@ -227,18 +300,15 @@ test.describe("course lesson player", () => {
   }) => {
     await openFirstLesson(page)
     await expectFirstPdfPageDrawn(page)
-    await page
-      .getByTestId("pdf-reader-page-4")
-      .evaluate((el) => el.scrollIntoView({ block: "start" }))
-    await expect(page.getByTestId("pdf-reader-page-indicator")).toContainText(
-      "صفحة 4 من",
-    )
+    const input = page.getByTestId("pdf-reader-page-input")
+    await input.fill("4")
+    await input.press("Enter")
+    await expect(input).toHaveValue("4")
 
     await page.reload()
-    await expect(page.getByTestId("pdf-reader-page-indicator")).toContainText(
-      "صفحة 4 من",
-      { timeout: 20_000 },
-    )
+    await expect(page.getByTestId("pdf-reader-page-input")).toHaveValue("4", {
+      timeout: 20_000,
+    })
     await expect(
       page.getByTestId("pdf-reader-page-4").locator("canvas"),
     ).toBeVisible()
