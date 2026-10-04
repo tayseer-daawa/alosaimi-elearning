@@ -8,6 +8,7 @@ import {
 
 const PLAYBACK_PREFIX = "lesson_playback:"
 const COMPLETED_PREFIX = "lesson_completed:"
+const PDF_PAGE_PREFIX = "lesson_pdf_page:"
 /** Global across lessons — device preference, not per-lesson. */
 const VOLUME_PREFS_KEY = "audio_player_volume"
 /** Last opened course path for home «متابعة التعلم». */
@@ -123,6 +124,17 @@ export function resumePosition(saved: number, duration: number): number | null {
   // Last 5 seconds — start fresh next time (lesson treated as finished).
   if (saved >= duration - 5) return null
   return Math.min(saved, duration - 0.25)
+}
+
+/** Book page the student was reading in this lesson, 1-based. */
+export function loadPdfPage(lessonId: string): number | null {
+  const page = Number(readUserItem(`${PDF_PAGE_PREFIX}${lessonId}`))
+  return Number.isInteger(page) && page >= 1 ? page : null
+}
+
+export function savePdfPage(lessonId: string, page: number): void {
+  if (!Number.isInteger(page) || page < 1) return
+  writeUserItem(`${PDF_PAGE_PREFIX}${lessonId}`, String(page))
 }
 
 export function loadVolumePrefs(): VolumePrefs | null {

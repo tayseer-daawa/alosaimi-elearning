@@ -26,7 +26,6 @@ import {
   readNotesPaneOpen,
   writeNotesPaneOpen,
 } from "../lib/notesPanePreference"
-import { releasePdfFocus } from "../lib/releasePdfFocus"
 import AudioPlayer, { type AudioPlaybackApi } from "./AudioPlayer"
 import LessonListDrawer from "./LessonListDrawer"
 import { LessonNotes } from "./LessonNotes"
@@ -37,7 +36,6 @@ type TabId = "book" | "notes"
 export default function CourseScreen() {
   const [activeTab, setActiveTab] = useState<TabId>("book")
   const [lessonListOpen, setLessonListOpen] = useState(false)
-  const [pdfIframeFocused, setPdfIframeFocused] = useState(false)
   const [notesPaneOpen, setNotesPaneOpen] = useState(readNotesPaneOpen)
   const playbackApiRef = useRef<AudioPlaybackApi | null>(null)
   const navigate = useNavigate()
@@ -162,13 +160,6 @@ export default function CourseScreen() {
       py={{ base: 2, lg: "10" }}
       pb={{ base: "48", lg: "36" }}
       data-testid="course-screen"
-      onPointerDown={(event) => {
-        // PDF iframe swallows keyboard events; click outside restores shortcuts.
-        if (event.target instanceof HTMLIFrameElement) return
-        if (releasePdfFocus()) {
-          setPdfIframeFocused(false)
-        }
-      }}
     >
       <Container
         maxW="container.lg"
@@ -375,9 +366,10 @@ export default function CourseScreen() {
               </Flex>
             ) : null}
             <PdfReader
+              key={lesson.id}
               url={pdfUrl}
               title={bookTitle}
-              onIframeFocusChange={setPdfIframeFocused}
+              lessonId={lesson.id}
             />
           </Box>
 
@@ -429,31 +421,6 @@ export default function CourseScreen() {
           ) : null}
         </Flex>
       </Container>
-
-      {pdfIframeFocused ? (
-        <Box
-          display={{ base: "none", md: "block" }}
-          position="fixed"
-          bottom="6.5rem"
-          left="50%"
-          transform="translateX(-50%)"
-          zIndex={20}
-          maxW="90vw"
-          px={4}
-          py={2}
-          borderRadius="full"
-          bg="brand.primary"
-          color="white"
-          boxShadow="lg"
-          textAlign="center"
-          pointerEvents="none"
-          data-testid="pdf-shortcuts-hint"
-        >
-          <Text fontSize="sm" fontWeight="medium">
-            اضغط على المشغّل لاستخدام الاختصارات
-          </Text>
-        </Box>
-      ) : null}
 
       <Box
         position="fixed"

@@ -1,17 +1,30 @@
 import { Box, Button, Flex, Link, Text } from "@chakra-ui/react"
-import { ExternalLink, RefreshCw } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { ExternalLink, RefreshCw, ZoomIn, ZoomOut } from "lucide-react"
+import {
+  Component,
+  lazy,
+  type ReactNode,
+  Suspense,
+  useCallback,
+  useEffect,
+  useState,
+} from "react"
+import { loadPdfPage, savePdfPage } from "../lib/lessonProgress"
+
+// pdf.js and its worker load only when a lesson with a PDF opens.
+const PdfPages = lazy(() => import("./PdfPages"))
 
 type PdfReaderProps = {
   url?: string | null
   title: string
-  /** Called when focus enters/leaves the PDF iframe (for shortcut hints). */
-  onIframeFocusChange?: (focused: boolean) => void
+  /** Remembers the page the student was reading in this lesson. */
+  lessonId: string
 }
 
-type FrameStatus = "loading" | "ready" | "timeout"
+type ReaderStatus = "loading" | "ready" | "error"
 
 const LOAD_TIMEOUT_MS = 15_000
+const ZOOM_STEPS = [0.75, 1, 1.25, 1.5, 2, 2.5]
 
 function pdfLoadTimeoutMs(): number {
   if (typeof window === "undefined") return LOAD_TIMEOUT_MS
@@ -22,64 +35,57 @@ function pdfLoadTimeoutMs(): number {
     : LOAD_TIMEOUT_MS
 }
 
-export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
+/** The pdf.js chunk itself failed to download (offline, stale deploy). */
+class ChunkErrorBoundary extends Component<
+  { onError: () => void; children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false }
+
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+
+  componentDidCatch() {
+    this.props.onError()
+  }
+
+  render() {
+    return this.state.failed ? null : this.props.children
+  }
+}
+
+export function PdfReader({ url, title, lessonId }: PdfReaderProps) {
   const href = url?.trim()
   const [reloadKey, setReloadKey] = useState(0)
-  const [status, setStatus] = useState<FrameStatus>("loading")
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const onFocusChangeRef = useRef(onIframeFocusChange)
+  const [status, setStatus] = useState<ReaderStatus>("loading")
+  const [zoomIndex, setZoomIndex] = useState(ZOOM_STEPS.indexOf(1))
+  const [numPages, setNumPages] = useState(0)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [initialPage] = useState(() => loadPdfPage(lessonId) ?? 1)
 
-  useEffect(() => {
-    onFocusChangeRef.current = onIframeFocusChange
-  }, [onIframeFocusChange])
-
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reloadKey restarts the timer on retry
   useEffect(() => {
     if (!href) return
     setStatus("loading")
     const timer = window.setTimeout(() => {
-      setStatus((s) => (s === "loading" ? "timeout" : s))
+      setStatus((s) => (s === "loading" ? "error" : s))
     }, pdfLoadTimeoutMs())
     return () => window.clearTimeout(timer)
-  }, [href])
+  }, [href, reloadKey])
 
-  // Detect when the PDF iframe holds focus (cross-origin: window blur + activeElement).
-  useEffect(() => {
-    if (!href) {
-      onFocusChangeRef.current?.(false)
-      return
-    }
-    const report = () => {
-      const focused = document.activeElement === iframeRef.current
-      onFocusChangeRef.current?.(focused)
-    }
-    const onWindowBlur = () => {
-      window.setTimeout(report, 0)
-    }
-    const onFocusIn = () => report()
-    const onPointerDown = (event: PointerEvent) => {
-      if (
-        iframeRef.current &&
-        event.target instanceof Node &&
-        !iframeRef.current.contains(event.target) &&
-        event.target !== iframeRef.current
-      ) {
-        if (document.activeElement === iframeRef.current) {
-          iframeRef.current.blur()
-        }
-        onFocusChangeRef.current?.(false)
-      }
-    }
-
-    window.addEventListener("blur", onWindowBlur)
-    document.addEventListener("focusin", onFocusIn)
-    document.addEventListener("pointerdown", onPointerDown, true)
-    return () => {
-      window.removeEventListener("blur", onWindowBlur)
-      document.removeEventListener("focusin", onFocusIn)
-      document.removeEventListener("pointerdown", onPointerDown, true)
-      onFocusChangeRef.current?.(false)
-    }
-  }, [href])
+  const handleLoaded = useCallback((pages: number) => {
+    setNumPages(pages)
+    setStatus("ready")
+  }, [])
+  const handleError = useCallback(() => setStatus("error"), [])
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setCurrentPage(page)
+      savePdfPage(lessonId, page)
+    },
+    [lessonId],
+  )
 
   if (!href) {
     return (
@@ -114,34 +120,52 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
     setReloadKey((k) => k + 1)
   }
 
+  const zoom = ZOOM_STEPS[zoomIndex]
+  const ready = status === "ready"
+
   return (
-    <Box
-      data-testid="pdf-reader"
-      onMouseDown={(event) => {
-        // Clicks on the chrome around the iframe (not inside it) restore page-level shortcuts.
-        if (
-          event.target instanceof HTMLElement &&
-          event.target.tagName !== "IFRAME" &&
-          document.activeElement instanceof HTMLIFrameElement
-        ) {
-          document.activeElement.blur()
-          onFocusChangeRef.current?.(false)
-        }
-      }}
-    >
-      <Flex justify="flex-end" mb={{ base: 2, md: 3 }} gap={2} flexWrap="wrap">
-        {status === "timeout" ? (
+    <Box data-testid="pdf-reader">
+      <Flex
+        justify="space-between"
+        align="center"
+        mb={{ base: 2, md: 3 }}
+        gap={2}
+        flexWrap="wrap"
+      >
+        <Flex align="center" gap={2}>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             color="brand.primary"
-            onClick={retry}
-            data-testid="pdf-reader-retry"
+            disabled={!ready || zoomIndex >= ZOOM_STEPS.length - 1}
+            onClick={() => setZoomIndex((i) => i + 1)}
+            data-testid="pdf-reader-zoom-in"
           >
-            <RefreshCw size={14} />
-            إعادة المحاولة
+            <ZoomIn size={16} />
+            تكبير
           </Button>
-        ) : null}
+          <Button
+            variant="outline"
+            size="sm"
+            color="brand.primary"
+            disabled={!ready || zoomIndex <= 0}
+            onClick={() => setZoomIndex((i) => i - 1)}
+            data-testid="pdf-reader-zoom-out"
+          >
+            <ZoomOut size={16} />
+            تصغير
+          </Button>
+          {ready && currentPage ? (
+            <Text
+              fontSize="sm"
+              color="brand.secondary"
+              fontVariantNumeric="tabular-nums"
+              data-testid="pdf-reader-page-indicator"
+            >
+              صفحة {currentPage} من {numPages}
+            </Text>
+          ) : null}
+        </Flex>
         <Link
           href={href}
           target="_blank"
@@ -159,7 +183,7 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
         </Link>
       </Flex>
 
-      {status === "timeout" ? (
+      {status === "error" ? (
         <Box
           borderWidth="1px"
           borderColor="orange.200"
@@ -169,14 +193,14 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
           py={6}
           textAlign="center"
           mb={3}
-          data-testid="pdf-reader-timeout"
+          data-testid="pdf-reader-error"
         >
           <Text color="brand.primary" fontWeight="medium" mb={2}>
             تعذر عرض الملف داخل الصفحة
           </Text>
           <Text fontSize="sm" color="brand.secondary" mb={4}>
-            قد يكون الاتصال بطيئاً، أو أن المصدر يمنع التضمين. افتح الملف في
-            تبويب جديد أو أعد المحاولة.
+            قد يكون الاتصال بطيئاً، أو أن الملف غير متاح حالياً. أعد المحاولة أو
+            افتح الملف في تبويب جديد.
           </Text>
           <Flex justify="center" gap={3} flexWrap="wrap">
             <Button
@@ -204,7 +228,7 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
         borderColor="gray.200"
         borderRadius="md"
         overflow="hidden"
-        bg="gray.50"
+        bg="gray.100"
         // Fill leftover viewport under the header; leave room for the fixed player.
         h={{
           base: "min(62dvh, 480px)",
@@ -213,7 +237,7 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
         }}
         minH={{ base: "280px", md: "420px" }}
         position="relative"
-        display={status === "timeout" ? "none" : "block"}
+        display={status === "error" ? "none" : "block"}
       >
         {status === "loading" ? (
           <Flex
@@ -230,21 +254,19 @@ export function PdfReader({ url, title, onIframeFocusChange }: PdfReaderProps) {
             </Text>
           </Flex>
         ) : null}
-        <iframe
-          ref={iframeRef}
-          key={reloadKey}
-          src={href}
-          title={`قراءة ${title}`}
-          style={{
-            width: "100%",
-            height: "100%",
-            border: 0,
-            display: "block",
-          }}
-          data-testid="pdf-reader-frame"
-          onLoad={() => setStatus("ready")}
-          onFocus={() => onFocusChangeRef.current?.(true)}
-        />
+        <ChunkErrorBoundary key={reloadKey} onError={handleError}>
+          <Suspense fallback={null}>
+            <PdfPages
+              url={href}
+              title={title}
+              zoom={zoom}
+              initialPage={currentPage || initialPage}
+              onLoaded={handleLoaded}
+              onError={handleError}
+              onPageChange={handlePageChange}
+            />
+          </Suspense>
+        </ChunkErrorBoundary>
       </Box>
     </Box>
   )
