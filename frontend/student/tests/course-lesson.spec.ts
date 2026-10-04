@@ -484,7 +484,7 @@ test.describe("course lesson player", () => {
     await page.addInitScript(
       ({ id, position, rate }) => {
         localStorage.setItem(
-          `lesson_playback:${id}`,
+          `user:student@example.com:lesson_playback:${id}`,
           JSON.stringify({ position, rate, updatedAt: Date.now() }),
         )
       },
@@ -520,7 +520,9 @@ test.describe("course lesson player", () => {
       }, seconds)
     const savedPosition = () =>
       page.evaluate((id) => {
-        const raw = localStorage.getItem(`lesson_playback:${id}`)
+        const raw = localStorage.getItem(
+          `user:student@example.com:lesson_playback:${id}`,
+        )
         return raw ? (JSON.parse(raw) as { position: number }).position : null
       }, lessonId)
 
@@ -536,33 +538,30 @@ test.describe("course lesson player", () => {
     expect((await audioState(page))?.currentTime ?? 999).toBeLessThan(2)
   })
 
-  test("logging out from a lesson leaves no user data in the browser", async ({
+  test("logging out from a lesson ends the session but keeps the student's progress", async ({
     page,
   }) => {
-    await openFirstLesson(page)
+    const { lessonId } = await openFirstLesson(page)
     await waitForAudioReady(page)
     await page.evaluate(() => {
       const audio = document.querySelector("audio")!
       audio.currentTime = 30
       audio.dispatchEvent(new Event("pause"))
     })
-    await expect
-      .poll(() =>
-        page.evaluate(() =>
-          Object.keys(localStorage).some((k) =>
-            k.startsWith("lesson_playback:"),
-          ),
-        ),
-      )
-      .toBe(true)
+    const playbackKey = `user:${STUDENT_EMAIL}:lesson_playback:${lessonId}`
+    const storedKeys = () => page.evaluate(() => Object.keys(localStorage))
+    await expect.poll(storedKeys).toContain(playbackKey)
 
     await page.getByRole("button", { name: "القائمة الرئيسية" }).click()
     await page.getByText("تسجيل الخروج").click()
     await page.waitForURL("/welcome")
 
-    // pagehide flushes from the player must not write progress back.
-    expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([])
-    expect(await page.evaluate(() => Object.keys(sessionStorage))).toEqual([])
+    const keys = await storedKeys()
+    expect(keys).not.toContain("access_token")
+    expect(keys).not.toContain("student_profile")
+    expect(keys).toContain(playbackKey)
+    // pagehide flushes from the player have no student to write for.
+    expect(keys.filter((k) => k.startsWith("lesson_"))).toEqual([])
   })
 
   test("persists volume and mute globally across reload", async ({ page }) => {
@@ -648,10 +647,10 @@ test.describe("course lesson player", () => {
 
     await page.evaluate((id) => {
       localStorage.setItem(
-        `lesson_playback:${id}`,
+        `user:student@example.com:lesson_playback:${id}`,
         JSON.stringify({ position: 90, rate: 1, updatedAt: Date.now() }),
       )
-      localStorage.removeItem(`lesson_completed:${id}`)
+      localStorage.removeItem(`user:student@example.com:lesson_completed:${id}`)
     }, lessonId)
 
     await page.getByTestId("lesson-list-open").click()
@@ -666,7 +665,10 @@ test.describe("course lesson player", () => {
     await expect
       .poll(async () =>
         page.evaluate(
-          (id) => localStorage.getItem(`lesson_completed:${id}`) != null,
+          (id) =>
+            localStorage.getItem(
+              `user:student@example.com:lesson_completed:${id}`,
+            ) != null,
           lessonId,
         ),
       )
@@ -803,7 +805,9 @@ test.describe("course lesson player", () => {
   }) => {
     const readSavedPath = () =>
       page.evaluate(() => {
-        const raw = localStorage.getItem("continue_learning_path")
+        const raw = localStorage.getItem(
+          "user:student@example.com:continue_learning_path",
+        )
         return raw ? (JSON.parse(raw) as Record<string, string>) : null
       })
 

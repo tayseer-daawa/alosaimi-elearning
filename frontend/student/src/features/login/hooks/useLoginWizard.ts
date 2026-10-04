@@ -2,7 +2,7 @@ import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 import { ApiError, LoginService, UsersService } from "@/client"
 import { apiErrorMessage } from "@/shared/lib/apiErrorMessage"
-import { clearAuthSession, setStudentProfile } from "@/shared/lib/authSession"
+import { clearAccessToken, setStudentProfile } from "@/shared/lib/authSession"
 
 export function useLoginWizard() {
   const navigate = useNavigate()
@@ -54,7 +54,7 @@ export function useLoginWizard() {
           first_name: profile.first_name,
         })
       } catch {
-        clearAuthSession()
+        clearAccessToken()
         setError({
           email: "تعذر تحميل بيانات الحساب، يرجى المحاولة مرة أخرى",
           password: null,
@@ -64,7 +64,7 @@ export function useLoginWizard() {
 
       await navigate({ to: "/" })
     } catch (err: unknown) {
-      clearAuthSession()
+      clearAccessToken()
       if (err instanceof ApiError) {
         setError({ email: apiErrorMessage(err.body), password: null })
       } else {

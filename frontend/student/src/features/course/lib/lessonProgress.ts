@@ -1,6 +1,10 @@
 /** Client-side lesson / player prefs (localStorage). Survives reload on this browser/device. */
 
-import { canStoreUserData } from "@/shared/lib/authSession"
+import {
+  readUserItem,
+  removeUserItem,
+  writeUserItem,
+} from "@/shared/lib/userStorage"
 
 const PLAYBACK_PREFIX = "lesson_playback:"
 const COMPLETED_PREFIX = "lesson_completed:"
@@ -46,7 +50,7 @@ function isNonEmptyString(value: unknown): value is string {
 
 export function loadPlayback(lessonId: string): LessonPlaybackState | null {
   try {
-    const raw = localStorage.getItem(playbackKey(lessonId))
+    const raw = readUserItem(playbackKey(lessonId))
     if (!raw) return null
     const parsed = JSON.parse(raw) as LessonPlaybackState
     if (
@@ -68,25 +72,16 @@ export function savePlayback(
   rate: number,
 ): void {
   if (!Number.isFinite(position) || position < 0) return
-  if (!canStoreUserData()) return
   const payload: LessonPlaybackState = {
     position,
     rate,
     updatedAt: Date.now(),
   }
-  try {
-    localStorage.setItem(playbackKey(lessonId), JSON.stringify(payload))
-  } catch {
-    // quota / private mode — ignore
-  }
+  writeUserItem(playbackKey(lessonId), JSON.stringify(payload))
 }
 
 export function isLessonCompleted(lessonId: string): boolean {
-  try {
-    return localStorage.getItem(completedKey(lessonId)) != null
-  } catch {
-    return false
-  }
+  return readUserItem(completedKey(lessonId)) != null
 }
 
 /** Device-local browse badge: completed > started (resume) > none. */
@@ -102,23 +97,14 @@ export function getLessonProgressStatus(
 }
 
 export function markLessonCompleted(lessonId: string): void {
-  if (!canStoreUserData()) return
-  try {
-    localStorage.setItem(
-      completedKey(lessonId),
-      JSON.stringify({ completedAt: Date.now() }),
-    )
-  } catch {
-    // ignore
-  }
+  writeUserItem(
+    completedKey(lessonId),
+    JSON.stringify({ completedAt: Date.now() }),
+  )
 }
 
 export function clearLessonCompleted(lessonId: string): void {
-  try {
-    localStorage.removeItem(completedKey(lessonId))
-  } catch {
-    // ignore
-  }
+  removeUserItem(completedKey(lessonId))
 }
 
 export function toggleLessonCompleted(lessonId: string): boolean {
@@ -161,7 +147,7 @@ export function loadVolumePrefs(): VolumePrefs | null {
 }
 
 export function saveVolumePrefs(volume: number, muted: boolean): void {
-  if (!Number.isFinite(volume) || !canStoreUserData()) return
+  if (!Number.isFinite(volume)) return
   const payload: VolumePrefs = {
     volume: Math.min(1, Math.max(0, volume)),
     muted,
@@ -175,7 +161,7 @@ export function saveVolumePrefs(volume: number, muted: boolean): void {
 
 export function loadLastLearningPath(): LastLearningPath | null {
   try {
-    const raw = localStorage.getItem(LAST_LEARNING_PATH_KEY)
+    const raw = readUserItem(LAST_LEARNING_PATH_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw) as LastLearningPath
     if (
@@ -208,7 +194,6 @@ export function saveLastLearningPath(path: {
   bookId: string
   courseId: string
 }): void {
-  if (!canStoreUserData()) return
   if (
     !isNonEmptyString(path.programId) ||
     !isNonEmptyString(path.phaseId) ||
@@ -224,9 +209,5 @@ export function saveLastLearningPath(path: {
     courseId: path.courseId,
     updatedAt: Date.now(),
   }
-  try {
-    localStorage.setItem(LAST_LEARNING_PATH_KEY, JSON.stringify(payload))
-  } catch {
-    // ignore
-  }
+  writeUserItem(LAST_LEARNING_PATH_KEY, JSON.stringify(payload))
 }

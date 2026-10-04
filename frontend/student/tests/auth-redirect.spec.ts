@@ -35,7 +35,10 @@ test.describe("auth redirects", () => {
     await page.goto("/")
     await page.waitForURL("/welcome", { timeout: 15000 })
 
-    expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([])
+    // Only the token goes; the profile records whose progress is on the device.
+    expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([
+      "student_profile",
+    ])
   })
 
   test("a permission 403 on one resource keeps the student signed in", async ({

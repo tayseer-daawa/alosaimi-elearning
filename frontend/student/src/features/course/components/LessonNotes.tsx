@@ -8,15 +8,14 @@ import {
 } from "@chakra-ui/react"
 import { ChevronDown, Clock } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { canStoreUserData } from "@/shared/lib/authSession"
+import { readUserItem, writeUserItem } from "@/shared/lib/userStorage"
 import { formatNoteTimestamp, listNoteTimestamps } from "../lib/noteTimestamps"
 import { releasePdfFocus } from "../lib/releasePdfFocus"
 
 const storageKey = (lessonId: string) => `lesson_notes:${lessonId}`
 
 function storeNote(lessonId: string, text: string) {
-  if (!canStoreUserData()) return
-  localStorage.setItem(storageKey(lessonId), text)
+  writeUserItem(storageKey(lessonId), text)
 }
 /** Wait for typing to settle before writing + showing «تم الحفظ محلياً». */
 const SAVE_DEBOUNCE_MS = 450
@@ -96,7 +95,7 @@ export function LessonNotes({
 
   useEffect(() => {
     clearSaveTimer()
-    const saved = localStorage.getItem(storageKey(lessonId))
+    const saved = readUserItem(storageKey(lessonId))
     setDraft(saved ?? "")
     setSavedHint(saved != null && saved.length > 0)
     return () => {
