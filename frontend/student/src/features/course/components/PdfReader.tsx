@@ -25,7 +25,14 @@ import {
   useState,
 } from "react"
 import { loadPdfPage, savePdfPage } from "../lib/lessonProgress"
-import { defaultPdfZoom, type PdfZoom, steppedScale } from "../lib/pdfZoom"
+import {
+  defaultPdfZoom,
+  loadPdfZoom,
+  type PdfZoom,
+  type ReaderLayout,
+  savePdfZoom,
+  steppedScale,
+} from "../lib/pdfZoom"
 import type { AudioPlaybackApi } from "./AudioPlayer"
 import type { PdfPagesHandle } from "./PdfPages"
 import { ReadingAudioBar } from "./ReadingAudioBar"
@@ -57,10 +64,12 @@ function pdfLoadTimeoutMs(): number {
     : LOAD_TIMEOUT_MS
 }
 
+function matchesPhone(): boolean {
+  return typeof window !== "undefined" && window.matchMedia(PHONE_MQ).matches
+}
+
 function useIsPhone(): boolean {
-  const [isPhone, setIsPhone] = useState(
-    () => typeof window !== "undefined" && window.matchMedia(PHONE_MQ).matches,
-  )
+  const [isPhone, setIsPhone] = useState(matchesPhone)
   useEffect(() => {
     const mq = window.matchMedia(PHONE_MQ)
     const onChange = () => setIsPhone(mq.matches)
@@ -90,6 +99,11 @@ class ChunkErrorBoundary extends Component<
   }
 }
 
+/**
+ * Desktop: the book with a one-row toolbar above it.
+ * Phone: a book card (cover + «اقرأ الكتاب») that opens a full-screen
+ * reading mode with compact labelled controls and the lesson audio.
+ */
 export function PdfReader({
   url,
   title,
@@ -100,9 +114,13 @@ export function PdfReader({
   const readerRef = useRef<HTMLDivElement>(null)
   const pagesRef = useRef<PdfPagesHandle>(null)
   const isPhone = useIsPhone()
+  const layout: ReaderLayout = isPhone ? "phone" : "desktop"
   const [reloadKey, setReloadKey] = useState(0)
   const [status, setStatus] = useState<ReaderStatus>("loading")
-  const [zoom, setZoom] = useState<PdfZoom>(defaultPdfZoom)
+  const [zoom, setZoom] = useState<PdfZoom>(() => {
+    const initialLayout = matchesPhone() ? "phone" : "desktop"
+    return loadPdfZoom(initialLayout) ?? defaultPdfZoom(initialLayout)
+  })
   const [scale, setScale] = useState(1)
   const [numPages, setNumPages] = useState(0)
   const [currentPage, setCurrentPage] = useState(0)
@@ -113,6 +131,7 @@ export function PdfReader({
   const canFullscreen =
     typeof document !== "undefined" && document.fullscreenEnabled
   const readingMode = isPhone && reading
+  const bookCard = isPhone && !reading
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reloadKey restarts the timer on retry
   useEffect(() => {
@@ -152,6 +171,13 @@ export function PdfReader({
     }
   }, [readingMode])
 
+  const changeZoom = useCallback(
+    (next: PdfZoom) => {
+      setZoom(next)
+      savePdfZoom(layout, next)
+    },
+    [layout],
+  )
   const handleLoaded = useCallback((pages: number) => {
     setNumPages(pages)
     setStatus("ready")
@@ -172,7 +198,7 @@ export function PdfReader({
         borderColor="gray.200"
         borderRadius="md"
         bg="gray.50"
-        minH={{ base: "280px", md: "420px" }}
+        minH={{ base: "200px", md: "420px" }}
         px={6}
         py={10}
         textAlign="center"
@@ -199,6 +225,7 @@ export function PdfReader({
   }
 
   const ready = status === "ready"
+  const shownPage = currentPage || initialPage
   const goToPage = (page: number) => {
     if (!numPages) return
     pagesRef.current?.scrollToPage(Math.min(Math.max(page, 1), numPages))
@@ -210,7 +237,7 @@ export function PdfReader({
   }
   const zoomStep = (direction: 1 | -1) => {
     const next = steppedScale(scale, direction)
-    if (next != null) setZoom({ mode: "scale", scale: next })
+    if (next != null) changeZoom({ mode: "scale", scale: next })
   }
   const toggleFullscreen = () => {
     if (document.fullscreenElement) {
@@ -221,137 +248,66 @@ export function PdfReader({
       })
     }
   }
+  const openReading = () => {
+    if (ready) setReading(true)
+  }
   const closeReading = () => {
     // Pops the history entry pushed on open; popstate then closes the mode.
     if (window.history.state?.pdfReading) window.history.back()
     else setReading(false)
   }
 
-  const pageLabel = (
+  const zoomLevel = (
+    <Text
+      fontSize="sm"
+      color="brand.secondary"
+      minW="10"
+      textAlign="center"
+      fontVariantNumeric="tabular-nums"
+      data-testid="pdf-reader-zoom-level"
+    >
+      {Math.round(scale * 100)}٪
+    </Text>
+  )
+
+  const pageInput = (
+    <Input
+      size="sm"
+      w="14"
+      flexShrink={0}
+      textAlign="center"
+      inputMode="numeric"
+      aria-label="رقم الصفحة"
+      disabled={!ready}
+      value={pageDraft ?? (currentPage ? String(currentPage) : "")}
+      onFocus={(e) => {
+        setPageDraft(e.currentTarget.value)
+        e.currentTarget.select()
+      }}
+      onChange={(e) => setPageDraft(e.target.value.replace(/\D/g, ""))}
+      onBlur={commitPageDraft}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.currentTarget.blur()
+        if (e.key === "Escape") {
+          e.stopPropagation()
+          setPageDraft(null)
+          e.currentTarget.blur()
+        }
+      }}
+      data-testid="pdf-reader-page-input"
+    />
+  )
+
+  const pageCount = (
     <Text
       fontSize="sm"
       color="brand.secondary"
       whiteSpace="nowrap"
       fontVariantNumeric="tabular-nums"
-      data-testid="pdf-reader-page-label"
+      data-testid="pdf-reader-page-count"
     >
-      صفحة {currentPage || "…"} من {numPages || "…"}
+      من {numPages || "…"}
     </Text>
-  )
-
-  const pageNav = (
-    <Flex
-      align="center"
-      gap={1.5}
-      flexWrap="nowrap"
-      data-testid="pdf-reader-page-nav"
-    >
-      <ToolButton
-        disabled={!ready || currentPage <= 1}
-        onClick={() => goToPage(currentPage - 1)}
-        testId="pdf-reader-prev-page"
-      >
-        <ChevronUp size={16} />
-        السابقة
-      </ToolButton>
-      <Input
-        size="sm"
-        w="14"
-        flexShrink={0}
-        textAlign="center"
-        inputMode="numeric"
-        aria-label="رقم الصفحة"
-        disabled={!ready}
-        value={pageDraft ?? (currentPage ? String(currentPage) : "")}
-        onFocus={(e) => {
-          setPageDraft(e.currentTarget.value)
-          e.currentTarget.select()
-        }}
-        onChange={(e) => setPageDraft(e.target.value.replace(/\D/g, ""))}
-        onBlur={commitPageDraft}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") e.currentTarget.blur()
-          if (e.key === "Escape") {
-            e.stopPropagation()
-            setPageDraft(null)
-            e.currentTarget.blur()
-          }
-        }}
-        data-testid="pdf-reader-page-input"
-      />
-      <Text
-        fontSize="sm"
-        color="brand.secondary"
-        whiteSpace="nowrap"
-        fontVariantNumeric="tabular-nums"
-        data-testid="pdf-reader-page-count"
-      >
-        من {numPages || "…"}
-      </Text>
-      <ToolButton
-        disabled={!ready || currentPage >= numPages}
-        onClick={() => goToPage(currentPage + 1)}
-        testId="pdf-reader-next-page"
-      >
-        التالية
-        <ChevronDown size={16} />
-      </ToolButton>
-    </Flex>
-  )
-
-  const zoomControls = (
-    <Flex align="center" gap={1.5} flexWrap="nowrap">
-      <ToolButton
-        disabled={!ready || steppedScale(scale, -1) == null}
-        onClick={() => zoomStep(-1)}
-        testId="pdf-reader-zoom-out"
-      >
-        <ZoomOut size={16} />
-        تصغير
-      </ToolButton>
-      <Text
-        fontSize="sm"
-        color="brand.secondary"
-        minW="10"
-        textAlign="center"
-        fontVariantNumeric="tabular-nums"
-        data-testid="pdf-reader-zoom-level"
-      >
-        {Math.round(scale * 100)}٪
-      </Text>
-      <ToolButton
-        disabled={!ready || steppedScale(scale, 1) == null}
-        onClick={() => zoomStep(1)}
-        testId="pdf-reader-zoom-in"
-      >
-        <ZoomIn size={16} />
-        تكبير
-      </ToolButton>
-    </Flex>
-  )
-
-  const fitPageButton = (
-    <ToolButton
-      active={zoom.mode === "fit-page"}
-      disabled={!ready}
-      onClick={() => setZoom({ mode: "fit-page" })}
-      testId="pdf-reader-fit-page"
-    >
-      <FileText size={16} />
-      الصفحة كاملة
-    </ToolButton>
-  )
-
-  const fitWidthButton = (
-    <ToolButton
-      active={zoom.mode === "fit-width"}
-      disabled={!ready}
-      onClick={() => setZoom({ mode: "fit-width" })}
-      testId="pdf-reader-fit-width"
-    >
-      <MoveHorizontal size={16} />
-      ملء العرض
-    </ToolButton>
   )
 
   const openTabLink = (
@@ -372,16 +328,67 @@ export function PdfReader({
     </Link>
   )
 
-  let toolbar: ReactNode
+  let toolbar: ReactNode = null
   if (!isPhone) {
     // Desktop / tablet: one wrapping row above the book.
     toolbar = (
       <Flex align="center" gap={2} columnGap={4} flexWrap="wrap" mb={3}>
-        {pageNav}
+        <Flex align="center" gap={1.5} data-testid="pdf-reader-page-nav">
+          <ToolButton
+            disabled={!ready || currentPage <= 1}
+            onClick={() => goToPage(currentPage - 1)}
+            testId="pdf-reader-prev-page"
+          >
+            <ChevronUp size={16} />
+            السابقة
+          </ToolButton>
+          {pageInput}
+          {pageCount}
+          <ToolButton
+            disabled={!ready || currentPage >= numPages}
+            onClick={() => goToPage(currentPage + 1)}
+            testId="pdf-reader-next-page"
+          >
+            التالية
+            <ChevronDown size={16} />
+          </ToolButton>
+        </Flex>
         <Flex align="center" gap={1.5} flexWrap="wrap">
-          {zoomControls}
-          {fitPageButton}
-          {fitWidthButton}
+          <ToolButton
+            disabled={!ready || steppedScale(scale, -1) == null}
+            onClick={() => zoomStep(-1)}
+            testId="pdf-reader-zoom-out"
+          >
+            <ZoomOut size={16} />
+            تصغير
+          </ToolButton>
+          {zoomLevel}
+          <ToolButton
+            disabled={!ready || steppedScale(scale, 1) == null}
+            onClick={() => zoomStep(1)}
+            testId="pdf-reader-zoom-in"
+          >
+            <ZoomIn size={16} />
+            تكبير
+          </ToolButton>
+          <ToolButton
+            active={zoom.mode === "fit-page"}
+            disabled={!ready}
+            onClick={() => changeZoom({ mode: "fit-page" })}
+            testId="pdf-reader-fit-page"
+          >
+            <FileText size={16} />
+            الصفحة كاملة
+          </ToolButton>
+          <ToolButton
+            active={zoom.mode === "fit-width"}
+            disabled={!ready}
+            onClick={() => changeZoom({ mode: "fit-width" })}
+            testId="pdf-reader-fit-width"
+          >
+            <MoveHorizontal size={16} />
+            ملء العرض
+          </ToolButton>
           {canFullscreen ? (
             <ToolButton
               active={fullscreen}
@@ -396,39 +403,75 @@ export function PdfReader({
         <Box ms="auto">{openTabLink}</Box>
       </Flex>
     )
-  } else if (!readingMode) {
-    // Phone, inline: one slim bar; every other control lives in reading mode.
-    toolbar = (
-      <Flex align="center" justify="space-between" gap={2} mb={2}>
-        <Button
-          size="md"
-          bg="brand.primary"
-          color="white"
-          onClick={() => setReading(true)}
-          data-testid="pdf-reader-open-reading"
-        >
-          <BookOpen size={18} />
-          قراءة الكتاب
-        </Button>
-        {ready ? pageLabel : null}
-      </Flex>
-    )
+  } else if (bookCard) {
+    // Phone: the card's text side; the cover thumbnail is the pages box.
+    toolbar =
+      status === "error" ? null : (
+        <Flex direction="column" gap={2} flex="1" minW={0}>
+          <Text
+            fontWeight="semibold"
+            color="brand.primary"
+            lineClamp={2}
+            data-testid="pdf-reader-card-title"
+          >
+            {title}
+          </Text>
+          <Text
+            fontSize="sm"
+            color="brand.secondary"
+            fontVariantNumeric="tabular-nums"
+            data-testid="pdf-reader-page-label"
+          >
+            صفحة {shownPage} من {numPages || "…"}
+          </Text>
+          <Button
+            size="lg"
+            bg="brand.primary"
+            color="white"
+            loading={!ready}
+            onClick={openReading}
+            data-testid="pdf-reader-open-reading"
+          >
+            <BookOpen size={20} />
+            اقرأ الكتاب
+          </Button>
+        </Flex>
+      )
   } else {
+    // Reading mode, top: close + zoom.
     toolbar = (
       <Flex
         align="center"
         justify="space-between"
         gap={2}
-        px={3}
-        py={2}
+        px={2}
+        py={1}
         borderBottomWidth="1px"
         borderColor="gray.200"
       >
-        <ToolButton onClick={closeReading} testId="pdf-reader-close-reading">
-          <X size={16} />
-          إغلاق
-        </ToolButton>
-        {fitWidthButton}
+        <CaptionButton
+          icon={<X size={20} />}
+          label="إغلاق"
+          onClick={closeReading}
+          testId="pdf-reader-close-reading"
+        />
+        <Flex align="center" gap={1}>
+          <CaptionButton
+            icon={<ZoomOut size={20} />}
+            label="تصغير"
+            disabled={!ready || steppedScale(scale, -1) == null}
+            onClick={() => zoomStep(-1)}
+            testId="pdf-reader-zoom-out"
+          />
+          {zoomLevel}
+          <CaptionButton
+            icon={<ZoomIn size={20} />}
+            label="تكبير"
+            disabled={!ready || steppedScale(scale, 1) == null}
+            onClick={() => zoomStep(1)}
+            testId="pdf-reader-zoom-in"
+          />
+        </Flex>
       </Flex>
     )
   }
@@ -437,18 +480,26 @@ export function PdfReader({
     <Box
       borderWidth={readingMode ? 0 : "1px"}
       borderColor="gray.200"
-      borderRadius={readingMode ? 0 : "md"}
+      borderRadius={readingMode ? 0 : bookCard ? "sm" : "md"}
       overflow="hidden"
       bg="gray.100"
-      // Inline, the book sits between the lesson header + toolbar and the fixed
-      // audio player, so «الصفحة كاملة» really shows the whole page above it.
+      // Desktop: the book sits between the lesson header + toolbar and the
+      // fixed audio player, so «الصفحة كاملة» shows the whole page above it.
       h={
-        readingMode || fullscreen
+        bookCard
           ? "auto"
-          : { base: "calc(100dvh - 22rem)", md: "calc(100dvh - 28rem)" }
+          : readingMode || fullscreen
+            ? "auto"
+            : "calc(100dvh - 28rem)"
       }
+      w={bookCard ? "88px" : undefined}
+      minW={bookCard ? "88px" : undefined}
       flex={readingMode || fullscreen ? "1" : undefined}
-      minH={readingMode || fullscreen ? 0 : "320px"}
+      minH={bookCard ? "124px" : readingMode || fullscreen ? 0 : "320px"}
+      // Cover first (on the right in RTL), text beside it.
+      order={bookCard ? -1 : undefined}
+      cursor={bookCard ? "pointer" : undefined}
+      onClick={bookCard ? openReading : undefined}
       position="relative"
       display={status === "error" ? "none" : "block"}
     >
@@ -462,9 +513,11 @@ export function PdfReader({
           zIndex={1}
           data-testid="pdf-reader-loading"
         >
-          <Text color="brand.secondary" fontSize="sm">
-            جاري تحميل الملف…
-          </Text>
+          {bookCard ? null : (
+            <Text color="brand.secondary" fontSize="sm">
+              جاري تحميل الملف…
+            </Text>
+          )}
         </Flex>
       ) : null}
       <ChunkErrorBoundary key={reloadKey} onError={handleError}>
@@ -474,12 +527,13 @@ export function PdfReader({
             url={href}
             title={title}
             zoom={zoom}
-            initialPage={currentPage || initialPage}
+            view={bookCard ? "cover" : "pages"}
+            initialPage={shownPage}
             onLoaded={handleLoaded}
             onError={handleError}
             onPageChange={handlePageChange}
             onScaleChange={setScale}
-            onZoomRequest={setZoom}
+            onZoomRequest={changeZoom}
           />
         </Suspense>
       </ChunkErrorBoundary>
@@ -497,7 +551,8 @@ export function PdfReader({
         py={6}
         textAlign="center"
         m={readingMode ? 3 : 0}
-        mb={3}
+        mb={bookCard ? 0 : 3}
+        flex={bookCard ? "1" : undefined}
         data-testid="pdf-reader-error"
       >
         <Text color="brand.primary" fontWeight="medium" mb={2}>
@@ -530,12 +585,27 @@ export function PdfReader({
 
   const fillsScreen = readingMode || fullscreen
 
+  // toolbar, error, pages and controls keep their positions in every layout,
+  // so the loaded document survives switching between card and reading mode.
   return (
     <Box
       ref={readerRef}
       data-testid="pdf-reader"
       data-fullscreen={fullscreen ? "true" : "false"}
       data-reading={readingMode ? "true" : "false"}
+      {...(bookCard
+        ? {
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            p: 3,
+            borderWidth: "1px",
+            borderColor: "gray.200",
+            borderRadius: "lg",
+            bg: "white",
+            "data-card": "true",
+          }
+        : {})}
       {...(readingMode
         ? {
             position: "fixed",
@@ -563,16 +633,37 @@ export function PdfReader({
         <Flex
           direction="column"
           align="center"
-          gap={2}
-          px={3}
-          pt={2}
-          pb="calc(0.5rem + env(safe-area-inset-bottom, 0px))"
+          gap={1}
+          px={2}
+          pt={1}
+          pb="calc(0.25rem + env(safe-area-inset-bottom, 0px))"
           borderTopWidth="1px"
           borderColor="gray.200"
           data-testid="pdf-reader-reading-controls"
         >
-          {pageNav}
-          {zoomControls}
+          <Flex
+            align="center"
+            justify="center"
+            gap={2}
+            data-testid="pdf-reader-page-nav"
+          >
+            <CaptionButton
+              icon={<ChevronUp size={20} />}
+              label="السابقة"
+              disabled={!ready || currentPage <= 1}
+              onClick={() => goToPage(currentPage - 1)}
+              testId="pdf-reader-prev-page"
+            />
+            {pageInput}
+            {pageCount}
+            <CaptionButton
+              icon={<ChevronDown size={20} />}
+              label="التالية"
+              disabled={!ready || currentPage >= numPages}
+              onClick={() => goToPage(currentPage + 1)}
+              testId="pdf-reader-next-page"
+            />
+          </Flex>
           {audioApiRef ? <ReadingAudioBar apiRef={audioApiRef} /> : null}
         </Flex>
       ) : null}
@@ -580,7 +671,7 @@ export function PdfReader({
   )
 }
 
-/** Labelled outline button — the reader's controls stay visible and named. */
+/** Labelled outline button — the desktop toolbar's controls stay named. */
 function ToolButton({
   children,
   onClick,
@@ -605,6 +696,43 @@ function ToolButton({
       data-testid={testId}
     >
       {children}
+    </Button>
+  )
+}
+
+/** Phone control: icon with a short word under it, like a bottom tab bar. */
+function CaptionButton({
+  icon,
+  label,
+  onClick,
+  disabled,
+  testId,
+}: {
+  icon: ReactNode
+  label: string
+  onClick: () => void
+  disabled?: boolean
+  testId: string
+}) {
+  return (
+    <Button
+      variant="ghost"
+      color="brand.primary"
+      h="auto"
+      minH="12"
+      minW="14"
+      px={2}
+      py={1}
+      flexDirection="column"
+      gap={0.5}
+      disabled={disabled}
+      onClick={onClick}
+      data-testid={testId}
+    >
+      {icon}
+      <Text as="span" fontSize="xs" lineHeight="1" fontWeight="medium">
+        {label}
+      </Text>
     </Button>
   )
 }

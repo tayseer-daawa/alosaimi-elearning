@@ -1,5 +1,7 @@
 /** PDF reader zoom model — no React, no pdf.js. */
 
+import { readUserItem, writeUserItem } from "@/shared/lib/userStorage"
+
 /**
  * fit-page: the whole page is visible. fit-width: the page fills the
  * reader's width. scale: 1 = the PDF's natural size (like the browser viewer's 100%).
@@ -33,10 +35,38 @@ export function steppedScale(
   return next ?? null
 }
 
+export type ReaderLayout = "phone" | "desktop"
+
 /** Phones read best at full width; larger screens start on the whole page. */
-export function defaultPdfZoom(): PdfZoom {
-  if (typeof window === "undefined") return { mode: "fit-width" }
-  return window.matchMedia("(min-width: 48em)").matches
-    ? { mode: "fit-page" }
-    : { mode: "fit-width" }
+export function defaultPdfZoom(layout: ReaderLayout): PdfZoom {
+  return layout === "phone" ? { mode: "fit-width" } : { mode: "fit-page" }
+}
+
+/**
+ * The student's last zoom, kept per layout so a desktop zoom never lands on
+ * a phone screen (and the other way round).
+ */
+export function loadPdfZoom(layout: ReaderLayout): PdfZoom | null {
+  try {
+    const raw = readUserItem(`pdf_zoom:${layout}`)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as PdfZoom
+    if (parsed.mode === "fit-page" || parsed.mode === "fit-width") {
+      return { mode: parsed.mode }
+    }
+    if (
+      parsed.mode === "scale" &&
+      typeof parsed.scale === "number" &&
+      Number.isFinite(parsed.scale)
+    ) {
+      return { mode: "scale", scale: clampScale(parsed.scale) }
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+export function savePdfZoom(layout: ReaderLayout, zoom: PdfZoom): void {
+  writeUserItem(`pdf_zoom:${layout}`, JSON.stringify(zoom))
 }
