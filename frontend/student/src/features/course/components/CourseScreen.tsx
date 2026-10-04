@@ -220,32 +220,38 @@ export default function CourseScreen() {
           <AppMenu position="static" />
         </Flex>
 
-        <Breadcrumbs
-          compact
-          breadcrumbs={[
-            {
-              label: programQuery.data?.title ?? "البرنامج",
-              url: "/programs",
-            },
-            {
-              label: phaseLabel,
-              url: `/programs/${programId}/phases`,
-            },
-            {
-              label: bookTitle,
-              url: `/programs/${programId}/phases/${phaseId}/books/${bookId}`,
-            },
-            {
-              label: lessonLabel,
-              isCurrent: true,
-              hasDropdown: true,
-              options: lessons.map((item) => ({
-                label: `المقرر ${item.order + 1}`,
-                url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/${item.id}`,
-              })),
-            },
-          ]}
-        />
+        {/*
+          Phones: the back button above and the player's lesson list cover
+          this; the row is better spent on the book.
+        */}
+        <Box display={{ base: "none", md: "block" }}>
+          <Breadcrumbs
+            compact
+            breadcrumbs={[
+              {
+                label: programQuery.data?.title ?? "البرنامج",
+                url: "/programs",
+              },
+              {
+                label: phaseLabel,
+                url: `/programs/${programId}/phases`,
+              },
+              {
+                label: bookTitle,
+                url: `/programs/${programId}/phases/${phaseId}/books/${bookId}`,
+              },
+              {
+                label: lessonLabel,
+                isCurrent: true,
+                hasDropdown: true,
+                options: lessons.map((item) => ({
+                  label: `المقرر ${item.order + 1}`,
+                  url: `/programs/${programId}/phases/${phaseId}/books/${bookId}/courses/${item.id}`,
+                })),
+              },
+            ]}
+          />
+        </Box>
       </Container>
 
       {/*
@@ -431,6 +437,8 @@ export default function CourseScreen() {
         bg="white"
         boxShadow="lg"
         zIndex={10}
+        // The phone PDF reader measures this to fill the space above it.
+        data-lesson-player
       >
         <AudioPlayer
           key={lesson.id}

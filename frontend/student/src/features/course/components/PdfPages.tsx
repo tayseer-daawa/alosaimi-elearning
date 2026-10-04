@@ -25,8 +25,6 @@ const DEFAULT_PAGE_PT = { width: 595, height: 842 }
 const PT_TO_CSS_PX = 96 / 72
 /** Phones report 3×; 2× stays sharp without huge canvases. */
 const MAX_PIXEL_RATIO = 2
-/** Cover thumbnail width in the phone book card. */
-export const COVER_WIDTH_PX = 88
 const DOUBLE_TAP_MS = 300
 const DOUBLE_TAP_SLOP_PX = 30
 /** Double-tap zooms from fit-width to this multiple of it. */
@@ -49,8 +47,6 @@ export type PdfPagesProps = {
   url: string
   title: string
   zoom: PdfZoom
-  /** "cover": only the first page as a small thumbnail (phone book card). */
-  view?: "pages" | "cover"
   /** Page to scroll to once the pages are laid out. */
   initialPage: number
   onLoaded: (numPages: number) => void
@@ -72,15 +68,12 @@ function pageAtOffset(offsets: number[], y: number): number {
 /**
  * Renders the PDF with pdf.js inside its own scroll box. Only pages near the
  * visible area are drawn; the rest are placeholders of the same height so the
- * scrollbar and page offsets stay stable on long books. The same <Document>
- * stays mounted when switching between the cover and the pages, so the file
- * is fetched once.
+ * scrollbar and page offsets stay stable on long books.
  */
 export default function PdfPages({
   url,
   title,
   zoom,
-  view = "pages",
   initialPage,
   onLoaded,
   onError,
@@ -89,7 +82,6 @@ export default function PdfPages({
   onZoomRequest,
   ref,
 }: PdfPagesProps) {
-  const cover = view === "cover"
   const scrollerRef = useRef<HTMLDivElement>(null)
   const documentRef = useRef<HTMLDivElement>(null)
   const [numPages, setNumPages] = useState(0)
@@ -128,15 +120,13 @@ export default function PdfPages({
     fitWidth,
     Math.max(0, viewHeight - PAGE_GAP_PX * 2) / defaultRatio,
   )
-  const pageWidth = cover
-    ? 0
-    : Math.floor(
-        zoom.mode === "fit-width"
-          ? fitWidth
-          : zoom.mode === "fit-page"
-            ? fitPage
-            : naturalWidth * zoom.scale,
-      )
+  const pageWidth = Math.floor(
+    zoom.mode === "fit-width"
+      ? fitWidth
+      : zoom.mode === "fit-page"
+        ? fitPage
+        : naturalWidth * zoom.scale,
+  )
   const effectiveScale = naturalWidth ? pageWidth / naturalWidth : 1
   const fitWidthScale = naturalWidth ? fitWidth / naturalWidth : 1
 
@@ -184,7 +174,7 @@ export default function PdfPages({
   // two-finger pinch and double-tap zoom the book, not the whole page.
   useEffect(() => {
     const el = scrollerRef.current
-    if (!el || cover) return
+    if (!el) return
 
     const anchorAt = (clientX: number, clientY: number): ZoomAnchor | null => {
       const rect = el.getBoundingClientRect()
@@ -326,7 +316,7 @@ export default function PdfPages({
       el.removeEventListener("gesturestart", onGesture)
       el.removeEventListener("gesturechange", onGesture)
     }
-  }, [cover])
+  }, [])
 
   // Keep the same spot in the book when zoom or the reader width changes:
   // under the fingers / cursor for gestures; otherwise the same page and
@@ -363,13 +353,9 @@ export default function PdfPages({
     el.scrollLeft = el.scrollLeft * (pageWidth / previous)
   }, [pageWidth])
 
-  // Open on the requested page each time the pages are shown.
+  // Open on the requested page once the pages are laid out.
   useLayoutEffect(() => {
     const el = scrollerRef.current
-    if (cover) {
-      restoredRef.current = false
-      return
-    }
     if (restoredRef.current || !el || !numPages || !pageWidth) return
     restoredRef.current = true
     const target = Math.min(Math.max(initialPage, 1), numPages)
@@ -381,8 +367,9 @@ export default function PdfPages({
     layoutRef.current = { offsets, heights }
   })
 
-  const currentPage =
-    !cover && numPages ? pageAtOffset(offsets, scrollTop + viewHeight * 0.3) : 0
+  const currentPage = numPages
+    ? pageAtOffset(offsets, scrollTop + viewHeight * 0.3)
+    : 0
   useEffect(() => {
     if (!currentPage || currentPage === currentPageRef.current) return
     currentPageRef.current = currentPage
@@ -397,16 +384,16 @@ export default function PdfPages({
   return (
     <Box
       ref={scrollerRef}
-      h={cover ? "auto" : "full"}
-      overflow={cover ? "hidden" : "auto"}
+      h="full"
+      overflow="auto"
       overscrollBehavior="contain"
       // The browser still scrolls; pinch and double-tap are handled above.
-      touchAction={cover ? undefined : "pan-x pan-y"}
-      bg={cover ? "white" : "gray.100"}
+      touchAction="pan-x pan-y"
+      bg="gray.100"
       onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
       role="region"
       aria-label={`قراءة ${title}`}
-      data-testid={cover ? "pdf-reader-cover" : "pdf-reader-pages"}
+      data-testid="pdf-reader-pages"
     >
       <Document
         file={url}
@@ -430,61 +417,49 @@ export default function PdfPages({
         onLoadError={onError}
         onSourceError={onError}
       >
-        {cover ? (
-          numPages ? (
-            <Page
-              pageNumber={1}
-              width={COVER_WIDTH_PX}
-              devicePixelRatio={pixelRatio}
-              renderTextLayer={false}
-              renderAnnotationLayer={false}
-              loading={null}
-              error={null}
-            />
-          ) : null
-        ) : pageWidth > 0 ? (
-          heights.map((height, index) => {
-            const n = index + 1
-            const pageTop = offsets[index]
-            const draw = pageTop + height >= drawFrom && pageTop <= drawTo
-            return (
-              <Box
-                key={n}
-                w={`${pageWidth}px`}
-                h={`${height}px`}
-                mx="auto"
-                mt={`${PAGE_GAP_PX}px`}
-                bg="white"
-                boxShadow="sm"
-                position="relative"
-                overflow="hidden"
-                data-page={n}
-                data-testid={`pdf-reader-page-${n}`}
-                data-drawn={draw ? "true" : "false"}
-              >
-                {draw ? (
-                  <Page
-                    pageNumber={n}
-                    width={pageWidth}
-                    devicePixelRatio={pixelRatio}
-                    renderAnnotationLayer={false}
-                    loading={null}
-                    error={<PageMessage text="تعذر عرض هذه الصفحة" />}
-                    onLoadSuccess={(page) => {
-                      const ratio = page.originalHeight / page.originalWidth
-                      if (
-                        Math.abs(ratio - (ratios[n] ?? defaultRatio)) > 0.01
-                      ) {
-                        setRatios((prev) => ({ ...prev, [n]: ratio }))
-                      }
-                    }}
-                  />
-                ) : null}
-              </Box>
-            )
-          })
-        ) : null}
-        {!cover && numPages ? <Box h={`${PAGE_GAP_PX}px`} /> : null}
+        {pageWidth > 0
+          ? heights.map((height, index) => {
+              const n = index + 1
+              const pageTop = offsets[index]
+              const draw = pageTop + height >= drawFrom && pageTop <= drawTo
+              return (
+                <Box
+                  key={n}
+                  w={`${pageWidth}px`}
+                  h={`${height}px`}
+                  mx="auto"
+                  mt={`${PAGE_GAP_PX}px`}
+                  bg="white"
+                  boxShadow="sm"
+                  position="relative"
+                  overflow="hidden"
+                  data-page={n}
+                  data-testid={`pdf-reader-page-${n}`}
+                  data-drawn={draw ? "true" : "false"}
+                >
+                  {draw ? (
+                    <Page
+                      pageNumber={n}
+                      width={pageWidth}
+                      devicePixelRatio={pixelRatio}
+                      renderAnnotationLayer={false}
+                      loading={null}
+                      error={<PageMessage text="تعذر عرض هذه الصفحة" />}
+                      onLoadSuccess={(page) => {
+                        const ratio = page.originalHeight / page.originalWidth
+                        if (
+                          Math.abs(ratio - (ratios[n] ?? defaultRatio)) > 0.01
+                        ) {
+                          setRatios((prev) => ({ ...prev, [n]: ratio }))
+                        }
+                      }}
+                    />
+                  ) : null}
+                </Box>
+              )
+            })
+          : null}
+        {numPages ? <Box h={`${PAGE_GAP_PX}px`} /> : null}
       </Document>
     </Box>
   )
