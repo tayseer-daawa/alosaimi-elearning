@@ -82,6 +82,13 @@ async function openFirstLesson(page: Page) {
   }
 }
 
+/** The first book page is drawn by pdf.js (a painted canvas, not an iframe). */
+async function expectFirstPdfPageDrawn(page: Page) {
+  const firstPage = page.getByTestId("pdf-reader-page-1")
+  await expect(firstPage.locator("canvas")).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByTestId("pdf-reader-loading")).toHaveCount(0)
+}
+
 async function audioState(page: Page) {
   return page.evaluate(() => {
     const audio = document.querySelector("audio")
@@ -120,7 +127,7 @@ test.describe("course lesson player", () => {
     await expect(page.getByTestId("lesson-notes")).toHaveCount(0)
     await expect(page.getByTestId("tab-panel-book")).toBeVisible()
     await expect(page.getByTestId("pdf-reader")).toBeVisible()
-    await expect(page.getByTestId("pdf-reader-frame")).toBeVisible()
+    await expectFirstPdfPageDrawn(page)
     await expect(page.getByTestId("course-split")).toHaveAttribute(
       "data-notes-open",
       "false",
@@ -157,24 +164,84 @@ test.describe("course lesson player", () => {
     await expect(page.getByTestId("tab-panel-book")).toBeVisible()
     await expect(page.getByTestId("pdf-reader")).toBeVisible()
     await expect(page.getByTestId("lesson-notes")).toHaveCount(0)
+    // Mobile browsers without a PDF viewer showed a placeholder in the iframe.
+    await expectFirstPdfPageDrawn(page)
+    const pageBox = await page.getByTestId("pdf-reader-page-1").boundingBox()
+    expect(pageBox?.width ?? 0).toBeGreaterThan(300)
   })
 
-  test("shows PDF timeout panel with retry and open-in-tab", async ({
+  test("PDF load failure offers retry and open-in-tab; retry draws the book", async ({
     page,
   }) => {
-    await page.addInitScript(() => {
-      ;(
-        window as Window & { __COURSE_PDF_TIMEOUT_MS__?: number }
-      ).__COURSE_PDF_TIMEOUT_MS__ = 1
-    })
+    let failPdf = true
+    await page.route(/\.pdf(\?|$)/i, (route) =>
+      failPdf ? route.fulfill({ status: 404 }) : route.fallback(),
+    )
     await openFirstLesson(page)
 
-    await expect(page.getByTestId("pdf-reader-timeout")).toBeVisible({
+    await expect(page.getByTestId("pdf-reader-error")).toBeVisible({
       timeout: 10_000,
     })
-    await expect(page.getByTestId("pdf-reader-retry-panel")).toBeVisible()
+    await expect(page.getByTestId("pdf-reader-error")).toContainText(
+      "تعذر عرض الملف داخل الصفحة",
+    )
     await expect(page.getByTestId("pdf-reader-open-tab-panel")).toBeVisible()
     await expect(page.getByTestId("pdf-reader-open-tab")).toBeVisible()
+
+    failPdf = false
+    await page.getByTestId("pdf-reader-retry-panel").click()
+    await expect(page.getByTestId("pdf-reader-error")).toHaveCount(0)
+    await expectFirstPdfPageDrawn(page)
+  })
+
+  test("PDF zoom buttons resize the page and the page indicator follows scrolling", async ({
+    page,
+  }) => {
+    await openFirstLesson(page)
+    await expectFirstPdfPageDrawn(page)
+    const indicator = page.getByTestId("pdf-reader-page-indicator")
+    await expect(indicator).toContainText("صفحة 1 من")
+
+    const firstPage = page.getByTestId("pdf-reader-page-1")
+    const before = (await firstPage.boundingBox())?.width ?? 0
+    await page.getByTestId("pdf-reader-zoom-in").click()
+    await expect
+      .poll(async () => (await firstPage.boundingBox())?.width ?? 0)
+      .toBeGreaterThan(before * 1.2)
+    await page.getByTestId("pdf-reader-zoom-out").click()
+    await expect
+      .poll(async () => (await firstPage.boundingBox())?.width ?? 0)
+      .toBeCloseTo(before, -1)
+
+    await page
+      .getByTestId("pdf-reader-page-3")
+      .evaluate((el) => el.scrollIntoView({ block: "start" }))
+    await expect(indicator).toContainText("صفحة 3 من")
+    await expect(
+      page.getByTestId("pdf-reader-page-3").locator("canvas"),
+    ).toBeVisible()
+  })
+
+  test("reopens the book on the page the student was reading", async ({
+    page,
+  }) => {
+    await openFirstLesson(page)
+    await expectFirstPdfPageDrawn(page)
+    await page
+      .getByTestId("pdf-reader-page-4")
+      .evaluate((el) => el.scrollIntoView({ block: "start" }))
+    await expect(page.getByTestId("pdf-reader-page-indicator")).toContainText(
+      "صفحة 4 من",
+    )
+
+    await page.reload()
+    await expect(page.getByTestId("pdf-reader-page-indicator")).toContainText(
+      "صفحة 4 من",
+      { timeout: 20_000 },
+    )
+    await expect(
+      page.getByTestId("pdf-reader-page-4").locator("canvas"),
+    ).toBeVisible()
   })
 
   test("retry reloads the audio after it failed to load", async ({ page }) => {
@@ -678,7 +745,7 @@ test.describe("course lesson player", () => {
     await expect(drawer).not.toContainText("مكتمل")
   })
 
-  test("PDF open-in-new-tab link is available and timeout offers retry", async ({
+  test("a PDF that never finishes loading shows the error panel", async ({
     page,
   }) => {
     await page.addInitScript(() => {
@@ -699,11 +766,11 @@ test.describe("course lesson player", () => {
 
     await openFirstLesson(page)
     await expect(page.getByTestId("pdf-reader-open-tab")).toBeVisible()
-    await expect(page.getByTestId("pdf-reader-timeout")).toBeVisible({
+    await expect(page.getByTestId("pdf-reader-error")).toBeVisible({
       timeout: 5_000,
     })
     await expect(page.getByTestId("pdf-reader-retry-panel")).toBeVisible()
-    await expect(page.getByTestId("pdf-reader-timeout")).toContainText(
+    await expect(page.getByTestId("pdf-reader-error")).toContainText(
       "تعذر عرض الملف داخل الصفحة",
     )
   })

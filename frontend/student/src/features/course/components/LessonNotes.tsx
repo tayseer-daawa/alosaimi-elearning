@@ -10,7 +10,6 @@ import { ChevronDown, Clock } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { readUserItem, writeUserItem } from "@/shared/lib/userStorage"
 import { formatNoteTimestamp, listNoteTimestamps } from "../lib/noteTimestamps"
-import { releasePdfFocus } from "../lib/releasePdfFocus"
 
 const storageKey = (lessonId: string) => `lesson_notes:${lessonId}`
 
@@ -158,12 +157,7 @@ export function LessonNotes({
   }
 
   return (
-    <Box
-      data-testid="lesson-notes"
-      onPointerDown={() => {
-        releasePdfFocus()
-      }}
-    >
+    <Box data-testid="lesson-notes">
       {explanation ? (
         <Collapsible.Root
           open={explanationOpen}

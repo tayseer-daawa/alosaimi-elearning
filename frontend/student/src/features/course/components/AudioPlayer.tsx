@@ -32,7 +32,6 @@ import {
   savePlayback,
   saveVolumePrefs,
 } from "../lib/lessonProgress"
-import { releasePdfFocus } from "../lib/releasePdfFocus"
 import { PlayerActionHud, type PlayerHudPayload } from "./PlayerActionHud"
 import PlayerShortcutsHelp from "./PlayerShortcutsHelp"
 
@@ -118,10 +117,6 @@ function isMenuNavigationTarget(target: EventTarget | null): boolean {
   return Boolean(
     target.closest('[role="menu"], [role="menuitem"], [data-scope="menu"]'),
   )
-}
-
-function blurIframes() {
-  releasePdfFocus()
 }
 
 export type AudioPlaybackApi = {
@@ -292,9 +287,8 @@ export default function AudioPlayer({
     setHudFlashId((id) => id + 1)
   }, [])
 
-  /** Keep shortcuts alive: blur iframe/menu/slider focus back onto the player chrome. */
+  /** Keep shortcuts alive: blur menu/slider focus back onto the player chrome. */
   const focusPlayerChrome = useCallback(() => {
-    blurIframes()
     const active = document.activeElement
     if (
       active instanceof HTMLElement &&
@@ -884,18 +878,6 @@ export default function AudioPlayer({
       tabIndex={0}
       outline="none"
       _focusVisible={{ boxShadow: "outline" }}
-      onPointerDown={() => {
-        // Reclaim shortcuts as soon as the pointer lands on the player.
-        if (document.activeElement instanceof HTMLIFrameElement) {
-          focusPlayerChrome()
-        }
-      }}
-      onMouseEnter={() => {
-        // PDF iframe steals keys; reclaim when the pointer returns to the player.
-        if (document.activeElement instanceof HTMLIFrameElement) {
-          focusPlayerChrome()
-        }
-      }}
       aria-keyshortcuts="Space, ArrowLeft, ArrowRight, KeyJ, KeyL, KeyK, KeyM, Shift+Comma, Shift+Period, Shift+KeyN, Shift+KeyP, Shift+Slash"
     >
       <PlayerActionHud payload={hudPayload} flashId={hudFlashId} />
