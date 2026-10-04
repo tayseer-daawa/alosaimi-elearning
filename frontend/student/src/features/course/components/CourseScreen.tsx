@@ -370,6 +370,7 @@ export default function CourseScreen() {
               url={pdfUrl}
               title={bookTitle}
               lessonId={lesson.id}
+              audioApiRef={lesson.lesson_audio ? playbackApiRef : undefined}
             />
           </Box>
 
@@ -441,7 +442,7 @@ export default function CourseScreen() {
           hasPrevLesson={currentIndex > 0}
           hasNextLesson={currentIndex >= 0 && currentIndex < lessons.length - 1}
           onOpenLessonList={() => setLessonListOpen(true)}
-          playbackApiRef={showNotes ? playbackApiRef : undefined}
+          playbackApiRef={playbackApiRef}
         />
       </Box>
 

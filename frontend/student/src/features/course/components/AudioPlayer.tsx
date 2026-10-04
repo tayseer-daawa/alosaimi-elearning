@@ -74,7 +74,7 @@ function nextRate(current: number, direction: 1 | -1): Rate {
   return RATES[clamped]!
 }
 
-function formatTime(seconds: number): string {
+export function formatTime(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00"
   const total = Math.floor(seconds)
   const h = Math.floor(total / 3600)
@@ -122,6 +122,12 @@ function isMenuNavigationTarget(target: EventTarget | null): boolean {
 export type AudioPlaybackApi = {
   getCurrentTime: () => number
   seekTo: (seconds: number) => void
+  /** Same as the player's play button, so its state stays in sync. */
+  togglePlay: () => void
+  /** Seek relative to the current position (seconds, negative = back). */
+  skipBy: (seconds: number) => void
+  /** For a second set of controls to follow play / pause / time. */
+  getAudioElement: () => HTMLAudioElement | null
 }
 
 export type AudioPlayerProps = {
@@ -611,21 +617,6 @@ export default function AudioPlayer({
     [audioUrl, markBufferingSoon, persistPlayback],
   )
 
-  // Expose seek/time for lesson notes timestamps.
-  useEffect(() => {
-    if (!playbackApiRef) return
-    playbackApiRef.current = {
-      getCurrentTime: () => audioRef.current?.currentTime ?? 0,
-      seekTo: (seconds: number) => {
-        commitSeek(seconds)
-        focusPlayerChrome()
-      },
-    }
-    return () => {
-      playbackApiRef.current = null
-    }
-  }, [playbackApiRef, commitSeek, focusPlayerChrome])
-
   const beginPointerScrub = useCallback(() => {
     const audio = audioRef.current
     if (!audio || !audioUrl) return
@@ -694,6 +685,25 @@ export default function AudioPlayer({
       setError("تعذر تشغيل الملف الصوتي.")
     }
   }, [audioUrl])
+
+  // Expose playback for lesson notes timestamps and the PDF reading mode.
+  useEffect(() => {
+    if (!playbackApiRef) return
+    playbackApiRef.current = {
+      getCurrentTime: () => audioRef.current?.currentTime ?? 0,
+      seekTo: (seconds: number) => {
+        commitSeek(seconds)
+        focusPlayerChrome()
+      },
+      togglePlay: () => void togglePlay(),
+      skipBy: (seconds: number) =>
+        commitSeek((audioRef.current?.currentTime ?? 0) + seconds),
+      getAudioElement: () => audioRef.current,
+    }
+    return () => {
+      playbackApiRef.current = null
+    }
+  }, [playbackApiRef, commitSeek, focusPlayerChrome, togglePlay])
 
   const toggleMute = useCallback(
     (showHud = false) => {

@@ -170,6 +170,71 @@ test.describe("course lesson player", () => {
     expect(pageBox?.width ?? 0).toBeGreaterThan(300)
   })
 
+  test("phone: slim bar opens a full-screen reading mode with page, zoom and audio controls", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    const { url } = await openFirstLesson(page)
+    await expectFirstPdfPageDrawn(page)
+    const reader = page.getByTestId("pdf-reader")
+
+    // Inline: one slim bar, the rest of the controls wait for reading mode.
+    await expect(page.getByTestId("pdf-reader-open-reading")).toBeVisible()
+    await expect(page.getByTestId("pdf-reader-page-label")).toContainText(
+      "صفحة 1 من",
+    )
+    await expect(page.getByTestId("pdf-reader-zoom-in")).toHaveCount(0)
+    await expect(page.getByTestId("pdf-reader-page-input")).toHaveCount(0)
+
+    await page.getByTestId("pdf-reader-open-reading").click()
+    await expect(reader).toHaveAttribute("data-reading", "true")
+    const box = (await reader.boundingBox())!
+    expect(box.y).toBe(0)
+    expect(box.height).toBeGreaterThan(800)
+
+    await page.getByTestId("pdf-reader-next-page").click()
+    await expect(page.getByTestId("pdf-reader-page-input")).toHaveValue("2")
+    const level = page.getByTestId("pdf-reader-zoom-level")
+    const before = await level.innerText()
+    await page.getByTestId("pdf-reader-zoom-in").click()
+    await expect(level).not.toHaveText(before)
+
+    // The strip drives the same audio as the main player.
+    await waitForAudioReady(page)
+    await page.getByTestId("reading-audio-play").click()
+    await expect(page.getByTestId("reading-audio-play")).toHaveAttribute(
+      "aria-label",
+      "إيقاف مؤقت",
+    )
+    await expect.poll(async () => (await audioState(page))?.paused).toBe(false)
+    await expect(page.getByTestId("audio-play-pause")).toHaveAttribute(
+      "aria-label",
+      "إيقاف مؤقت",
+    )
+    await page.getByTestId("reading-audio-play").click()
+    await expect.poll(async () => (await audioState(page))?.paused).toBe(true)
+
+    // The phone's back button closes reading mode and stays on the lesson.
+    await page.goBack()
+    await expect(reader).toHaveAttribute("data-reading", "false")
+    expect(new URL(page.url()).pathname.replace(/\/$/, "")).toBe(
+      url.replace(/\/$/, ""),
+    )
+    await expect(page.getByTestId("course-screen")).toBeVisible()
+
+    // «إغلاق» closes it too, and the page reached in reading mode is kept.
+    await page.getByTestId("pdf-reader-open-reading").click()
+    await expect(reader).toHaveAttribute("data-reading", "true")
+    await page.getByTestId("pdf-reader-close-reading").click()
+    await expect(reader).toHaveAttribute("data-reading", "false")
+    await expect(page.getByTestId("pdf-reader-page-label")).toContainText(
+      "صفحة 2 من",
+    )
+    expect(new URL(page.url()).pathname.replace(/\/$/, "")).toBe(
+      url.replace(/\/$/, ""),
+    )
+  })
+
   test("PDF load failure offers retry and open-in-tab; retry draws the book", async ({
     page,
   }) => {
