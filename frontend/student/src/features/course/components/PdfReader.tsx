@@ -1,6 +1,5 @@
 import { Box, Button, Flex, Input, Link, Text } from "@chakra-ui/react"
 import {
-  BookOpen,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -21,11 +20,13 @@ import {
   Suspense,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react"
 import { loadPdfPage, savePdfPage } from "../lib/lessonProgress"
 import {
+  clampScale,
   defaultPdfZoom,
   loadPdfZoom,
   type PdfZoom,
@@ -79,6 +80,44 @@ function useIsPhone(): boolean {
   return isPhone
 }
 
+/**
+ * Phone: height that makes the book fill the screen down to the lesson's
+ * fixed audio player, so the page itself never scrolls (only the book does).
+ * Measured, not hard-coded: a larger system font makes the header taller.
+ */
+function useFillToPlayer(
+  boxRef: RefObject<HTMLElement | null>,
+  enabled: boolean,
+): number | null {
+  const [height, setHeight] = useState<number | null>(null)
+  useLayoutEffect(() => {
+    if (!enabled) return
+    const measure = () => {
+      const box = boxRef.current
+      if (!box) return
+      const rect = box.getBoundingClientRect()
+      const top = rect.top + window.scrollY
+      // Whatever the page lays out below the book (paddings reserved for the
+      // player), so the document ends exactly at the bottom of the screen.
+      const below = document.documentElement.scrollHeight - (top + rect.height)
+      const player = document.querySelector<HTMLElement>("[data-lesson-player]")
+      const reserved = Math.max(below, (player?.offsetHeight ?? 0) + 8)
+      setHeight(Math.max(240, Math.floor(window.innerHeight - top - reserved)))
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(document.body)
+    const player = document.querySelector<HTMLElement>("[data-lesson-player]")
+    if (player) observer.observe(player)
+    window.addEventListener("resize", measure)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("resize", measure)
+    }
+  }, [boxRef, enabled])
+  return enabled ? height : null
+}
+
 /** The pdf.js chunk itself failed to download (offline, stale deploy). */
 class ChunkErrorBoundary extends Component<
   { onError: () => void; children: ReactNode },
@@ -101,8 +140,9 @@ class ChunkErrorBoundary extends Component<
 
 /**
  * Desktop: the book with a one-row toolbar above it.
- * Phone: a book card (cover + «اقرأ الكتاب») that opens a full-screen
- * reading mode with compact labelled controls and the lesson audio.
+ * Phone: the book fills the screen down to the audio player under one row of
+ * compact labelled controls; «ملء الشاشة» opens a full-screen reading mode
+ * with the lesson audio inside it.
  */
 export function PdfReader({
   url,
@@ -113,6 +153,7 @@ export function PdfReader({
   const href = url?.trim()
   const readerRef = useRef<HTMLDivElement>(null)
   const pagesRef = useRef<PdfPagesHandle>(null)
+  const pagesBoxRef = useRef<HTMLDivElement>(null)
   const isPhone = useIsPhone()
   const layout: ReaderLayout = isPhone ? "phone" : "desktop"
   const [reloadKey, setReloadKey] = useState(0)
@@ -131,7 +172,8 @@ export function PdfReader({
   const canFullscreen =
     typeof document !== "undefined" && document.fullscreenEnabled
   const readingMode = isPhone && reading
-  const bookCard = isPhone && !reading
+  const phoneInline = isPhone && !reading
+  const fillHeight = useFillToPlayer(pagesBoxRef, phoneInline)
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reloadKey restarts the timer on retry
   useEffect(() => {
@@ -225,7 +267,6 @@ export function PdfReader({
   }
 
   const ready = status === "ready"
-  const shownPage = currentPage || initialPage
   const goToPage = (page: number) => {
     if (!numPages) return
     pagesRef.current?.scrollToPage(Math.min(Math.max(page, 1), numPages))
@@ -248,9 +289,7 @@ export function PdfReader({
       })
     }
   }
-  const openReading = () => {
-    if (ready) setReading(true)
-  }
+  const openReading = () => setReading(true)
   const closeReading = () => {
     // Pops the history entry pushed on open; popstate then closes the mode.
     if (window.history.state?.pdfReading) window.history.back()
@@ -403,40 +442,75 @@ export function PdfReader({
         <Box ms="auto">{openTabLink}</Box>
       </Flex>
     )
-  } else if (bookCard) {
-    // Phone: the card's text side; the cover thumbnail is the pages box.
-    toolbar =
-      status === "error" ? null : (
-        <Flex direction="column" gap={2} flex="1" minW={0}>
-          <Text
-            fontWeight="semibold"
-            color="brand.primary"
-            lineClamp={2}
-            data-testid="pdf-reader-card-title"
-          >
-            {title}
-          </Text>
+  } else if (phoneInline) {
+    // Phone: one compact row; the book fills the rest down to the player.
+    toolbar = (
+      <Flex
+        align="center"
+        justify="space-between"
+        gap={1}
+        flexWrap="wrap"
+        mb={1}
+        data-testid="pdf-reader-phone-bar"
+      >
+        <Flex align="center" gap={0.5} data-testid="pdf-reader-page-nav">
+          <CaptionButton
+            icon={<ChevronUp size={20} />}
+            label="السابقة"
+            disabled={!ready || currentPage <= 1}
+            onClick={() => goToPage(currentPage - 1)}
+            testId="pdf-reader-prev-page"
+          />
           <Text
             fontSize="sm"
             color="brand.secondary"
+            whiteSpace="nowrap"
             fontVariantNumeric="tabular-nums"
             data-testid="pdf-reader-page-label"
           >
-            صفحة {shownPage} من {numPages || "…"}
+            {currentPage || "…"} من {numPages || "…"}
           </Text>
-          <Button
-            size="lg"
-            bg="brand.primary"
-            color="white"
-            loading={!ready}
-            onClick={openReading}
-            data-testid="pdf-reader-open-reading"
-          >
-            <BookOpen size={20} />
-            اقرأ الكتاب
-          </Button>
+          <CaptionButton
+            icon={<ChevronDown size={20} />}
+            label="التالية"
+            disabled={!ready || currentPage >= numPages}
+            onClick={() => goToPage(currentPage + 1)}
+            testId="pdf-reader-next-page"
+          />
         </Flex>
-      )
+        <Flex align="center" gap={0.5}>
+          {/* One toggle, like a double-tap: fit width ↔ zoomed in. */}
+          <CaptionButton
+            icon={
+              zoom.mode === "fit-width" ? (
+                <ZoomIn size={20} />
+              ) : (
+                <ZoomOut size={20} />
+              )
+            }
+            label={zoom.mode === "fit-width" ? "تكبير" : "تصغير"}
+            disabled={!ready}
+            onClick={() =>
+              changeZoom(
+                zoom.mode === "fit-width"
+                  ? {
+                      mode: "scale",
+                      scale: clampScale(scale * 2),
+                    }
+                  : { mode: "fit-width" },
+              )
+            }
+            testId="pdf-reader-zoom-toggle"
+          />
+          <CaptionButton
+            icon={<Maximize size={20} />}
+            label="ملء الشاشة"
+            onClick={openReading}
+            testId="pdf-reader-open-reading"
+          />
+        </Flex>
+      </Flex>
+    )
   } else {
     // Reading mode, top: close + zoom.
     toolbar = (
@@ -478,28 +552,25 @@ export function PdfReader({
 
   const pagesBox = (
     <Box
+      ref={pagesBoxRef}
       borderWidth={readingMode ? 0 : "1px"}
       borderColor="gray.200"
-      borderRadius={readingMode ? 0 : bookCard ? "sm" : "md"}
+      borderRadius={readingMode ? 0 : "md"}
       overflow="hidden"
       bg="gray.100"
       // Desktop: the book sits between the lesson header + toolbar and the
       // fixed audio player, so «الصفحة كاملة» shows the whole page above it.
       h={
-        bookCard
+        readingMode || fullscreen
           ? "auto"
-          : readingMode || fullscreen
-            ? "auto"
+          : phoneInline
+            ? fillHeight
+              ? `${fillHeight}px`
+              : "calc(100dvh - 22rem)"
             : "calc(100dvh - 28rem)"
       }
-      w={bookCard ? "88px" : undefined}
-      minW={bookCard ? "88px" : undefined}
       flex={readingMode || fullscreen ? "1" : undefined}
-      minH={bookCard ? "124px" : readingMode || fullscreen ? 0 : "320px"}
-      // Cover first (on the right in RTL), text beside it.
-      order={bookCard ? -1 : undefined}
-      cursor={bookCard ? "pointer" : undefined}
-      onClick={bookCard ? openReading : undefined}
+      minH={readingMode || fullscreen ? 0 : phoneInline ? "240px" : "320px"}
       position="relative"
       display={status === "error" ? "none" : "block"}
     >
@@ -513,11 +584,9 @@ export function PdfReader({
           zIndex={1}
           data-testid="pdf-reader-loading"
         >
-          {bookCard ? null : (
-            <Text color="brand.secondary" fontSize="sm">
-              جاري تحميل الملف…
-            </Text>
-          )}
+          <Text color="brand.secondary" fontSize="sm">
+            جاري تحميل الملف…
+          </Text>
         </Flex>
       ) : null}
       <ChunkErrorBoundary key={reloadKey} onError={handleError}>
@@ -527,8 +596,7 @@ export function PdfReader({
             url={href}
             title={title}
             zoom={zoom}
-            view={bookCard ? "cover" : "pages"}
-            initialPage={shownPage}
+            initialPage={currentPage || initialPage}
             onLoaded={handleLoaded}
             onError={handleError}
             onPageChange={handlePageChange}
@@ -551,8 +619,7 @@ export function PdfReader({
         py={6}
         textAlign="center"
         m={readingMode ? 3 : 0}
-        mb={bookCard ? 0 : 3}
-        flex={bookCard ? "1" : undefined}
+        mb={3}
         data-testid="pdf-reader-error"
       >
         <Text color="brand.primary" fontWeight="medium" mb={2}>
@@ -586,26 +653,13 @@ export function PdfReader({
   const fillsScreen = readingMode || fullscreen
 
   // toolbar, error, pages and controls keep their positions in every layout,
-  // so the loaded document survives switching between card and reading mode.
+  // so the loaded document survives opening and closing reading mode.
   return (
     <Box
       ref={readerRef}
       data-testid="pdf-reader"
       data-fullscreen={fullscreen ? "true" : "false"}
       data-reading={readingMode ? "true" : "false"}
-      {...(bookCard
-        ? {
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            p: 3,
-            borderWidth: "1px",
-            borderColor: "gray.200",
-            borderRadius: "lg",
-            bg: "white",
-            "data-card": "true",
-          }
-        : {})}
       {...(readingMode
         ? {
             position: "fixed",
@@ -720,8 +774,8 @@ function CaptionButton({
       color="brand.primary"
       h="auto"
       minH="12"
-      minW="14"
-      px={2}
+      minW="11"
+      px={1}
       py={1}
       flexDirection="column"
       gap={0.5}

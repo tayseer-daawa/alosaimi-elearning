@@ -153,7 +153,7 @@ test.describe("course lesson player", () => {
     }
   })
 
-  test("phone: a book card with the cover opens the full-width reading mode", async ({
+  test("phone: the book shows right away and fills the screen above the player", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 })
@@ -162,24 +162,52 @@ test.describe("course lesson player", () => {
     await expect(page.getByTestId("tab-book")).toHaveCount(0)
     await expect(page.getByTestId("tab-notes")).toHaveCount(0)
     await expect(page.getByTestId("lesson-notes")).toHaveCount(0)
-    // No scroll-inside-a-scroll on the lesson page: just the card.
-    await expect(page.getByTestId("pdf-reader")).toHaveAttribute(
-      "data-card",
-      "true",
-    )
-    await expect(
-      page.getByTestId("pdf-reader-cover").locator("canvas"),
-    ).toBeVisible({ timeout: 20_000 })
-    await expect(page.getByTestId("pdf-reader-page-1")).toHaveCount(0)
+    // No tap needed: the book is drawn on the lesson page itself.
+    // (Mobile browsers without a PDF viewer showed a placeholder in the iframe.)
+    await expectFirstPdfPageDrawn(page)
+    await expect(page.getByTestId("pdf-reader-phone-bar")).toBeVisible()
     await expect(page.getByTestId("pdf-reader-page-label")).toContainText(
-      "صفحة 1 من",
+      "1 من",
+    )
+    const pageBox = await page.getByTestId("pdf-reader-page-1").boundingBox()
+    expect(pageBox?.width ?? 0).toBeGreaterThan(300)
+
+    // Only the book scrolls: the page fits the screen and the book ends
+    // above the fixed audio player.
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => document.documentElement.scrollHeight - window.innerHeight,
+        ),
+      )
+      .toBeLessThanOrEqual(1)
+    const book = (await page.getByTestId("pdf-reader-pages").boundingBox())!
+    const player = (await page.getByTestId("audio-player").boundingBox())!
+    expect(book.y + book.height).toBeLessThanOrEqual(player.y + 1)
+    expect(book.height).toBeGreaterThan(300)
+
+    await page.getByTestId("pdf-reader-next-page").click()
+    await expect(page.getByTestId("pdf-reader-page-label")).toContainText(
+      "2 من",
     )
 
-    await page.getByTestId("pdf-reader-open-reading").click()
-    // Mobile browsers without a PDF viewer showed a placeholder in the iframe.
-    await expectFirstPdfPageDrawn(page)
-    const pageBox = await page.getByTestId("pdf-reader-page-1").boundingBox()
-    expect(pageBox?.width ?? 0).toBeGreaterThan(340)
+    // All controls fit in one row, and the zoom toggle goes in and back out.
+    const bar = (await page.getByTestId("pdf-reader-phone-bar").boundingBox())!
+    expect(bar.height).toBeLessThan(70)
+    const toggle = page.getByTestId("pdf-reader-zoom-toggle")
+    const fitted = (await page.getByTestId("pdf-reader-page-1").boundingBox())!
+      .width
+    await expect(toggle).toContainText("تكبير")
+    await toggle.click()
+    await expect(toggle).toContainText("تصغير")
+    await expect
+      .poll(
+        async () =>
+          (await page.getByTestId("pdf-reader-page-1").boundingBox())!.width,
+      )
+      .toBeGreaterThan(fitted * 1.8)
+    await toggle.click()
+    await expect(toggle).toContainText("تكبير")
   })
 
   test("phone reading mode: compact controls, audio strip, back button closes it", async ({
@@ -228,7 +256,7 @@ test.describe("course lesson player", () => {
     )
     await expect(page.getByTestId("course-screen")).toBeVisible()
     await expect(page.getByTestId("pdf-reader-page-label")).toContainText(
-      "صفحة 2 من",
+      "2 من",
     )
 
     // «إغلاق» closes it too; reopening lands on the same page.
