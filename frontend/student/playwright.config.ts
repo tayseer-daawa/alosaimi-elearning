@@ -5,9 +5,9 @@ import "dotenv/config"
  * Student app Playwright config.
  * Dev server runs on 5174 (admin is 5173).
  *
- * First specs cover public/unauthenticated flows only — no auth setup project yet.
- * When authenticated suites are added, reintroduce a setup project + storageState
- * the same way frontend/admin does.
+ * Every test starts logged out; specs that need a student sign in themselves
+ * (API token or the login form) — there is no shared auth setup project. If one
+ * is added, reintroduce a setup project + storageState the way frontend/admin does.
  */
 export default defineConfig({
 	testDir: "./tests",
@@ -26,7 +26,7 @@ export default defineConfig({
 			name: "chromium",
 			use: {
 				...devices["Desktop Chrome"],
-				// Public specs start logged out
+				// Start logged out; authenticated specs sign in per test
 				storageState: { cookies: [], origins: [] },
 			},
 		},
