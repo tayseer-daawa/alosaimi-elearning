@@ -5,8 +5,7 @@ Honest status of `frontend/student`: what talks to the real FastAPI backend, wha
 Companion docs:
 
 - Course player UX / deferred PDF work → [student-learning-experience.md](./student-learning-experience.md)
-- Domain vocabulary → [`.claude/skills/muhimmat-al-ilm/SKILL.md`](../.claude/skills/muhimmat-al-ilm/SKILL.md)
-- Agent conventions → [`AGENTS.md`](../AGENTS.md)
+- Domain vocabulary and curriculum map → [`backend/app/seed/README.md`](../backend/app/seed/README.md)
 
 **Verdict: Beta-partial — not production-ready as a full product.**  
 Catalog + auth + course player are on the real API. Progress, sessions, exams, and account are not.
@@ -20,14 +19,12 @@ Catalog + auth + course player are on the real API. Progress, sessions, exams, a
 | Login / signup / password reset | Wired | JWT in `localStorage`; no refresh token |
 | Programs → phases → books → lessons | Wired | Generated OpenAPI client + feature repos |
 | Course PDF / audio / teacher notes | Wired | From lesson/book API fields |
-| 401 / 403 handling | Wired | Clear session → `/welcome` |
-| Student notes / playback / completion / continue path / browse badges | Local only | `localStorage` — not cross-device |
+| Dead session (401, invalid token, deleted / inactive user) | Wired | Drop the token → `/welcome`; the student's progress stays. Permission 403s are normal errors |
+| Student notes / playback / completion / PDF page / continue path / browse badges | Local only | `localStorage`, per student — not cross-device |
 | ProgramSession enrollment | Unwired | Client SDK exists; no student UX |
 | Exams / questions / attempts | Unwired | Client SDK exists; no student UX |
 | Account / profile edit / help | Partial / static | Placeholder support email |
 | `mockData.ts` | Dead orphan | File exists; **zero imports** |
-
-`AGENTS.md` still says home/programs/phases/books import `mockData` — that is **stale**. Those features use repos + the generated client.
 
 ---
 
@@ -47,15 +44,17 @@ Catalog + auth + course player are on the real API. Progress, sessions, exams, a
 | `features/account/components/CopyrightScreen.tsx` | Static in-file legal sections (not CMS/API) |
 | `features/account/components/ProfileScreen.tsx` | Name/email from `student_profile` cache; email-notify toggle only in `localStorage` — no `PATCH` user |
 | `features/example/**` + route `/example` | Scaffold; `exampleRepo` hits non-existent `/api/examples` |
-| `features/course/components/AudioPlayer.tsx` (`isPlayableSrc`) | Rejects `example.com`, `soundhelix.com`, `pdfobject.com` so seed demo hosts do not “play” |
+| Course audio player | Rejects `example.com`, `soundhelix.com`, `pdfobject.com` URLs so seed demo hosts do not “play” |
 
 ### Client-only domain data (not mocks, not API)
 
 | Path | Storage / behavior |
 | --- | --- |
-| `LessonNotes.tsx` | `lesson_notes:{lessonId}` — UI: «تم الحفظ محلياً» (debounced write) |
-| `lib/lessonProgress.ts` | `lesson_playback:`, `lesson_completed:`, `audio_player_volume` |
-| `lib/notesPanePreference.ts` | Notes pane open/closed preference |
+| `shared/lib/userStorage.ts` | Per-student namespace: progress keys are stored as `user:<email>:<key>`, so sign-out and token expiry keep them and another student on the same device never sees them. Older unprefixed keys are moved under the signed-in student on startup |
+| `LessonNotes.tsx` | `lesson_notes:{lessonId}` (per student) — UI: «تم الحفظ محلياً» (debounced write). Notes UI is off by default (`VITE_NOTES_FEATURE_ENABLED`) |
+| `lib/lessonProgress.ts` | Per student: `lesson_playback:`, `lesson_completed:`, `lesson_pdf_page:`, `continue_learning_path`. Device-wide: `audio_player_volume` |
+| `lib/pdfZoom.ts` | Per student: `pdf_zoom:phone` / `pdf_zoom:desktop` — PDF reader zoom, kept separately per layout |
+| `lib/notesPanePreference.ts` | Notes pane open/closed preference (device-wide) |
 | Teacher explanation | API `lesson.explanation_notes`; **student** notes stay local |
 
 ### Continue learning (device-local)
@@ -80,7 +79,7 @@ Still not enrollment-aware or cross-device — same beta tradeoff as notes/playb
 | **course** | Consumes books/phases/programs hooks | Same | Yes for lesson metadata + PDF/audio URLs; notes/progress local |
 | **home** | `usersRepo` + programs + continue heuristic | `UsersService` + catalog repos | User + catalog yes; continue = heuristic |
 | **login** | Wizard hook → client | `LoginService.loginAccessToken`, `UsersService.readUserMe` | Yes |
-| **signup** | Wizard hook → client | `UsersService.registerUser` | Yes (then navigate to `/login`; no auto-login) |
+| **signup** | Wizard hook → client | `UsersService.registerUser`, `LoginService.loginAccessToken`, `UsersService.readUserMe` | Yes — registers, signs the student in, then navigates to `/` |
 | **forget-password** | Hooks → client | `LoginService.recoverPassword` / `resetPassword` | Yes |
 | **welcome** | Static CTAs | None | N/A |
 | **account** | Static / localStorage | No repo | Not API-backed |
@@ -99,10 +98,10 @@ Still not enrollment-aware or cross-device — same beta tradeoff as notes/playb
 | Concern | Implementation |
 | --- | --- |
 | Login | `useLoginWizard` → JWT → `localStorage.access_token` → `/users/me` → `student_profile` cache |
-| Signup | `registerUser` then `/login` |
-| Logout | `shared/lib/logout.ts` — clear localStorage + Query cache + hard nav to `/welcome`; **no server revoke** |
+| Signup | `useSignupWizard` → `registerUser` → `loginAccessToken` → `/users/me` → `student_profile` cache → `/` (falls back to `/login` if the automatic sign-in fails) |
+| Logout | `shared/lib/logout.ts` — drop the token + `student_profile` + Query cache, hard nav to `/welcome`; the student's progress stays (per-student keys); **no server revoke** |
 | Token inject | `main.tsx` request interceptor: `Authorization: Bearer …` |
-| 401 / 403 | OpenAPI response interceptor + React Query `onError` → clear auth + `/welcome` (skips redirect on public auth paths) |
+| Dead session | OpenAPI response interceptor + React Query `onError`: 401, 403 «Could not validate credentials», 404 «User not found» and 400 «Inactive user» drop the token only → `/welcome` (no redirect on public auth paths). Other 403s are per-resource permission errors and stay normal errors. A failed login or signup also drops only the token |
 | Route gate | `routes/_layout.tsx` `beforeLoad`: token **presence** vs `publicRoutes` |
 
 ### Public vs authenticated routes
@@ -138,8 +137,9 @@ Backend GETs for programs/phases/books/lessons are marked guest-friendly in the 
 | PDF | API: `lesson.book_part_pdf` or fallback `book.pdf` |
 | Audio | API: `lesson.lesson_audio` |
 | Teacher notes | API: `lesson.explanation_notes` |
-| Student notes | **localStorage only** |
-| Playback position / completion / volume | **localStorage only** |
+| PDF rendering | In-page `react-pdf` (pdf.js), lazy-loaded; the PDF host must allow CORS (the catalog's IslamHouse URLs do), else the reader offers «فتح في تبويب جديد» |
+| Student notes | **localStorage only** (UI off by default) |
+| Playback position / completion / PDF page / zoom / volume | **localStorage only** |
 | Continue learning | Last opened lesson on this device (`continue_learning_path`); else first catalog leaf |
 
 Seed or staging media may still point at demo hosts; the player **refuses** those URLs. Production content must use real HTTPS media on lesson/book rows.
@@ -163,16 +163,18 @@ Seed or staging media may still point at demo hosts; the player **refuses** thos
 | --- | --- |
 | **`VITE_API_URL`** | Required. Set as `OpenAPI.BASE` in `main.tsx`. **Throws in production builds** if missing. |
 | `VITE_API_BASE` | Deprecated alias for `fetcher` only |
+| `VITE_NOTES_FEATURE_ENABLED` | Optional, default off. Turns on the course notes UI (only `true` / `1` / `yes`). Read at build time; passed as a Docker build arg in `docker-compose.yml` / `docker-compose.override.yml` (default `false`) |
 | `MAILCATCHER_HOST` | E2E / local mail — not used at runtime by the SPA |
 
 **Local / Docker notes**
 
 - Compose override often builds the student image with `VITE_API_URL=http://localhost:8000` (browser talks to the host)
-- `VITE_API_URL` is baked at **Docker build** time (`ARG` → `npm run build`)
+- `VITE_API_URL` and `VITE_NOTES_FEATURE_ENABLED` are baked at **Docker build** time (`ARG` → `npm run build`)
+- `frontend/student/nginx.conf` serves `.mjs` as `text/javascript` — the stock nginx types map it to `application/octet-stream`, which browsers refuse for the pdf.js worker
 - Playwright `baseURL`: `http://localhost:5174`
 - `fetcher` falls back to `http://localhost:8000` if both env vars are unset (dev convenience; prod still throws in `main.tsx`)
 
-No other Vite env vars are declared in `vite-env.d.ts`.
+These are all the Vite env vars declared in `frontend/student/src/vite-env.d.ts`.
 
 ---
 
@@ -180,8 +182,9 @@ No other Vite env vars are declared in `vite-env.d.ts`.
 
 Under `frontend/student/tests/` (against a live stack on **5174**):
 
-- Auth flows (login / signup / reset where applicable)
-- Course lesson player: PDF/notes chrome, audio controls, shortcuts, resume/volume persistence seeding, scrub behavior, drawer, navigation
+- Auth flows (login / signup with automatic sign-in / reset where applicable), logout, dead-session redirects
+- Session expiry and sign-out keeping each student's progress; another student on the device not seeing it
+- Course lesson player: notes hidden by default; PDF reader (render, load error / timeout + retry, zoom, fit modes, page navigation, full screen, reopening on the last page; phone layout, reading mode, pinch / double-tap); audio controls, shortcuts, resume/volume persistence, scrub behavior, drawer, lesson navigation, lesson load error with retry / back
 
 That is enough confidence for a **beta learning demo**, not a claim that the full product graph (sessions, exams, synced progress) works end-to-end.
 
@@ -204,7 +207,6 @@ That is enough confidence for a **beta learning demo**, not a claim that the ful
 - Real “continue learning” from **server** progress / enrollment (client last-path is beta)
 - Guest browse aligned with guest API (or drop guest-readable API pretence in the SPA)
 - Wire `updateUserMe` + notification prefs to the backend
-- Align `AGENTS.md` / `.cursor/rules/frontend-student.mdc` with current repos (no `mockData` claim)
 - Broader Playwright coverage beyond auth + course-lesson
 
 ### What is already solid for beta

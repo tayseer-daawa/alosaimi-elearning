@@ -8,7 +8,7 @@ Arabic e-learning platform for **برنامج مهمات العلم** (Muhimmat 
 - **Admin app** (`frontend/admin`, :5173) — English LTR dashboard for content and users  
 - **Backend** (`backend`, :8000) — FastAPI + PostgreSQL  
 
-Product / curriculum notes for seed and UI copy: [backend/app/seed/README.md](./backend/app/seed/README.md) (15 متون → phases). Local agent conventions live in `AGENTS.md` / `.claude/skills/muhimmat-al-ilm/` when present on your machine.
+Product / curriculum notes for seed and UI copy: [backend/app/seed/README.md](./backend/app/seed/README.md) (15 متون → phases).
 
 Built on [`fastapi/full-stack-fastapi-template`](https://github.com/fastapi/full-stack-fastapi-template); some template docs below still describe the upstream sample app.
 
