@@ -4,8 +4,7 @@ Identity is email (users) or exact Arabic title (programs/books).
 Do not rename these without updating clean.py (and legacy title lists).
 
 Curriculum mirrors Sheikh Saleh al-Osaimi's public programs
-(مكتبة الشيخ / Wikipedia program list). See
-`.claude/skills/muhimmat-al-ilm/SKILL.md`.
+(مكتبة الشيخ / Wikipedia program list). See backend/app/seed/README.md.
 """
 
 from dataclasses import dataclass

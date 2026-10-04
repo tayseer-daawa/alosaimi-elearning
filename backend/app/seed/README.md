@@ -2,7 +2,7 @@
 
 Idempotent local fixtures for student + admin UI work. **Not** part of `prestart` / production.
 
-Curriculum mirrors Sheikh **صالح بن عبدالله العصيمي**’s public programs (مكتبة الشيخ + Wikipedia program list). Domain notes: `.claude/skills/muhimmat-al-ilm/SKILL.md`.
+Curriculum mirrors Sheikh **صالح بن عبدالله العصيمي**’s public programs (مكتبة الشيخ + Wikipedia program list). This file is the reference for the curriculum vocabulary and the phase → متون map.
 
 ## Safety
 
