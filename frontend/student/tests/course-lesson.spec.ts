@@ -793,12 +793,12 @@ test.describe("course lesson player", () => {
   })
 
   test("next lesson navigation from player button", async ({ page }) => {
-    const { url } = await openFirstLesson(page)
+    const { url, hasNext } = await openFirstLesson(page)
+    // The seed's first book has several lessons. The button stays disabled
+    // until the lesson list loads, so wait for it instead of skipping.
+    expect(hasNext).toBe(true)
     const nextBtn = page.getByTestId("audio-next-lesson")
-    if (await nextBtn.isDisabled()) {
-      test.skip()
-      return
-    }
+    await expect(nextBtn).toBeEnabled()
     await nextBtn.click()
     await expect(page).not.toHaveURL(url)
     await expect(page.getByTestId("course-screen")).toBeVisible()
