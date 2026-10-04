@@ -3,7 +3,7 @@
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query"
 import { ApiError } from "@/client"
 import {
-  clearAuthSession,
+  clearAccessToken,
   isDeadSessionResponse,
 } from "@/shared/lib/authSession"
 
@@ -12,7 +12,7 @@ function handleApiError(error: Error) {
     error instanceof ApiError &&
     isDeadSessionResponse(error.status, error.body)
   ) {
-    clearAuthSession()
+    clearAccessToken()
     queryClient.clear()
     window.location.href = "/welcome"
   }

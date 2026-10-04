@@ -1,4 +1,4 @@
-/** Auth session keys and clear helper — no React, no UI. */
+/** Auth session keys and clear helpers — no React, no UI. */
 
 export const ACCESS_TOKEN_KEY = "access_token"
 export const STUDENT_PROFILE_KEY = "student_profile"
@@ -9,13 +9,27 @@ export type StudentProfile = {
 }
 
 /**
- * Sign out on this device: wipe everything the app stored for the user
- * (token, profile, lesson progress, notes, player prefs), not only the token.
+ * The token is dead (expired, invalid account, failed login): drop only the
+ * token. The profile stays so pagehide flushes still save the student's
+ * progress under their namespace (see userStorage).
  */
-export function clearAuthSession(): void {
+export function clearAccessToken(): void {
   try {
-    localStorage.clear()
-    sessionStorage.clear()
+    localStorage.removeItem(ACCESS_TOKEN_KEY)
+  } catch {
+    // storage disabled — nothing to clear
+  }
+}
+
+/**
+ * Explicit sign-out: drop the token and profile. The student's progress stays
+ * under their namespace for their next sign-in; nobody else can read it in
+ * the app (see userStorage).
+ */
+export function clearSession(): void {
+  try {
+    localStorage.removeItem(ACCESS_TOKEN_KEY)
+    localStorage.removeItem(STUDENT_PROFILE_KEY)
   } catch {
     // storage disabled — nothing to clear
   }
@@ -45,18 +59,6 @@ export function isDeadSessionResponse(status: number, body: unknown): boolean {
 
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY)
-}
-
-/**
- * Per-user data is only written while signed in, so pagehide/unmount flushes
- * during logout's hard navigation can't restore what clearAuthSession wiped.
- */
-export function canStoreUserData(): boolean {
-  try {
-    return getAccessToken() != null
-  } catch {
-    return false
-  }
 }
 
 export function getStudentProfile(): StudentProfile | null {

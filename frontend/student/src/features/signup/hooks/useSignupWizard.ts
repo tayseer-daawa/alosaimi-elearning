@@ -4,7 +4,7 @@ import { ApiError, LoginService, UsersService } from "@/client"
 import { apiErrorMessage } from "@/shared/lib/apiErrorMessage"
 import {
   ACCESS_TOKEN_KEY,
-  clearAuthSession,
+  clearAccessToken,
   setStudentProfile,
 } from "@/shared/lib/authSession"
 import { emailIssue, emailIssueMessage } from "../lib/emailRules"
@@ -202,7 +202,7 @@ export function useSignupWizard() {
       })
       await navigate({ to: "/" })
     } catch {
-      clearAuthSession()
+      clearAccessToken()
       await navigate({ to: "/login" })
     }
   }

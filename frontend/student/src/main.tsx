@@ -7,9 +7,10 @@ import { queryClient } from "./providers/queryClient"
 import { ThemeProvider } from "./providers/theme"
 import { router } from "./routes/router"
 import {
-  clearAuthSession,
+  clearAccessToken,
   isDeadSessionResponse,
 } from "./shared/lib/authSession"
+import { adoptLegacyUserData } from "./shared/lib/userStorage"
 
 const apiUrl = import.meta.env.VITE_API_URL
 if (!apiUrl) {
@@ -23,6 +24,8 @@ if (!apiUrl) {
   )
 }
 OpenAPI.BASE = apiUrl || ""
+
+adoptLegacyUserData()
 
 const publicAuthPaths = [
   "/login",
@@ -46,7 +49,7 @@ OpenAPI.interceptors.request.use((request) => {
 // login can show its own error.
 OpenAPI.interceptors.response.use((response) => {
   if (isDeadSessionResponse(response.status, response.data)) {
-    clearAuthSession()
+    clearAccessToken()
     queryClient.clear()
     const path = window.location.pathname
     if (!publicAuthPaths.includes(path)) {
