@@ -97,9 +97,22 @@ function useFillToPlayer(
       if (!box) return
       const rect = box.getBoundingClientRect()
       const top = rect.top + window.scrollY
-      // Whatever the page lays out below the book (paddings reserved for the
-      // player), so the document ends exactly at the bottom of the screen.
-      const below = document.documentElement.scrollHeight - (top + rect.height)
+      // What the page lays out below the book (its section's own bottom
+      // spacing + the page's bottom padding), so the page ends at the screen
+      // bottom. Not the document height: the page has min-height: 100vh, and
+      // counting that filler would freeze the book at its first height.
+      const page = box.closest<HTMLElement>("[data-lesson-page]")
+      let section: HTMLElement = box
+      while (section.parentElement && section.parentElement !== page) {
+        section = section.parentElement
+      }
+      const sectionStyle = getComputedStyle(section)
+      const below = page
+        ? section.getBoundingClientRect().bottom -
+          rect.bottom +
+          (Number.parseFloat(sectionStyle.marginBottom) || 0) +
+          (Number.parseFloat(getComputedStyle(page).paddingBottom) || 0)
+        : 0
       const player = document.querySelector<HTMLElement>("[data-lesson-player]")
       const reserved = Math.max(below, (player?.offsetHeight ?? 0) + 8)
       setHeight(Math.max(240, Math.floor(window.innerHeight - top - reserved)))
@@ -107,6 +120,10 @@ function useFillToPlayer(
     measure()
     const observer = new ResizeObserver(measure)
     observer.observe(document.body)
+    // The page's bottom padding follows the player's height; with
+    // min-height: 100vh only the page's content box notices that change.
+    const page = boxRef.current?.closest<HTMLElement>("[data-lesson-page]")
+    if (page) observer.observe(page)
     const player = document.querySelector<HTMLElement>("[data-lesson-player]")
     if (player) observer.observe(player)
     window.addEventListener("resize", measure)

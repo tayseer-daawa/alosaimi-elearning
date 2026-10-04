@@ -186,6 +186,22 @@ test.describe("course lesson player", () => {
     expect(book.y + book.height).toBeLessThanOrEqual(player.y + 1)
     expect(book.height).toBeGreaterThan(300)
 
+    // On a taller screen the book grows to the player — no empty band.
+    await page.setViewportSize({ width: 390, height: 1100 })
+    await expect
+      .poll(async () => {
+        const b = (await page.getByTestId("pdf-reader-pages").boundingBox())!
+        const p = (await page.getByTestId("audio-player").boundingBox())!
+        return p.y - (b.y + b.height)
+      })
+      .toBeLessThan(60)
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollHeight - window.innerHeight,
+      ),
+    ).toBeLessThanOrEqual(1)
+    await page.setViewportSize({ width: 390, height: 844 })
+
     await page.getByTestId("pdf-reader-next-page").click()
     await expect(page.getByTestId("pdf-reader-page-label")).toContainText(
       "2 من",

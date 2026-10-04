@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { MoveRight, PanelLeftClose, PanelLeftOpen } from "lucide-react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { useBook } from "@/features/books/api/useBook"
 import { useLesson } from "@/features/books/api/useLesson"
@@ -38,6 +38,17 @@ export default function CourseScreen() {
   const [lessonListOpen, setLessonListOpen] = useState(false)
   const [notesPaneOpen, setNotesPaneOpen] = useState(readNotesPaneOpen)
   const playbackApiRef = useRef<AudioPlaybackApi | null>(null)
+  // Pad the page by the fixed player's real height (it grows with the system
+  // font size), so nothing hides behind it and no empty band is left above it.
+  const [playerHeight, setPlayerHeight] = useState<number | null>(null)
+  const measurePlayer = useCallback((el: HTMLDivElement | null) => {
+    if (!el) return
+    const update = () => setPlayerHeight(el.offsetHeight)
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
   const navigate = useNavigate()
   const { programId, phaseId, bookId, courseId } = useParams({
     strict: false,
@@ -158,8 +169,13 @@ export default function CourseScreen() {
       dir="rtl"
       px={{ base: 0, lg: "16" }}
       py={{ base: 2, lg: "10" }}
-      pb={{ base: "48", lg: "36" }}
+      pb={{
+        base: playerHeight ? `${playerHeight + 8}px` : "48",
+        lg: "36",
+      }}
       data-testid="course-screen"
+      // The phone PDF reader measures the layout below the book from here.
+      data-lesson-page
     >
       <Container
         maxW="container.lg"
@@ -439,6 +455,7 @@ export default function CourseScreen() {
         zIndex={10}
         // The phone PDF reader measures this to fill the space above it.
         data-lesson-player
+        ref={measurePlayer}
       >
         <AudioPlayer
           key={lesson.id}
