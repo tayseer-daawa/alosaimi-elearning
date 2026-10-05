@@ -1,6 +1,9 @@
+import re
 import uuid
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
@@ -38,7 +41,7 @@ def test_create_user_new_email(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
     with (
-        patch("app.utils.send_email", return_value=None),
+        patch("app.api.routes.users.send_email", return_value=None),
         patch("app.core.config.settings.SMTP_HOST", "smtp.example.com"),
         patch("app.core.config.settings.SMTP_USER", "admin@example.com"),
     ):
@@ -531,3 +534,100 @@ def test_delete_user_without_privileges(
     )
     assert r.status_code == 403
     assert r.json()["detail"] == "The user doesn't have enough privileges"
+
+
+def _create_user_and_capture_welcome_email(
+    client: TestClient, superuser_token_headers: dict[str, str], **flags: bool
+) -> tuple[str, str]:
+    """Create a user through the API; return (password, welcome email HTML)."""
+    password = random_lower_string()
+    data = {
+        "email": random_email(),
+        "password": password,
+        "first_name": "Test",
+        "father_name": "User",
+        "family_name": "Name",
+        "is_male": random_gender_is_male(),
+        **flags,
+    }
+    with (
+        patch("app.api.routes.users.send_email") as send_email,
+        patch("app.core.config.settings.SMTP_HOST", "smtp.example.com"),
+        patch("app.core.config.settings.EMAILS_FROM_EMAIL", "info@example.com"),
+    ):
+        r = client.post(
+            f"{settings.API_V1_STR}/users/", headers=superuser_token_headers, json=data
+        )
+    assert r.status_code == 200
+    send_email.assert_called_once()
+    return password, send_email.call_args.kwargs["html_content"]
+
+
+def _set_password_link(html: str) -> str:
+    match = re.search(r'href="([^"]*/reset-password\?token=[^"]+)"', html)
+    assert match, "welcome email has no set-password link"
+    return match.group(1)
+
+
+def test_create_user_welcome_email_has_no_password(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    password, html = _create_user_and_capture_welcome_email(
+        client, superuser_token_headers
+    )
+    assert password not in html
+
+
+def test_create_student_welcome_email_links_to_student_app(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    _, html = _create_user_and_capture_welcome_email(client, superuser_token_headers)
+    assert _set_password_link(html).startswith(
+        f"{settings.FRONTEND_STUDENT_HOST}/reset-password?token="
+    )
+
+
+@pytest.mark.parametrize("staff_flag", ["is_teacher", "is_admin", "is_superuser"])
+def test_create_staff_welcome_email_links_to_admin_app(
+    client: TestClient, superuser_token_headers: dict[str, str], staff_flag: str
+) -> None:
+    _, html = _create_user_and_capture_welcome_email(
+        client, superuser_token_headers, **{staff_flag: True}
+    )
+    assert _set_password_link(html).startswith(
+        f"{settings.FRONTEND_ADMIN_HOST}/reset-password?token="
+    )
+
+
+def test_welcome_email_link_sets_password_once(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    _, html = _create_user_and_capture_welcome_email(client, superuser_token_headers)
+    token = parse_qs(urlparse(_set_password_link(html)).query)["token"][0]
+
+    r = client.post(
+        f"{settings.API_V1_STR}/reset-password/",
+        json={"new_password": random_lower_string(), "token": token},
+    )
+    assert r.status_code == 200
+
+    r = client.post(
+        f"{settings.API_V1_STR}/reset-password/",
+        json={"new_password": random_lower_string(), "token": token},
+    )
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Invalid token"
+
+
+def test_welcome_email_link_ignores_trailing_slash_on_host(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    with patch(
+        "app.core.config.settings.FRONTEND_STUDENT_HOST", "http://student.example.com/"
+    ):
+        _, html = _create_user_and_capture_welcome_email(
+            client, superuser_token_headers
+        )
+    assert _set_password_link(html).startswith(
+        "http://student.example.com/reset-password?token="
+    )

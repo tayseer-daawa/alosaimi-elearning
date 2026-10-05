@@ -13,6 +13,7 @@ from jwt.exceptions import InvalidTokenError
 
 from app.core import security
 from app.core.config import settings
+from app.models import User
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -93,9 +94,19 @@ def generate_reset_password_email(
     return EmailData(html_content=html_content, subject=subject)
 
 
+def frontend_host_for_user(user: User) -> str:
+    """Staff use the admin app; everyone else uses the student app."""
+    if user.is_superuser or user.is_admin or user.is_teacher:
+        return settings.FRONTEND_ADMIN_HOST
+    return settings.FRONTEND_STUDENT_HOST
+
+
 def generate_new_account_email(
-    email_to: str, username: str, password: str
+    email_to: str, username: str, token: str, frontend_host: str
 ) -> EmailData:
+    """
+    The email carries a single-use link to set the password, never the password itself.
+    """
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - New account for user {username}"
     html_content = render_email_template(
@@ -103,9 +114,9 @@ def generate_new_account_email(
         context={
             "project_name": settings.PROJECT_NAME,
             "username": username,
-            "password": password,
             "email": email_to,
-            "link": settings.FRONTEND_ADMIN_HOST,
+            "valid_hours": settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS,
+            "link": f"{frontend_host.rstrip('/')}/reset-password?token={token}",
         },
     )
     return EmailData(html_content=html_content, subject=subject)
