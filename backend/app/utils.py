@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import jwt
 from emails.message import Message
@@ -19,6 +19,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 PASSWORD_RESET_TOKEN_PURPOSE = "password-reset"
+
+FrontendApp = Literal["admin", "student"]
 
 
 @dataclass
@@ -80,7 +82,7 @@ def generate_reset_password_email(
 ) -> EmailData:
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - Password recovery for user {email}"
-    link = f"{frontend_host.rstrip('/')}/reset-password?token={token}"
+    link = f"{frontend_host}/reset-password?token={token}"
     html_content = render_email_template(
         template_name="reset_password.html",
         context={
@@ -94,11 +96,23 @@ def generate_reset_password_email(
     return EmailData(html_content=html_content, subject=subject)
 
 
-def frontend_host_for_user(user: User) -> str:
-    """Staff use the admin app; everyone else uses the student app."""
-    if user.is_superuser or user.is_admin or user.is_teacher:
-        return settings.FRONTEND_ADMIN_HOST
-    return settings.FRONTEND_STUDENT_HOST
+def get_frontend_host_for_app(app: FrontendApp) -> str:
+    """Base URL of the given frontend app, without a trailing slash."""
+    host = (
+        settings.FRONTEND_ADMIN_HOST
+        if app == "admin"
+        else settings.FRONTEND_STUDENT_HOST
+    )
+    return host.rstrip("/")
+
+
+def get_frontend_host_for_user(user: User) -> str:
+    """
+    Base URL of the app the user signs in to:
+    The admin app for staff, the student app for everyone else.
+    """
+    is_staff = user.is_superuser or user.is_admin or user.is_teacher
+    return get_frontend_host_for_app("admin" if is_staff else "student")
 
 
 def generate_new_account_email(
@@ -116,7 +130,7 @@ def generate_new_account_email(
             "username": username,
             "email": email_to,
             "valid_hours": settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS,
-            "link": f"{frontend_host.rstrip('/')}/reset-password?token={token}",
+            "link": f"{frontend_host}/reset-password?token={token}",
         },
     )
     return EmailData(html_content=html_content, subject=subject)

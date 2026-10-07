@@ -24,9 +24,9 @@ from app.models import (
     UserUpdateMe,
 )
 from app.utils import (
-    frontend_host_for_user,
     generate_new_account_email,
     generate_password_reset_token,
+    get_frontend_host_for_user,
     send_email,
 )
 
@@ -77,7 +77,7 @@ def create_user(session: SessionDep, user_in: UserCreate) -> User:
             email_to=user_in.email,
             username=user_in.email,
             token=token,
-            frontend_host=frontend_host_for_user(user),
+            frontend_host=get_frontend_host_for_user(user),
         )
         send_email(
             email_to=user_in.email,
