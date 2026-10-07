@@ -1,6 +1,6 @@
 import hmac
 from datetime import timedelta
-from typing import Annotated, Literal
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import HTMLResponse
@@ -14,22 +14,16 @@ from app.core.config import settings
 from app.core.security import get_password_hash
 from app.models import Message, NewPassword, Token, User, UserPublic
 from app.utils import (
+    FrontendApp,
     generate_password_reset_token,
     generate_reset_password_email,
+    get_frontend_host_for_app,
     password_fingerprint,
     send_email,
     verify_password_reset_token,
 )
 
 router = APIRouter(tags=["login"])
-
-FrontendApp = Literal["admin", "student"]
-
-
-def _frontend_host_for(app: FrontendApp) -> str:
-    if app == "admin":
-        return settings.FRONTEND_ADMIN_HOST
-    return settings.FRONTEND_STUDENT_HOST
 
 
 @router.post("/login/access-token")
@@ -84,7 +78,7 @@ def recover_password(
             email_to=user.email,
             email=email,
             token=password_reset_token,
-            frontend_host=_frontend_host_for(app),
+            frontend_host=get_frontend_host_for_app(app),
         )
         send_email(
             email_to=user.email,
@@ -163,7 +157,7 @@ def recover_password_html_content(
         email_to=user.email,
         email=email,
         token=password_reset_token,
-        frontend_host=_frontend_host_for(app),
+        frontend_host=get_frontend_host_for_app(app),
     )
 
     return HTMLResponse(
