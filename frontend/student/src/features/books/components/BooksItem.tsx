@@ -1,5 +1,5 @@
 import { Box, Flex, Link, Text } from "@chakra-ui/react"
-import { useNavigate, useParams } from "@tanstack/react-router"
+import { Link as RouterLink, useParams } from "@tanstack/react-router"
 import { Check } from "lucide-react"
 import {
   getLessonProgressStatus,
@@ -66,7 +66,6 @@ function LessonStatusBadge({ status }: { status: LessonProgressStatus }) {
 }
 
 export const BooksItem = ({ book }: BooksItemProps) => {
-  const navigate = useNavigate()
   const { programId, phaseId, bookId } = useParams({ strict: false })
 
   const hasPdf = Boolean(book.pdf?.trim())
@@ -148,27 +147,26 @@ export const BooksItem = ({ book }: BooksItemProps) => {
                       flexWrap="wrap"
                       verticalAlign="middle"
                     >
-                      <Text
-                        as="span"
+                      <Link
+                        asChild
                         fontSize={{ base: "sm", lg: "md" }}
                         color="brand.primary"
                         textDecoration="underline"
-                        cursor="pointer"
                         _hover={{ opacity: 0.8 }}
-                        onClick={() =>
-                          navigate({
-                            to: "/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId",
-                            params: {
-                              programId: programId ?? "",
-                              phaseId: phaseId ?? "",
-                              bookId: bookId ?? book.id,
-                              courseId: lesson.id,
-                            },
-                          })
-                        }
+                        data-testid="book-lesson-link"
                       >
-                        {`المقرر ${lesson.order + 1}`}
-                      </Text>
+                        <RouterLink
+                          to="/programs/$programId/phases/$phaseId/books/$bookId/courses/$courseId"
+                          params={{
+                            programId: programId ?? "",
+                            phaseId: phaseId ?? "",
+                            bookId: bookId ?? book.id,
+                            courseId: lesson.id,
+                          }}
+                        >
+                          {`المقرر ${lesson.order + 1}`}
+                        </RouterLink>
+                      </Link>
                       <LessonStatusBadge status={status} />
                     </Flex>
                     {notes ? (

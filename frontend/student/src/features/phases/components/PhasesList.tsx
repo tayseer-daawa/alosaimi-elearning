@@ -1,5 +1,5 @@
 import { Box, Button, Flex, Grid, Image, Text, VStack } from "@chakra-ui/react"
-import { useNavigate, useParams } from "@tanstack/react-router"
+import { Link, useParams } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import { loadLastLearningPath } from "@/features/course/lib/lessonProgress"
 import { PhasesListSkeleton } from "@/shared/components/PageSkeletons"
@@ -17,7 +17,6 @@ export const PhasesList = () => {
   } = usePhasesWithBooks(programId)
   const [expandedStage, setExpandedStage] = useState<string | null>(null)
   const [didInitExpand, setDidInitExpand] = useState(false)
-  const navigate = useNavigate()
   const lastBookId = loadLastLearningPath()?.bookId ?? null
 
   const orderedStages = stages
@@ -68,6 +67,8 @@ export const PhasesList = () => {
     <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={6}>
       {orderedStages.map((stage) => {
         const isExpanded = expandedStage === stage.id
+        const showBooks = isExpanded && stage.books.length > 0
+        const booksId = `phase-books-${stage.id}`
         // PhasePublic has no title — label from API order only.
         const title = `مرحلة ${stage.order + 1}`
         const description =
@@ -84,9 +85,34 @@ export const PhasesList = () => {
               boxShadow="lg"
               transition="all 0.3s"
             >
-              <Box p={8} cursor="pointer" onClick={() => toggleStage(stage.id)}>
-                <Flex mb={4} align="center" justify="space-between" gap={3}>
+              {/* The books grid sits outside the toggle: links can't nest in a button. */}
+              <Box
+                as="button"
+                display="block"
+                w="full"
+                p={8}
+                pb={showBooks ? 5 : 8}
+                textAlign="start"
+                cursor="pointer"
+                aria-expanded={isExpanded}
+                aria-controls={showBooks ? booksId : undefined}
+                _focusVisible={{
+                  outline: "2px solid",
+                  outlineColor: isExpanded ? "white" : "brand.primary",
+                  outlineOffset: "-6px",
+                }}
+                data-testid="phase-toggle"
+                onClick={() => toggleStage(stage.id)}
+              >
+                <Flex
+                  as="span"
+                  mb={4}
+                  align="center"
+                  justify="space-between"
+                  gap={3}
+                >
                   <Text
+                    as="span"
                     fontSize={{ base: "xl", lg: "3xl" }}
                     fontWeight="semibold"
                     color={isExpanded ? "white" : "brand.primary"}
@@ -98,6 +124,7 @@ export const PhasesList = () => {
                   </Text>
 
                   <Box
+                    as="span"
                     w={{ base: 8, lg: 14 }}
                     h={{ base: 8, lg: 14 }}
                     bg="brand.secondary"
@@ -109,6 +136,7 @@ export const PhasesList = () => {
                   >
                     <Image
                       src={headphones}
+                      alt=""
                       boxSize={{ base: 4, lg: 6 }}
                       objectFit="contain"
                     />
@@ -116,6 +144,8 @@ export const PhasesList = () => {
                 </Flex>
 
                 <Text
+                  as="span"
+                  display="block"
                   fontSize={{ base: "md", lg: "xl" }}
                   color={isExpanded ? "brand.lightGray" : "brand.secondary"}
                   lineHeight="tall"
@@ -124,61 +154,61 @@ export const PhasesList = () => {
                 >
                   {description}
                 </Text>
+              </Box>
 
-                {isExpanded && stage.books.length > 0 && (
-                  <Grid
-                    templateColumns={{
-                      base: "1fr",
-                      sm: "repeat(2, minmax(0, 1fr))",
-                    }}
-                    gap={3}
-                    mt={5}
-                    w="full"
-                  >
-                    {stage.books.map((book) => {
-                      const isLastOpened = lastBookId === book.id
-                      return (
-                        <Button
-                          key={book.id}
-                          bg={isLastOpened ? "white" : "brand.accent"}
-                          color="text.default"
-                          _hover={{
-                            bg: isLastOpened ? "brand.lightTeal" : "#d4cc85",
-                          }}
-                          borderRadius="4px"
-                          borderWidth="2px"
-                          borderColor={
-                            isLastOpened ? "brand.primary" : "transparent"
-                          }
-                          fontSize={{ base: "sm", md: "md" }}
-                          fontWeight="semibold"
-                          h="auto"
-                          minH="12"
-                          minW={0}
-                          w="full"
-                          px={3}
-                          py={3}
-                          pt={isLastOpened ? 6 : 3}
-                          whiteSpace="normal"
-                          lineHeight="short"
-                          textAlign="center"
-                          overflow="hidden"
-                          position="relative"
-                          data-testid={
-                            isLastOpened
-                              ? "phase-book-chip-last"
-                              : "phase-book-chip"
-                          }
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            navigate({
-                              to: "/programs/$programId/phases/$phaseId/books/$bookId",
-                              params: {
-                                programId: programId ?? "",
-                                phaseId: stage.id,
-                                bookId: book.id,
-                              },
-                            })
+              {showBooks && (
+                <Grid
+                  id={booksId}
+                  templateColumns={{
+                    base: "1fr",
+                    sm: "repeat(2, minmax(0, 1fr))",
+                  }}
+                  gap={3}
+                  px={8}
+                  pb={8}
+                >
+                  {stage.books.map((book) => {
+                    const isLastOpened = lastBookId === book.id
+                    return (
+                      <Button
+                        key={book.id}
+                        asChild
+                        bg={isLastOpened ? "white" : "brand.accent"}
+                        color="text.default"
+                        _hover={{
+                          bg: isLastOpened ? "brand.lightTeal" : "#d4cc85",
+                        }}
+                        borderRadius="4px"
+                        borderWidth="2px"
+                        borderColor={
+                          isLastOpened ? "brand.primary" : "transparent"
+                        }
+                        fontSize={{ base: "sm", md: "md" }}
+                        fontWeight="semibold"
+                        h="auto"
+                        minH="12"
+                        minW={0}
+                        w="full"
+                        px={3}
+                        py={3}
+                        pt={isLastOpened ? 6 : 3}
+                        whiteSpace="normal"
+                        lineHeight="short"
+                        textAlign="center"
+                        overflow="hidden"
+                        position="relative"
+                        data-testid={
+                          isLastOpened
+                            ? "phase-book-chip-last"
+                            : "phase-book-chip"
+                        }
+                      >
+                        <Link
+                          to="/programs/$programId/phases/$phaseId/books/$bookId"
+                          params={{
+                            programId: programId ?? "",
+                            phaseId: stage.id,
+                            bookId: book.id,
                           }}
                         >
                           {isLastOpened ? (
@@ -208,12 +238,12 @@ export const PhasesList = () => {
                           >
                             {book.title}
                           </Text>
-                        </Button>
-                      )
-                    })}
-                  </Grid>
-                )}
-              </Box>
+                        </Link>
+                      </Button>
+                    )
+                  })}
+                </Grid>
+              )}
             </Box>
           </Box>
         )
