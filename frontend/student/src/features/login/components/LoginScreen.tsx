@@ -9,6 +9,7 @@ import { useLoginWizard } from "../hooks/useLoginWizard"
 export default function LoginScreen() {
   const {
     title,
+    notice,
     error,
     isSubmitting,
     email,
@@ -37,6 +38,18 @@ export default function LoginScreen() {
         >
           {title}
         </Text>
+        {notice ? (
+          <Text
+            role="status"
+            color="brand.primary"
+            fontSize={{ base: "md", md: "xl" }}
+            fontWeight={600}
+            textAlign="center"
+            data-testid="login-notice"
+          >
+            {notice}
+          </Text>
+        ) : null}
       </VStack>
       <VStack
         gap={{ base: 8, md: 10, lg: 12 }}
