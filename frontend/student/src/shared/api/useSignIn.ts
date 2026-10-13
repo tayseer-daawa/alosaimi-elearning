@@ -1,12 +1,13 @@
 // Shared by login and signup: exchange credentials for a session.
 
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { LoginService, UsersService } from "@/client"
 import {
   ACCESS_TOKEN_KEY,
   clearAccessToken,
   setStudentProfile,
 } from "@/shared/lib/authSession"
+import { queryKeys } from "@/shared/lib/queryKeys"
 
 export type SignInCredentials = {
   email: string
@@ -59,5 +60,13 @@ async function signIn({ email, password }: SignInCredentials): Promise<void> {
 
 /** Store token → fetch /users/me → save profile. Callers navigate on success. */
 export function useSignIn() {
-  return useMutation({ mutationFn: signIn })
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: signIn,
+    onSuccess: () => {
+      // A different student may have signed in on this device.
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all })
+    },
+  })
 }
