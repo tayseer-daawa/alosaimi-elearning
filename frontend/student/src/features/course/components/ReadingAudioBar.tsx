@@ -1,7 +1,8 @@
 import { Flex, IconButton, Text } from "@chakra-ui/react"
 import { Pause, Play, RotateCcw, RotateCw } from "lucide-react"
 import { type ReactNode, type RefObject, useEffect, useState } from "react"
-import { type AudioPlaybackApi, formatTime } from "./AudioPlayer"
+import { formatTime } from "../lib/audioPlayer"
+import type { AudioPlaybackApi } from "./AudioPlayer"
 
 const SKIP_SECONDS = 10
 const AUDIO_EVENTS = [
