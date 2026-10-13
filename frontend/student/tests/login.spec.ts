@@ -16,6 +16,12 @@ test.describe("login", () => {
     await expect(page.getByRole("link", { name: "إنشاء حساب" })).toBeVisible()
   })
 
+  test("shows no account-created notice on a plain visit", async ({ page }) => {
+    await page.goto("/login")
+    await expect(page.getByText("أدخل معلومات الحساب")).toBeVisible()
+    await expect(page.getByTestId("login-notice")).toHaveCount(0)
+  })
+
   test("shows per-field errors when submitting empty", async ({ page }) => {
     await page.goto("/login")
     await page.getByRole("button", { name: "مواصلة" }).click()

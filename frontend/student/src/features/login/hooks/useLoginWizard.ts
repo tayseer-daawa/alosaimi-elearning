@@ -1,11 +1,26 @@
-import { useNavigate } from "@tanstack/react-router"
+import { useNavigate, useSearch } from "@tanstack/react-router"
 import { useState } from "react"
-import { ApiError, LoginService, UsersService } from "@/client"
+import { ApiError } from "@/client"
+import { SignInError, useSignIn } from "@/shared/api/useSignIn"
 import { apiErrorMessage } from "@/shared/lib/apiErrorMessage"
-import { clearAccessToken, setStudentProfile } from "@/shared/lib/authSession"
+
+function signInErrorMessage(err: unknown): string {
+  if (err instanceof SignInError) {
+    if (err.stage === "profile") {
+      return "تعذر تحميل بيانات الحساب، يرجى المحاولة مرة أخرى"
+    }
+    if (err.reason instanceof ApiError) return apiErrorMessage(err.reason.body)
+  }
+  return "حدث خطأ غير متوقع للاتصال بالخادم"
+}
 
 export function useLoginWizard() {
   const navigate = useNavigate()
+  const signIn = useSignIn()
+  const search = useSearch({ strict: false })
+  // Set by signup when the account was created but the automatic sign-in failed.
+  const notice =
+    search.registered === true ? "تم إنشاء الحساب، يرجى تسجيل الدخول" : null
 
   const [email, setEmail] = useState("")
 
@@ -14,7 +29,6 @@ export function useLoginWizard() {
     email: string | null
     password: string | null
   } | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const title = "أدخل معلومات الحساب"
 
@@ -34,51 +48,21 @@ export function useLoginWizard() {
 
     if (!validateCurrentStep()) return
 
-    setIsSubmitting(true)
     try {
-      const response = await LoginService.loginAccessToken({
-        formData: {
-          username: email.trim(),
-          password: password,
-        },
-      })
-
-      // Store token only long enough to call /users/me; clear if that fails
-      // so beforeLoad never treats a half-login as authenticated.
-      localStorage.setItem("access_token", response.access_token)
-
-      try {
-        const profile = await UsersService.readUserMe()
-        setStudentProfile({
-          email: profile.email,
-          first_name: profile.first_name,
-        })
-      } catch {
-        clearAccessToken()
-        setError({
-          email: "تعذر تحميل بيانات الحساب، يرجى المحاولة مرة أخرى",
-          password: null,
-        })
-        return
-      }
-
-      await navigate({ to: "/" })
+      await signIn.mutateAsync({ email, password })
     } catch (err: unknown) {
-      clearAccessToken()
-      if (err instanceof ApiError) {
-        setError({ email: apiErrorMessage(err.body), password: null })
-      } else {
-        setError({ email: "حدث خطأ غير متوقع للاتصال بالخادم", password: null })
-      }
-    } finally {
-      setIsSubmitting(false)
+      setError({ email: signInErrorMessage(err), password: null })
+      return
     }
+
+    await navigate({ to: "/" })
   }
 
   return {
     title,
+    notice,
     error,
-    isSubmitting,
+    isSubmitting: signIn.isPending,
     email,
     setEmail,
     password,
