@@ -1,5 +1,5 @@
 import { Button, Flex, Menu, Text } from "@chakra-ui/react"
-import { useNavigate } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { ChevronLeft } from "lucide-react"
 
 type BreadcrumbOption = {
@@ -28,8 +28,6 @@ export function Breadcrumbs({
   breadcrumbs,
   compact = false,
 }: BreadcrumbsProps) {
-  const navigate = useNavigate()
-
   return (
     <nav aria-label="Breadcrumb">
       <Flex
@@ -74,7 +72,6 @@ export function Breadcrumbs({
                     fontWeight="medium"
                     color={crumb.isCurrent ? "brand.primary" : "gray.400"}
                     _hover={{ color: "brand.primary", bg: "transparent" }}
-                    onClick={() => crumb.url && navigate({ to: crumb.url })}
                   >
                     <Text as="span" lineClamp={1} maxW="9rem">
                       {crumb.label}
@@ -93,20 +90,24 @@ export function Breadcrumbs({
                     {crumb.options.map((option, i) => (
                       <Flex key={option.url} direction="column">
                         <Menu.Item
+                          asChild
                           value={`${index}-${i}`}
                           fontSize="sm"
                           display="flex"
                           alignItems="center"
                           gap={2}
-                          onClick={() => navigate({ to: option.url })}
                           _highlighted={{
                             color: "brand.primary",
                             bg: "transparent",
                             cursor: "pointer",
                           }}
                         >
-                          <Text color="gray.400">{">"}</Text>
-                          <Text>{option.label}</Text>
+                          <Link to={option.url}>
+                            <Text as="span" color="gray.400">
+                              {">"}
+                            </Text>
+                            <Text as="span">{option.label}</Text>
+                          </Link>
                         </Menu.Item>
 
                         {i < crumb.options!.length - 1 && <Menu.Separator />}
@@ -115,11 +116,11 @@ export function Breadcrumbs({
                   </Menu.Content>
                 </Menu.Positioner>
               </Menu.Root>
-            ) : crumb.isCurrent ? (
+            ) : crumb.isCurrent || !crumb.url ? (
               <Text
                 fontSize="sm"
                 fontWeight="medium"
-                color="brand.primary"
+                color={crumb.isCurrent ? "brand.primary" : "gray.400"}
                 px={1}
                 lineClamp={1}
                 maxW="9rem"
@@ -128,6 +129,7 @@ export function Breadcrumbs({
               </Text>
             ) : (
               <Button
+                asChild
                 variant="ghost"
                 size="sm"
                 px={1}
@@ -135,11 +137,12 @@ export function Breadcrumbs({
                 minH="8"
                 color="gray.400"
                 _hover={{ color: "brand.primary", bg: "transparent" }}
-                onClick={() => crumb.url && navigate({ to: crumb.url })}
               >
-                <Text as="span" lineClamp={1} maxW="9rem">
-                  {crumb.label}
-                </Text>
+                <Link to={crumb.url}>
+                  <Text as="span" lineClamp={1} maxW="9rem">
+                    {crumb.label}
+                  </Text>
+                </Link>
               </Button>
             )}
 
