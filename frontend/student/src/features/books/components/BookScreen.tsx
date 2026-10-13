@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Text } from "@chakra-ui/react"
+import { Box, Flex, Heading } from "@chakra-ui/react"
 import { useParams } from "@tanstack/react-router"
 import { usePhase } from "@/features/phases/api/usePhase"
 import { useProgram } from "@/features/programs/api/useProgram"
@@ -60,13 +60,8 @@ export default function BookScreen() {
       />
 
       <Box mt={10} px={{ lg: "16" }}>
-        {bookQuery.isError ? (
-          <Text color="red.500" textAlign="center">
-            تعذر تحميل الكتاب.
-          </Text>
-        ) : (
-          <BooksList />
-        )}
+        {/* BooksList owns the loading and error states, including retry. */}
+        <BooksList />
       </Box>
     </Box>
   )
