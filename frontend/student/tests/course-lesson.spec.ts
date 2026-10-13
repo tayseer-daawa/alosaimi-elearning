@@ -257,6 +257,34 @@ test.describe("course lesson player", () => {
     expect((await audioState(page))!.currentTime).not.toBe(before)
   })
 
+  test("play button follows a pause or resume from outside the player", async ({
+    page,
+  }) => {
+    await openFirstLesson(page)
+    await waitForAudioReady(page)
+
+    const play = page.getByTestId("audio-play-pause")
+    const hud = page.getByTestId("player-action-hud")
+
+    await play.click()
+    await expect(play).toHaveAttribute("aria-label", "إيقاف مؤقت")
+
+    // What a headset or keyboard media key does: pause the element directly.
+    await page.evaluate(() => document.querySelector("audio")?.pause())
+    await expect(play).toHaveAttribute("aria-label", "تشغيل")
+
+    // Space now resumes, so the HUD must announce play — not pause.
+    await page.keyboard.press("Space")
+    await expect(hud).toContainText("تشغيل")
+    await expect.poll(async () => (await audioState(page))?.paused).toBe(false)
+    await expect(play).toHaveAttribute("aria-label", "إيقاف مؤقت")
+
+    await page.evaluate(() => document.querySelector("audio")?.pause())
+    await expect(play).toHaveAttribute("aria-label", "تشغيل")
+    await page.evaluate(() => document.querySelector("audio")?.play())
+    await expect(play).toHaveAttribute("aria-label", "إيقاف مؤقت")
+  })
+
   test("all keyboard shortcuts control playback", async ({ page }) => {
     const { url, hasNext, lessonId } = await openFirstLesson(page)
     await waitForAudioReady(page)
