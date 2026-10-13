@@ -25,6 +25,11 @@ interface HomeScreenProps {
   continueMode?: boolean
   continueTitle?: string
   continueSubtitle?: string
+  /** False when there is neither a saved path nor a program to start. */
+  canContinue?: boolean
+  continueLoading?: boolean
+  /** Shown above the button; pressing the button again retries. */
+  continueError?: string
   onContinueLearning?: () => void
   onViewAllPrograms?: () => void
 }
@@ -35,6 +40,9 @@ export default function HomeScreenComponents({
   continueMode = false,
   continueTitle,
   continueSubtitle,
+  canContinue = allPrograms.length > 0,
+  continueLoading = false,
+  continueError,
   onContinueLearning,
   onViewAllPrograms,
 }: HomeScreenProps) {
@@ -105,8 +113,8 @@ export default function HomeScreenComponents({
             transform: "translateY(-6px)",
             boxShadow: "0 12px 32px rgba(33, 96, 93, 0.15)",
           }}
-          cursor={featured ? "pointer" : "default"}
-          onClick={featured ? onContinueLearning : undefined}
+          cursor={canContinue ? "pointer" : "default"}
+          onClick={canContinue ? onContinueLearning : undefined}
           p={{ base: 6, lg: 10 }}
         >
           <VStack align="stretch" gap={{ base: 6, lg: 8 }} h="full">
@@ -157,11 +165,26 @@ export default function HomeScreenComponents({
               </Flex>
             </Flex>
 
+            {continueError ? (
+              <Text
+                role="alert"
+                color="red.500"
+                fontSize={{ base: "sm", lg: "lg" }}
+                textAlign="center"
+                mt="auto"
+                data-testid="home-continue-error"
+              >
+                {continueError}
+              </Text>
+            ) : null}
+
             <Button
               size={{ base: "md", lg: "lg" }}
               w="full"
-              mt="auto"
-              disabled={!featured}
+              mt={continueError ? 0 : "auto"}
+              disabled={!canContinue}
+              loading={continueLoading}
+              data-testid="home-continue"
               onClick={(e) => {
                 e.stopPropagation()
                 onContinueLearning?.()
