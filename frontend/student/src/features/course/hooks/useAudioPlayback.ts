@@ -188,7 +188,11 @@ export function useAudioPlayback({
         persistPlayback(endAt, rateRef.current, true)
       }
     }
+    // The element is the source of truth for isPlaying — a headset or
+    // keyboard media key pauses and resumes it without going through us.
+    const onPlay = () => setIsPlaying(true)
     const onPause = () => {
+      setIsPlaying(false)
       persistPlayback(audio.currentTime, rateRef.current, true)
     }
     const onError = () => {
@@ -208,6 +212,7 @@ export function useAudioPlayback({
       ["playing", clearBuffering],
       ["progress", syncBuffered],
       ["ended", onEnded],
+      ["play", onPlay],
       ["pause", onPause],
       ["error", onError],
     ]
@@ -255,15 +260,11 @@ export function useAudioPlayback({
   const resume = useCallback(() => {
     const audio = audioRef.current
     if (!audio) return
-    void audio.play().then(
-      () => setIsPlaying(true),
-      () => setIsPlaying(false),
-    )
+    void audio.play().catch(() => setIsPlaying(false))
   }, [audioRef])
 
   const pause = useCallback(() => {
     audioRef.current?.pause()
-    setIsPlaying(false)
   }, [audioRef])
 
   const togglePlay = useCallback(async () => {
@@ -271,12 +272,10 @@ export function useAudioPlayback({
     if (!audio || !audioUrl) return
     if (!audio.paused) {
       audio.pause()
-      setIsPlaying(false)
       return
     }
     try {
       await audio.play()
-      setIsPlaying(true)
       setError(null)
     } catch (err) {
       // A pause while play() was pending — not a playback failure.
