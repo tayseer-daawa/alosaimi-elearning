@@ -38,7 +38,13 @@ def read_sessions(
     count_statement = select(func.count()).select_from(ProgramSession)
     count = session.exec(count_statement).one()
     sessions = crud.get_sessions(session=session, skip=skip, limit=limit)
-    return ProgramSessionsPublic(data=sessions, count=count)
+    return ProgramSessionsPublic(
+        data=[
+            ProgramSessionPublic.model_validate(program_session)
+            for program_session in sessions
+        ],
+        count=count,
+    )
 
 
 # For guest users as well
@@ -61,7 +67,13 @@ def read_sessions_by_program(
         .where(ProgramSession.program_id == program_id)
     )
     count = session.exec(count_statement).one()
-    return ProgramSessionsPublic(data=sessions, count=count)
+    return ProgramSessionsPublic(
+        data=[
+            ProgramSessionPublic.model_validate(program_session)
+            for program_session in sessions
+        ],
+        count=count,
+    )
 
 
 # For guest users as well
@@ -286,7 +298,9 @@ def read_session_events(
         .where(SessionEvent.session_id == session_id)
     )
     count = session.exec(count_statement).one()
-    return SessionEventsPublic(data=events, count=count)
+    return SessionEventsPublic(
+        data=[SessionEventPublic.model_validate(event) for event in events], count=count
+    )
 
 
 @router.get("/{session_id}/lessons", response_model=SessionEventsPublic)
@@ -309,7 +323,9 @@ def read_session_lessons(
         .where(not SessionEvent.is_break)
     )
     count = session.exec(count_statement).one()
-    return SessionEventsPublic(data=events, count=count)
+    return SessionEventsPublic(
+        data=[SessionEventPublic.model_validate(event) for event in events], count=count
+    )
 
 
 @router.get("/{session_id}/breaks", response_model=SessionEventsPublic)
@@ -332,7 +348,9 @@ def read_session_breaks(
         .where(SessionEvent.is_break)
     )
     count = session.exec(count_statement).one()
-    return SessionEventsPublic(data=events, count=count)
+    return SessionEventsPublic(
+        data=[SessionEventPublic.model_validate(event) for event in events], count=count
+    )
 
 
 @router.post(

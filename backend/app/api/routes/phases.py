@@ -8,6 +8,7 @@ from sqlmodel import func, select
 from app import crud
 from app.api.deps import SessionDep, get_current_admin_or_superuser
 from app.models import (
+    BookPublic,
     BooksPublic,
     Message,
     Phase,
@@ -34,7 +35,9 @@ def read_phases(
     statement = select(Phase).offset(skip).limit(limit)
     phases = session.exec(statement).all()
 
-    return PhasesPublic(data=phases, count=count)
+    return PhasesPublic(
+        data=[PhasePublic.model_validate(phase) for phase in phases], count=count
+    )
 
 
 @router.get("/program/{program_id}", response_model=PhasesPublic)
@@ -54,7 +57,9 @@ def read_phases_by_program(
         select(func.count()).select_from(Phase).where(Phase.program_id == program_id)
     )
     count = session.exec(count_statement).one()
-    return PhasesPublic(data=phases, count=count)
+    return PhasesPublic(
+        data=[PhasePublic.model_validate(phase) for phase in phases], count=count
+    )
 
 
 @router.get("/{phase_id}", response_model=PhasePublic)
@@ -93,7 +98,9 @@ def read_books_by_phase(
         .where(PhaseBook.phase_id == phase_id)
     )
     count = session.exec(count_statement).one()
-    return BooksPublic(data=books, count=count)
+    return BooksPublic(
+        data=[BookPublic.model_validate(book) for book in books], count=count
+    )
 
 
 @router.post(
