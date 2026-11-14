@@ -71,6 +71,11 @@ updates:
       # LTS major manually when the next line reaches Active LTS.
       - dependency-name: "node"
         update-types: ["version-update:semver-major"]
+      # Python: a new minor (3.14 -> 3.15) is a new interpreter that dependency
+      # wheels take months to support, and it must move together with
+      # backend/.python-version. Take patches only; bump the minor manually.
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     groups:
       playwright:
         patterns: ["mcr.microsoft.com/playwright"]
