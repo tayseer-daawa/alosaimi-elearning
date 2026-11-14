@@ -29,7 +29,9 @@ def read_books(
     count_statement = select(func.count()).select_from(Book)
     count = session.exec(count_statement).one()
     books = crud.get_books(session=session, skip=skip, limit=limit)
-    return BooksPublic(data=books, count=count)
+    return BooksPublic(
+        data=[BookPublic.model_validate(book) for book in books], count=count
+    )
 
 
 # For guest users as well
