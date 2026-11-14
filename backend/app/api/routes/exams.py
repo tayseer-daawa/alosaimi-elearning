@@ -52,7 +52,9 @@ def read_exams_by_session(
         select(func.count()).select_from(Exam).where(Exam.session_id == session_id)
     )
     count = session.exec(count_statement).one()
-    return ExamsPublic(data=exams, count=count)
+    return ExamsPublic(
+        data=[ExamPublic.model_validate(exam) for exam in exams], count=count
+    )
 
 
 @router.get("/{exam_id}", response_model=ExamPublic)
@@ -156,7 +158,10 @@ def read_student_exam_attempts(
     attempts = crud.get_student_attempts_for_exam(
         session=session, exam_id=exam_id, student_id=student_id
     )
-    return ExamAttemptsPublic(data=attempts, count=len(attempts))
+    return ExamAttemptsPublic(
+        data=[ExamAttemptPublic.model_validate(attempt) for attempt in attempts],
+        count=len(attempts),
+    )
 
 
 @router.get(
@@ -174,7 +179,10 @@ def read_my_exam_attempts(
     attempts = crud.get_student_attempts_for_exam(
         session=session, exam_id=exam_id, student_id=current_user.id
     )
-    return ExamAttemptsPublic(data=attempts, count=len(attempts))
+    return ExamAttemptsPublic(
+        data=[ExamAttemptPublic.model_validate(attempt) for attempt in attempts],
+        count=len(attempts),
+    )
 
 
 @router.post(

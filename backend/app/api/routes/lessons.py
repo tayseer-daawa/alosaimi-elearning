@@ -37,7 +37,9 @@ def read_lessons_by_book(
         select(func.count()).select_from(Lesson).where(Lesson.book_id == book_id)
     )
     count = session.exec(count_statement).one()
-    return LessonsPublic(data=lessons, count=count)
+    return LessonsPublic(
+        data=[LessonPublic.model_validate(lesson) for lesson in lessons], count=count
+    )
 
 
 # For guest users as well
