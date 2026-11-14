@@ -37,7 +37,10 @@ def read_questions(
     statement = select(Question).offset(skip).limit(limit)
     questions = session.exec(statement).all()
 
-    return QuestionsPublic(data=questions, count=count)
+    return QuestionsPublic(
+        data=[QuestionPublic.model_validate(question) for question in questions],
+        count=count,
+    )
 
 
 # For guest users as well
@@ -60,7 +63,10 @@ def read_questions_by_lesson(
         .where(Question.lesson_id == lesson_id)
     )
     count = session.exec(count_statement).one()
-    return QuestionsPublic(data=questions, count=count)
+    return QuestionsPublic(
+        data=[QuestionPublic.model_validate(question) for question in questions],
+        count=count,
+    )
 
 
 # For guest users as well
