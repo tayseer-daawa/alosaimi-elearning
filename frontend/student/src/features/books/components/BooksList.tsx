@@ -23,6 +23,7 @@ export const BooksList = () => {
         <Button
           loading={bookQuery.isFetching}
           onClick={() => void bookQuery.refetch()}
+          data-testid="book-retry"
         >
           إعادة المحاولة
         </Button>
@@ -39,6 +40,7 @@ export const BooksList = () => {
         <Button
           loading={lessonsQuery.isFetching}
           onClick={() => void lessonsQuery.refetch()}
+          data-testid="book-lessons-retry"
         >
           إعادة المحاولة
         </Button>
