@@ -8,7 +8,7 @@ import {
   Portal,
   Text,
 } from "@chakra-ui/react"
-import { useNavigate } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { ChevronLeft, LogOut, X } from "lucide-react"
 import { useState } from "react"
 import { getStudentProfile } from "@/shared/lib/authSession"
@@ -47,14 +47,8 @@ const NAV_ITEMS: NavItem[] = [
 
 export function AppMenu({ position = "absolute" }: AppMenuProps) {
   const [open, setOpen] = useState(false)
-  const navigate = useNavigate()
   const profile = getStudentProfile()
   const greetingName = profile?.first_name?.trim() || "الطالب"
-
-  const go = (to: NavItem["to"]) => {
-    setOpen(false)
-    void navigate({ to })
-  }
 
   return (
     <>
@@ -172,6 +166,7 @@ export function AppMenu({ position = "absolute" }: AppMenuProps) {
                   {NAV_ITEMS.map((item) => (
                     <Button
                       key={item.to}
+                      asChild
                       variant="ghost"
                       justifyContent="space-between"
                       h="12"
@@ -180,13 +175,14 @@ export function AppMenu({ position = "absolute" }: AppMenuProps) {
                       color="brand.primary"
                       fontWeight="medium"
                       fontSize="md"
-                      onClick={() => go(item.to)}
                       data-testid={item.testId}
                     >
-                      <Text flex="1" textAlign="right">
-                        {item.label}
-                      </Text>
-                      <ChevronLeft size={18} strokeWidth={2} aria-hidden />
+                      <Link to={item.to} onClick={() => setOpen(false)}>
+                        <Text as="span" flex="1" textAlign="right">
+                          {item.label}
+                        </Text>
+                        <ChevronLeft size={18} strokeWidth={2} aria-hidden />
+                      </Link>
                     </Button>
                   ))}
                 </Flex>
