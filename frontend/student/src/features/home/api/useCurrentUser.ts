@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
+import { usersRepo } from "@/shared/api/usersRepo"
 import { queryKeys } from "@/shared/lib/queryKeys"
-import { usersRepo } from "./usersRepo"
 
 export function useCurrentUser() {
   return useQuery({

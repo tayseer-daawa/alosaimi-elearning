@@ -16,6 +16,12 @@ test.describe("login", () => {
     await expect(page.getByRole("link", { name: "إنشاء حساب" })).toBeVisible()
   })
 
+  test("shows no account-created notice on a plain visit", async ({ page }) => {
+    await page.goto("/login")
+    await expect(page.getByText("أدخل معلومات الحساب")).toBeVisible()
+    await expect(page.getByTestId("login-notice")).toHaveCount(0)
+  })
+
   test("shows per-field errors when submitting empty", async ({ page }) => {
     await page.goto("/login")
     await page.getByRole("button", { name: "مواصلة" }).click()
@@ -69,5 +75,59 @@ test.describe("login", () => {
 
     await expect(page.getByText("حدث خطأ أثناء الاتصال بالخادم")).toBeVisible()
     await expect(page).toHaveURL(/\/login$/)
+  })
+
+  test("offline sign-in shows an error instead of spinning", async ({
+    page,
+    context,
+  }) => {
+    await page.goto("/login")
+    await page.getByLabel("البريد الإلكتروني").fill("student@example.com")
+    await page.getByLabel("كلمة السر").fill("Student123!")
+    await context.setOffline(true)
+    await page.getByRole("button", { name: "مواصلة" }).click()
+
+    await expect(
+      page.getByText("حدث خطأ غير متوقع للاتصال بالخادم"),
+    ).toBeVisible()
+    await expect(page.getByRole("button", { name: "مواصلة" })).toBeEnabled()
+    await context.setOffline(false)
+  })
+
+  test("pressing Enter twice starts one sign-in", async ({ page }) => {
+    let tokenRequests = 0
+    await page.route("**/api/v1/login/access-token", async (route) => {
+      tokenRequests += 1
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      await route.fulfill({
+        status: 400,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "Incorrect email or password" }),
+      })
+    })
+
+    await page.goto("/login")
+    await page.getByLabel("البريد الإلكتروني").fill("student@example.com")
+    const password = page.getByLabel("كلمة السر")
+    await password.fill("Student123!")
+    await password.press("Enter")
+    await password.press("Enter")
+
+    await expect(
+      page.getByText("البريد الإلكتروني أو كلمة السر غير صحيحة"),
+    ).toBeVisible()
+    expect(tokenRequests).toBe(1)
+  })
+
+  test("announces the account-created notice to screen readers", async ({
+    page,
+  }) => {
+    await page.goto("/login?registered=true")
+
+    await expect(
+      page.getByRole("status").filter({
+        hasText: "تم إنشاء الحساب، يرجى تسجيل الدخول",
+      }),
+    ).toHaveCount(1)
   })
 })

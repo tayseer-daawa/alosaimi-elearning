@@ -183,4 +183,68 @@ test.describe("signup wizard navigation", () => {
       await page.evaluate(() => localStorage.getItem("access_token")),
     ).toBe("test-token")
   })
+
+  test("explains the login fallback when sign-in fails after signup", async ({
+    page,
+  }) => {
+    await page.route("**/api/v1/users/signup", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ id: "u1", email: "ahmad@example.com" }),
+      })
+    })
+    await page.route("**/api/v1/login/access-token", async (route) => {
+      await route.fulfill({ status: 500, body: "{}" })
+    })
+
+    await reachPasswordStep(page, "ahmad@example.com")
+    await page.getByRole("button", { name: "إنشاء الحساب" }).click()
+
+    await page.waitForURL(/\/login\?registered=true$/, { timeout: 10000 })
+    await expect(page.getByTestId("login-notice")).toHaveText(
+      "تم إنشاء الحساب، يرجى تسجيل الدخول",
+    )
+    expect(
+      await page.evaluate(() => localStorage.getItem("access_token")),
+    ).toBeNull()
+  })
+
+  test("explains the login fallback when the profile fails after signup", async ({
+    page,
+  }) => {
+    await page.route("**/api/v1/users/signup", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ id: "u1", email: "ahmad@example.com" }),
+      })
+    })
+    await page.route("**/api/v1/login/access-token", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          access_token: "test-token",
+          token_type: "bearer",
+        }),
+      })
+    })
+    await page.route("**/api/v1/users/me", async (route) => {
+      await route.fulfill({
+        status: 403,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "Could not validate credentials" }),
+      })
+    })
+
+    await reachPasswordStep(page, "ahmad@example.com")
+    await page.getByRole("button", { name: "إنشاء الحساب" }).click()
+
+    await page.waitForURL(/\/login\?registered=true$/, { timeout: 10000 })
+    await expect(page.getByTestId("login-notice")).toBeVisible()
+    expect(
+      await page.evaluate(() => localStorage.getItem("access_token")),
+    ).toBeNull()
+  })
 })

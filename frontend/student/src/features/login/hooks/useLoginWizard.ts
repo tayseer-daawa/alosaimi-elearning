@@ -1,11 +1,33 @@
-import { useNavigate } from "@tanstack/react-router"
-import { useState } from "react"
-import { ApiError, LoginService, UsersService } from "@/client"
+import { getRouteApi, useNavigate } from "@tanstack/react-router"
+import { useRef, useState } from "react"
+import { ApiError } from "@/client"
+import { navigateOrLoad, SignInError, useSignIn } from "@/shared/api/useSignIn"
 import { apiErrorMessage } from "@/shared/lib/apiErrorMessage"
-import { clearAccessToken, setStudentProfile } from "@/shared/lib/authSession"
+
+const loginRoute = getRouteApi("/_layout/login")
+
+function signInErrorMessage(err: unknown): string {
+  if (err instanceof SignInError) {
+    if (err.stage === "profile") {
+      return "تعذر تحميل بيانات الحساب، يرجى المحاولة مرة أخرى"
+    }
+    if (err.reason instanceof ApiError) return apiErrorMessage(err.reason.body)
+  }
+  return "حدث خطأ غير متوقع للاتصال بالخادم"
+}
 
 export function useLoginWizard() {
   const navigate = useNavigate()
+  const signIn = useSignIn()
+  const { registered } = loginRoute.useSearch()
+  // Set by signup when the account was created but the automatic sign-in failed.
+  const notice = registered ? "تم إنشاء الحساب، يرجى تسجيل الدخول" : null
+
+  // Covers sign-in *and* the navigation after it, so the button stays busy
+  // until the home screen loads. The ref also stops a second Enter press that
+  // lands before the re-render.
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const inFlight = useRef(false)
 
   const [email, setEmail] = useState("")
 
@@ -14,7 +36,6 @@ export function useLoginWizard() {
     email: string | null
     password: string | null
   } | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const title = "أدخل معلومات الحساب"
 
@@ -30,53 +51,27 @@ export function useLoginWizard() {
   }
 
   const next = async () => {
+    if (inFlight.current) return
     setError(null)
 
     if (!validateCurrentStep()) return
 
+    inFlight.current = true
     setIsSubmitting(true)
     try {
-      const response = await LoginService.loginAccessToken({
-        formData: {
-          username: email.trim(),
-          password: password,
-        },
-      })
-
-      // Store token only long enough to call /users/me; clear if that fails
-      // so beforeLoad never treats a half-login as authenticated.
-      localStorage.setItem("access_token", response.access_token)
-
-      try {
-        const profile = await UsersService.readUserMe()
-        setStudentProfile({
-          email: profile.email,
-          first_name: profile.first_name,
-        })
-      } catch {
-        clearAccessToken()
-        setError({
-          email: "تعذر تحميل بيانات الحساب، يرجى المحاولة مرة أخرى",
-          password: null,
-        })
-        return
-      }
-
-      await navigate({ to: "/" })
+      await signIn.mutateAsync({ email, password })
+      await navigateOrLoad(() => navigate({ to: "/" }), "/")
     } catch (err: unknown) {
-      clearAccessToken()
-      if (err instanceof ApiError) {
-        setError({ email: apiErrorMessage(err.body), password: null })
-      } else {
-        setError({ email: "حدث خطأ غير متوقع للاتصال بالخادم", password: null })
-      }
+      setError({ email: signInErrorMessage(err), password: null })
     } finally {
+      inFlight.current = false
       setIsSubmitting(false)
     }
   }
 
   return {
     title,
+    notice,
     error,
     isSubmitting,
     email,
