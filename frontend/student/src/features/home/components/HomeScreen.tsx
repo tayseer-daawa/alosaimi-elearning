@@ -70,12 +70,12 @@ export default function HomeScreen() {
     navigate({ to: "/programs" })
   }
 
-  if (programsQuery.isLoading) {
+  // A saved path opens without the program list, so neither its loading
+  // (retries included) nor its failure may hold back the continue card.
+  if (programsQuery.isLoading && !hasContinue) {
     return <HomeSkeleton />
   }
 
-  // A saved path opens without the program list, so its failure must not
-  // hide the continue card.
   if (programsQuery.isError && !hasContinue) {
     return (
       <Text dir="rtl" p={8} color="red.500">
@@ -95,6 +95,13 @@ export default function HomeScreen() {
       continueLoading={continueLearning.isPending}
       continueError={
         continueLearning.isError ? CONTINUE_ERROR_MESSAGE : undefined
+      }
+      programsStatus={
+        programsQuery.isLoading
+          ? "loading"
+          : programsQuery.isError
+            ? "error"
+            : "ready"
       }
       onContinueLearning={handleContinueLearning}
       onViewAllPrograms={handleViewAllPrograms}

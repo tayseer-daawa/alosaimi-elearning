@@ -124,9 +124,15 @@ test.describe("home: continue learning", () => {
     )
 
     await page.goto("/")
-    // React Query retries three times before giving up on the list.
+    // The card does not wait for the list (React Query retries it ~7 s).
     const cta = page.getByTestId("home-continue")
-    await expect(cta).toBeEnabled({ timeout: 15_000 })
+    await expect(cta).toBeEnabled({ timeout: 3_000 })
+    await expect(page.getByTestId("home-programs-count")).toHaveCount(0)
+
+    // Once the retries give up, the count says so instead of reading 0.
+    await expect(page.getByTestId("home-programs-count-error")).toBeVisible({
+      timeout: 15_000,
+    })
 
     await cta.click()
     await expect(page).toHaveURL(lessonUrl(path))
