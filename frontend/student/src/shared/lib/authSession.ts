@@ -46,6 +46,19 @@ const DEAD_SESSION_RESPONSES: ReadonlyArray<readonly [number, string]> = [
   [400, "Inactive user"],
 ]
 
+/** Auth pages that show their own errors instead of sending the student to /welcome. */
+const PUBLIC_AUTH_PATHS: ReadonlySet<string> = new Set([
+  "/login",
+  "/signup",
+  "/welcome",
+  "/forget-password",
+  "/reset-password",
+])
+
+export function isPublicAuthPath(pathname: string): boolean {
+  return PUBLIC_AUTH_PATHS.has(pathname)
+}
+
 export function isDeadSessionResponse(status: number, body: unknown): boolean {
   if (status === 401) return true
   const detail =

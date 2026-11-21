@@ -3,13 +3,10 @@ import React from "react"
 import ReactDOM from "react-dom/client"
 import { OpenAPI } from "./client"
 import { QueryProvider } from "./providers/query"
-import { queryClient } from "./providers/queryClient"
+import { endDeadSession } from "./providers/queryClient"
 import { ThemeProvider } from "./providers/theme"
 import { router } from "./routes/router"
-import {
-  clearAccessToken,
-  isDeadSessionResponse,
-} from "./shared/lib/authSession"
+import { isDeadSessionResponse } from "./shared/lib/authSession"
 import { adoptLegacyUserData } from "./shared/lib/userStorage"
 
 const apiUrl = import.meta.env.VITE_API_URL
@@ -27,14 +24,6 @@ OpenAPI.BASE = apiUrl || ""
 
 adoptLegacyUserData()
 
-const publicAuthPaths = [
-  "/login",
-  "/signup",
-  "/welcome",
-  "/forget-password",
-  "/reset-password",
-]
-
 // Inject authorization token globally
 OpenAPI.interceptors.request.use((request) => {
   const token = localStorage.getItem("access_token")
@@ -49,12 +38,7 @@ OpenAPI.interceptors.request.use((request) => {
 // login can show its own error.
 OpenAPI.interceptors.response.use((response) => {
   if (isDeadSessionResponse(response.status, response.data)) {
-    clearAccessToken()
-    queryClient.clear()
-    const path = window.location.pathname
-    if (!publicAuthPaths.includes(path)) {
-      window.location.href = "/welcome"
-    }
+    endDeadSession()
   }
   return response
 })
