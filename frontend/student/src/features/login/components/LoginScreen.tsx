@@ -1,5 +1,6 @@
-import { Box, Text, VStack } from "@chakra-ui/react"
+import { Box, Text, VisuallyHidden, VStack } from "@chakra-ui/react"
 import { Link, useNavigate } from "@tanstack/react-router"
+import { useEffect, useState } from "react"
 import AuthCtaBtn from "@/shared/components/AuthCtaBtn"
 import AuthInlineBtn from "@/shared/components/AuthInlineBtn"
 import AuthLayout from "@/shared/components/AuthLayout"
@@ -21,6 +22,16 @@ export default function LoginScreen() {
 
   const navigate = useNavigate()
 
+  // A live region only announces text that changes after it is mounted, and the
+  // notice is there from the first paint. Fill the region a moment later so
+  // screen readers read it out.
+  const [announcement, setAnnouncement] = useState("")
+  useEffect(() => {
+    if (!notice) return
+    const timer = window.setTimeout(() => setAnnouncement(notice), 300)
+    return () => window.clearTimeout(timer)
+  }, [notice])
+
   const handleKeyDownEnter = (e: React.KeyboardEvent) => {
     if (e.key !== "Enter") return
     e.preventDefault()
@@ -40,7 +51,7 @@ export default function LoginScreen() {
         </Text>
         {notice ? (
           <Text
-            role="status"
+            aria-hidden
             color="brand.primary"
             fontSize={{ base: "md", md: "xl" }}
             fontWeight={600}
@@ -50,6 +61,7 @@ export default function LoginScreen() {
             {notice}
           </Text>
         ) : null}
+        <VisuallyHidden role="status">{announcement}</VisuallyHidden>
       </VStack>
       <VStack
         gap={{ base: 8, md: 10, lg: 12 }}
