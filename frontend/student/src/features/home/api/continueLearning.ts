@@ -10,11 +10,11 @@ export type ContinueLearningTarget = {
 }
 
 /**
- * Prefer the last course opened on this device (localStorage).
- * Fall back to the first program → phase → book → lesson leaf.
+ * Prefer the last course opened on this device (localStorage) — it needs no
+ * program list. Fall back to the first program → phase → book → lesson leaf.
  */
 export async function resolveContinueLearning(
-  fallbackProgramId: string,
+  fallbackProgramId: string | undefined,
 ): Promise<ContinueLearningTarget | null> {
   const last = loadLastLearningPath()
   if (last) {
@@ -26,6 +26,7 @@ export async function resolveContinueLearning(
     }
   }
 
+  if (!fallbackProgramId) return null
   return resolveFirstLessonInProgram(fallbackProgramId)
 }
 

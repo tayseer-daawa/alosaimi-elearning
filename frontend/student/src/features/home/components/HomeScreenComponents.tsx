@@ -4,6 +4,7 @@ import {
   Flex,
   Heading,
   Icon,
+  Spinner,
   Text,
   VStack,
 } from "@chakra-ui/react"
@@ -25,6 +26,17 @@ interface HomeScreenProps {
   continueMode?: boolean
   continueTitle?: string
   continueSubtitle?: string
+  /** False when there is neither a saved path nor a program to start. */
+  canContinue?: boolean
+  continueLoading?: boolean
+  /** Shown above the button; pressing the button again retries. */
+  continueError?: string
+  /**
+   * State of the program list behind the "all programs" count. With a saved
+   * lesson the page renders before the list arrives, so the count must not
+   * read 0 while it loads or after it fails.
+   */
+  programsStatus?: "loading" | "error" | "ready"
   onContinueLearning?: () => void
   onViewAllPrograms?: () => void
 }
@@ -35,12 +47,19 @@ export default function HomeScreenComponents({
   continueMode = false,
   continueTitle,
   continueSubtitle,
+  canContinue = allPrograms.length > 0,
+  continueLoading = false,
+  continueError,
+  programsStatus = "ready",
   onContinueLearning,
   onViewAllPrograms,
 }: HomeScreenProps) {
   const featured = allPrograms[0]
   const totalPrograms = allPrograms.length
-  const cardTitle = continueTitle || featured?.title || "لا توجد برامج بعد"
+  const cardTitle =
+    continueTitle ||
+    featured?.title ||
+    (continueMode ? "آخر مقرر فتحته" : "لا توجد برامج بعد")
   const cardSubtitle = continueSubtitle || featured?.subtitle
   const eyebrow = continueMode ? "متابعة التعلم" : "ابدأ من هنا"
   const ctaLabel = continueMode ? "متابعة المقرر" : "ابدأ التعلم"
@@ -105,8 +124,8 @@ export default function HomeScreenComponents({
             transform: "translateY(-6px)",
             boxShadow: "0 12px 32px rgba(33, 96, 93, 0.15)",
           }}
-          cursor={featured ? "pointer" : "default"}
-          onClick={featured ? onContinueLearning : undefined}
+          cursor={canContinue ? "pointer" : "default"}
+          onClick={canContinue ? onContinueLearning : undefined}
           p={{ base: 6, lg: 10 }}
         >
           <VStack align="stretch" gap={{ base: 6, lg: 8 }} h="full">
@@ -157,11 +176,26 @@ export default function HomeScreenComponents({
               </Flex>
             </Flex>
 
+            {continueError ? (
+              <Text
+                role="alert"
+                color="red.500"
+                fontSize={{ base: "sm", lg: "lg" }}
+                textAlign="center"
+                mt="auto"
+                data-testid="home-continue-error"
+              >
+                {continueError}
+              </Text>
+            ) : null}
+
             <Button
               size={{ base: "md", lg: "lg" }}
               w="full"
-              mt="auto"
-              disabled={!featured}
+              mt={continueError ? 0 : "auto"}
+              disabled={!canContinue}
+              loading={continueLoading}
+              data-testid="home-continue"
               onClick={(e) => {
                 e.stopPropagation()
                 onContinueLearning?.()
@@ -260,22 +294,44 @@ export default function HomeScreenComponents({
                 textAlign="center"
                 minW={{ base: "120px", lg: "160px" }}
               >
-                <Text
-                  fontSize={{ base: "3xl", lg: "5xl" }}
-                  fontWeight="700"
-                  color="white"
-                  lineHeight="1"
-                >
-                  {totalPrograms}
-                </Text>
-                <Text
-                  fontSize={{ base: "xs", lg: "md" }}
-                  color="rgba(255, 255, 255, 0.95)"
-                  mt={2}
-                  fontWeight="500"
-                >
-                  برنامج
-                </Text>
+                {programsStatus === "error" ? (
+                  <Text
+                    fontSize={{ base: "sm", lg: "md" }}
+                    color="white"
+                    fontWeight="500"
+                    data-testid="home-programs-count-error"
+                  >
+                    تعذر تحميل البرامج
+                  </Text>
+                ) : (
+                  <>
+                    {programsStatus === "loading" ? (
+                      <Spinner
+                        color="white"
+                        size={{ base: "md", lg: "lg" }}
+                        aria-label="جارٍ تحميل البرامج"
+                      />
+                    ) : (
+                      <Text
+                        fontSize={{ base: "3xl", lg: "5xl" }}
+                        fontWeight="700"
+                        color="white"
+                        lineHeight="1"
+                        data-testid="home-programs-count"
+                      >
+                        {totalPrograms}
+                      </Text>
+                    )}
+                    <Text
+                      fontSize={{ base: "xs", lg: "md" }}
+                      color="rgba(255, 255, 255, 0.95)"
+                      mt={2}
+                      fontWeight="500"
+                    >
+                      برنامج
+                    </Text>
+                  </>
+                )}
               </Box>
             </Flex>
 
