@@ -1,13 +1,13 @@
 // Shared by login and signup: exchange credentials for a session.
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { LoginService, UsersService } from "@/client"
+import { LoginService } from "@/client"
+import { usersRepo } from "@/shared/api/usersRepo"
 import {
   ACCESS_TOKEN_KEY,
   clearAccessToken,
   setStudentProfile,
 } from "@/shared/lib/authSession"
-import { queryKeys } from "@/shared/lib/queryKeys"
 
 export type SignInCredentials = {
   email: string
@@ -15,11 +15,8 @@ export type SignInCredentials = {
 }
 
 /**
- * Says which request failed; the original error is on `reason`.
- *
- * Also keeps the raw ApiError away from the global mutation handler, which
- * would read a rejected login (e.g. 400 "Inactive user") as a dead session
- * and redirect to /welcome instead of letting the form show the message.
+ * Says which request failed; the original error is on `reason`, so the form
+ * can pick a message per step.
  */
 export class SignInError extends Error {
   constructor(
@@ -47,7 +44,7 @@ async function signIn({ email, password }: SignInCredentials): Promise<void> {
   // fails so beforeLoad never treats a half-login as authenticated.
   localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
   try {
-    const profile = await UsersService.readUserMe()
+    const profile = await usersRepo.me()
     setStudentProfile({
       email: profile.email,
       first_name: profile.first_name,
@@ -58,15 +55,35 @@ async function signIn({ email, password }: SignInCredentials): Promise<void> {
   }
 }
 
+/**
+ * Navigate once the sign-in attempt is over. Its outcome is already settled,
+ * so a failed client-side navigation (e.g. a route chunk gone after a deploy)
+ * must not reach the form as a sign-in error: load `href` as a full page.
+ */
+export async function navigateOrLoad(
+  navigate: () => Promise<void>,
+  href: string,
+): Promise<void> {
+  try {
+    await navigate()
+  } catch {
+    window.location.assign(href)
+  }
+}
+
 /** Store token → fetch /users/me → save profile. Callers navigate on success. */
 export function useSignIn() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: signIn,
+    // The default ("online") pauses the mutation while the browser reports
+    // offline, so the form would spin with no message. Fail fast instead.
+    networkMode: "always",
     onSuccess: () => {
-      // A different student may have signed in on this device.
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.all })
+      // Nothing cached before this sign-in belongs to the new session; drop it
+      // so no screen renders another student's data while refetching.
+      queryClient.removeQueries()
     },
   })
 }

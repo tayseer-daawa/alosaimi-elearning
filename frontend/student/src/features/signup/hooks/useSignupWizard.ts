@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { ApiError, UsersService } from "@/client"
-import { useSignIn } from "@/shared/api/useSignIn"
+import { navigateOrLoad, useSignIn } from "@/shared/api/useSignIn"
 import { apiErrorMessage } from "@/shared/lib/apiErrorMessage"
 import { emailIssue, emailIssueMessage } from "../lib/emailRules"
 
@@ -186,20 +186,27 @@ export function useSignupWizard() {
     setStepIndex(steps.indexOf(fieldStep[field]))
   }
 
+  // The account exists by now: never report a failure here as a failed signup,
+  // or the student retries and gets "email already exists".
   const signInAfterSignup = async () => {
     try {
       await signIn.mutateAsync({ email, password })
     } catch {
-      // The account exists; only the automatic sign-in failed. Say so on the
-      // login screen instead of dropping the student there unexplained.
-      await navigate({ to: "/login", search: { registered: true } })
+      // Only the automatic sign-in failed. Say so on the login screen instead
+      // of dropping the student there unexplained.
+      await navigateOrLoad(
+        () => navigate({ to: "/login", search: { registered: true } }),
+        "/login?registered=true",
+      )
       return
     }
-    await navigate({ to: "/" })
+    await navigateOrLoad(() => navigate({ to: "/" }), "/")
   }
 
-  const submit = async () => {
-    setIsSubmitting(true)
+  // Registration errors go to the form. Once the account exists, only
+  // signInAfterSignup runs, so nothing after it can be reported as a failed
+  // signup.
+  const register = async (): Promise<boolean> => {
     try {
       await UsersService.registerUser({
         requestBody: {
@@ -211,7 +218,7 @@ export function useSignupWizard() {
           password: password,
         },
       })
-      await signInAfterSignup()
+      return true
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         showErrorOnStep(
@@ -221,6 +228,14 @@ export function useSignupWizard() {
       } else {
         showErrorOnStep(null, "تعذر إنشاء الحساب، يرجى المحاولة لاحقاً")
       }
+      return false
+    }
+  }
+
+  const submit = async () => {
+    setIsSubmitting(true)
+    try {
+      if (await register()) await signInAfterSignup()
     } finally {
       setIsSubmitting(false)
     }

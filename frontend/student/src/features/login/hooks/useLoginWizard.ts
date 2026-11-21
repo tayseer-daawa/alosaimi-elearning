@@ -1,8 +1,10 @@
-import { useNavigate, useSearch } from "@tanstack/react-router"
-import { useState } from "react"
+import { getRouteApi, useNavigate } from "@tanstack/react-router"
+import { useRef, useState } from "react"
 import { ApiError } from "@/client"
-import { SignInError, useSignIn } from "@/shared/api/useSignIn"
+import { navigateOrLoad, SignInError, useSignIn } from "@/shared/api/useSignIn"
 import { apiErrorMessage } from "@/shared/lib/apiErrorMessage"
+
+const loginRoute = getRouteApi("/_layout/login")
 
 function signInErrorMessage(err: unknown): string {
   if (err instanceof SignInError) {
@@ -17,10 +19,15 @@ function signInErrorMessage(err: unknown): string {
 export function useLoginWizard() {
   const navigate = useNavigate()
   const signIn = useSignIn()
-  const search = useSearch({ strict: false })
+  const { registered } = loginRoute.useSearch()
   // Set by signup when the account was created but the automatic sign-in failed.
-  const notice =
-    search.registered === true ? "تم إنشاء الحساب، يرجى تسجيل الدخول" : null
+  const notice = registered ? "تم إنشاء الحساب، يرجى تسجيل الدخول" : null
+
+  // Covers sign-in *and* the navigation after it, so the button stays busy
+  // until the home screen loads. The ref also stops a second Enter press that
+  // lands before the re-render.
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const inFlight = useRef(false)
 
   const [email, setEmail] = useState("")
 
@@ -44,25 +51,29 @@ export function useLoginWizard() {
   }
 
   const next = async () => {
+    if (inFlight.current) return
     setError(null)
 
     if (!validateCurrentStep()) return
 
+    inFlight.current = true
+    setIsSubmitting(true)
     try {
       await signIn.mutateAsync({ email, password })
+      await navigateOrLoad(() => navigate({ to: "/" }), "/")
     } catch (err: unknown) {
       setError({ email: signInErrorMessage(err), password: null })
-      return
+    } finally {
+      inFlight.current = false
+      setIsSubmitting(false)
     }
-
-    await navigate({ to: "/" })
   }
 
   return {
     title,
     notice,
     error,
-    isSubmitting: signIn.isPending,
+    isSubmitting,
     email,
     setEmail,
     password,
